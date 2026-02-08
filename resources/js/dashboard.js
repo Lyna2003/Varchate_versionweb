@@ -49,16 +49,6 @@ const editorCSS = CodeMirror.fromTextArea(
   }
 );
 
-// Autocompletado automático para CSS
-editorCSS.on("inputRead", function (cm, change) {
-  if (/[a-zA-Z]/.test(change.text[0])) {
-    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
-  }
-});
-
-// Auto-actualización CSS en tiempo real
-editorCSS.on("change", ejecutarCodigoCSS);
-
 // ---------- Editor JS (opcional) ----------
 const editorJS = CodeMirror.fromTextArea(
   document.getElementById("code-editor-js"),
