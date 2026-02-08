@@ -1,113 +1,103 @@
+// ===============================
+//          MENU HAMBURGUESA
+// ===============================
 const dropdown = document.getElementById("dropdown");
 const hamburger = document.querySelector(".hamburger");
 
-hamburger.addEventListener("click", () => {
-  dropdown.classList.toggle("show");
-});
-
-// Cerrar al hacer clic en un link
-dropdown.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    dropdown.classList.remove("show");
+if (hamburger && dropdown) {
+  hamburger.addEventListener("click", () => {
+    dropdown.classList.toggle("show");
   });
-});
 
-// ===============================
-//           CODEMIRROR EDITORS
-// ===============================
-
-// ---------- Editor HTML ----------
-const editorHTML = CodeMirror.fromTextArea(
-  document.getElementById("code-editor"),
-  {
-    mode: "xml",
-    theme: "default",
-    lineNumbers: true,
-    tabSize: 2,
-    autoCloseTags: true,
-    autoCloseBrackets: true,
-    extraKeys: { "Ctrl-Space": "autocomplete" },
-  }
-);
-
-// Autocompletado automático para HTML
-editorHTML.on("inputRead", function (cm, change) {
-  if (change.text[0] === "<") {
-    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
-  }
-});
-
-// ---------- Editor CSS ----------
-const editorCSS = CodeMirror.fromTextArea(
-  document.getElementById("code-editor-css"),
-  {
-    mode: "css",
-    theme: "default",
-    lineNumbers: true,
-    autoCloseBrackets: true,
-    extraKeys: { "Ctrl-Space": "autocomplete" },
-  }
-);
-
-// ---------- Editor JS (opcional) ----------
-const editorJS = CodeMirror.fromTextArea(
-  document.getElementById("code-editor-js"),
-  {
-    mode: "javascript",
-    theme: "default",
-    lineNumbers: true,
-    autoCloseBrackets: true,
-    extraKeys: { "Ctrl-Space": "autocomplete" },
-  }
-);
-
-// Autocompletado automático para JS
-editorJS.on("inputRead", function (cm, change) {
-  if (/[a-zA-Z]/.test(change.text[0])) {
-    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
-  }
-});
-
-// ---------- Editor SQL ----------
-const editorSQL = CodeMirror.fromTextArea(
-  document.getElementById("code-editor-sql"),
-  {
-    mode: "text/x-sql",
-    theme: "default",
-    lineNumbers: true,
-    tabSize: 2,
-    autoCloseBrackets: true,
-    extraKeys: { "Ctrl-Space": "autocomplete" },
-  }
-);
-
-// Autocompletado automático para SQL
-editorSQL.on("inputRead", function (cm, change) {
-  if (/[a-zA-Z]/.test(change.text[0])) {
-    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
-  }
-});
-
-// ===============================
-//         FUNCIONES DE EJECUCIÓN
-// ===============================
-
-// Ejecutar HTML
-function ejecutarCodigo() {
-  const code = editorHTML.getValue();
-  const previewFrame = document.getElementById("preview");
-  const preview =
-    previewFrame.contentDocument || previewFrame.contentWindow.document;
-
-  preview.open();
-  preview.write(code);
-  preview.close();
+  dropdown.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      dropdown.classList.remove("show");
+    });
+  });
 }
 
-// Ejecutar CSS
-function ejecutarCodigoCSS() {
+// ===============================
+//          CODEMIRROR SAFE
+// ===============================
+let editorHTML, editorCSS, editorJS, editorSQL, editorPHP;
+
+const htmlTA = document.getElementById("code-editor");
+if (htmlTA) {
+  editorHTML = CodeMirror.fromTextArea(htmlTA, {
+    mode: "xml",
+    lineNumbers: true,
+    autoCloseTags: true,
+    autoCloseBrackets: true,
+  });
+}
+
+const cssTA = document.getElementById("code-editor-css");
+if (cssTA) {
+  editorCSS = CodeMirror.fromTextArea(cssTA, {
+    mode: "css",
+    lineNumbers: true,
+    autoCloseBrackets: true,
+  });
+}
+
+const jsTA = document.getElementById("code-editor-js");
+if (jsTA) {
+  editorJS = CodeMirror.fromTextArea(jsTA, {
+    mode: "javascript",
+    lineNumbers: true,
+    autoCloseBrackets: true,
+  });
+}
+
+const sqlTA = document.getElementById("code-editor-sql");
+if (sqlTA) {
+  editorSQL = CodeMirror.fromTextArea(sqlTA, {
+    mode: "text/x-sql",
+    lineNumbers: true,
+    autoCloseBrackets: true,
+  });
+}
+
+const phpTA = document.getElementById("code-editor-php");
+if (phpTA) {
+  editorPHP = CodeMirror.fromTextArea(phpTA, {
+    mode: "application/x-httpd-php",
+    lineNumbers: true,
+    autoCloseBrackets: true,
+  });
+}
+
+// ===============================
+//        BOTONES
+// ===============================
+document.getElementById("btn-html")?.addEventListener("click", ejecutarHTML);
+document.getElementById("btn-css")?.addEventListener("click", ejecutarCSS);
+document.getElementById("btn-js")?.addEventListener("click", ejecutarJS);
+document.getElementById("btn-sql")?.addEventListener("click", ejecutarSQL);
+document.getElementById("btn-php")?.addEventListener("click", ejecutarPHP);
+
+// ===============================
+//        EJECUCIONES
+// ===============================
+
+// ---------- HTML ----------
+function ejecutarHTML() {
+  if (!editorHTML) return;
+
+  const iframe = document.getElementById("preview");
+  if (!iframe) return;
+
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(editorHTML.getValue());
+  doc.close();
+}
+
+// ---------- CSS ----------
+function ejecutarCSS() {
   const code = editorCSS.getValue();
   const iframe = document.getElementById("preview-css");
+  if (!iframe) return;
 
   iframe.srcdoc = `
     <html>
@@ -122,11 +112,13 @@ function ejecutarCodigoCSS() {
   `;
 }
 
-function ejecutarCodigoJS() {
+
+// ---------- JS ----------
+function ejecutarJS() {
   const code = editorJS.getValue();
   const iframe = document.getElementById("preview-js");
+  if (!iframe) return;
 
-  // Construir el contenido del iframe
   iframe.srcdoc = `
     <html>
       <head>
@@ -153,11 +145,8 @@ function ejecutarCodigoJS() {
   `;
 }
 
-// ===============================
-//     EJECUCIÓN DE CONSULTAS SQL
-// ===============================
 
-// Datos de ejemplo (tabla Customers)
+// ---------- SQL ----------
 const customers = [
   {
     id: 1,
@@ -203,7 +192,6 @@ const customers = [
   },
 ];
 
-// Función para generar tablas en HTML
 function generarTabla(data, columnas) {
   if (!data.length)
     return "<p style='color:red'>⚠️ No se encontraron resultados</p>";
@@ -228,117 +216,47 @@ function generarTabla(data, columnas) {
   return table;
 }
 
-// Función principal para ejecutar SQL simulado
-function ejecutarCodigoSQL() {
-  const consulta = editorSQL.getValue().trim();
+function ejecutarSQL() {
   const preview = document.getElementById("preview-sql");
+  if (!preview) return;
 
-  let resultado = "";
+  const query = editorSQL.getValue().toUpperCase();
 
-  // Normalizamos la consulta a mayúsculas para analizar
-  const consultaUpper = consulta.toUpperCase();
-
-  // Caso 1: SELECT * FROM Customers
-  if (
-    consultaUpper === "SELECT * FROM CUSTOMERS;" ||
-    consultaUpper === "SELECT * FROM CUSTOMERS"
-  ) {
-    resultado = generarTabla(customers, [
+  if (query.includes("SELECT") && query.includes("CUSTOMERS")) {
+    preview.innerHTML = generarTabla(customers, [
       "id",
       "name",
       "lastname",
       "country",
       "email",
     ]);
+  } else {
+    preview.innerHTML =
+      "<p style='color:red'>❌ Consulta SQL no soportada</p>";
   }
-
-  // Caso 2: SELECT name, email FROM Customers
-  else if (consultaUpper.includes("SELECT NAME, EMAIL FROM CUSTOMERS")) {
-    const data = customers.map((c) => ({ name: c.name, email: c.email }));
-    resultado = generarTabla(data, ["name", "email"]);
-  }
-
-  // Caso 3: SELECT * FROM Customers WHERE country = 'México'
-  else if (consultaUpper.includes("WHERE COUNTRY = 'MÉXICO'")) {
-    const data = customers.filter((c) => c.country === "México");
-    resultado = generarTabla(data, [
-      "id",
-      "name",
-      "lastname",
-      "country",
-      "email",
-    ]);
-  }
-
-  // Caso 4: SELECT * FROM Customers ORDER BY name
-  else if (consultaUpper.includes("ORDER BY NAME")) {
-    const data = [...customers].sort((a, b) => a.name.localeCompare(b.name));
-    resultado = generarTabla(data, [
-      "id",
-      "name",
-      "lastname",
-      "country",
-      "email",
-    ]);
-  }
-
-  // Consulta no soportada
-  else {
-    resultado = `<p style="color:red; font-weight:bold;">❌ Consulta no soportada en la demo.<br>
-      Prueba con:<br>
-      1️⃣ SELECT * FROM Customers;<br>
-      2️⃣ SELECT name, email FROM Customers;<br>
-      3️⃣ SELECT * FROM Customers WHERE country = 'México';<br>
-      4️⃣ SELECT * FROM Customers ORDER BY name;
-    </p>`;
-  }
-
-  preview.innerHTML = resultado;
 }
 
-const editorPHP = CodeMirror.fromTextArea(
-  document.getElementById("code-editor-php"),
-  {
-    mode: "application/x-httpd-php", // modo correcto para PHP
-    theme: "darcula", // tema que resalte colores
-    lineNumbers: true,
-    tabSize: 2,
-    autoCloseTags: true,
-    autoCloseBrackets: true,
-    extraKeys: { "Ctrl-Space": "autocomplete" },
-  }
-);
 
-function ejecutarCodigoPHP() {
-  const code = editorPHP.getValue().trim();
+
+// ---------- PHP ----------
+function ejecutarPHP() {
+  if (!editorPHP) return;
+
   const preview = document.getElementById("preview-php");
+  if (!preview) return;
 
-  let output = "";
+  const code = editorPHP.getValue();
+  let salida = "";
 
-  // Ejemplo 1: Mostrar mensaje
-  if (/echo\s*["']Hola, Mundo desde PHP!["']/.test(code)) {
-    output += "Hola, Mundo desde PHP!<br>";
-  }
+  if (code.includes("Hola")) salida += "Hola, Mundo desde PHP!<br>";
 
-  // Ejemplo 2: Crear variable y mostrarla
-  const nombreMatch = code.match(/\$nombre\s*=\s*["'](.+?)["'];/);
-  if (nombreMatch && code.includes("echo") && code.includes("$nombre")) {
-    output += `Hola, ${nombreMatch[1]}<br>`;
-  }
+  const nombre = code.match(/\$nombre\s*=\s*["'](.+?)["']/);
+  if (nombre) salida += `Hola, ${nombre[1]}<br>`;
 
-  // Ejemplo 3: Sumar dos números
-  const aMatch = code.match(/\$a\s*=\s*(\d+);/);
-  const bMatch = code.match(/\$b\s*=\s*(\d+);/);
-  if (aMatch && bMatch && code.includes("echo") && code.includes("$suma")) {
-    const suma = parseInt(aMatch[1]) + parseInt(bMatch[1]);
-    output += `La suma de ${aMatch[1]} y ${bMatch[1]} es: ${suma}<br>`;
-  }
+  const a = code.match(/\$a\s*=\s*(\d+)/);
+  const b = code.match(/\$b\s*=\s*(\d+)/);
+  if (a && b) salida += `La suma es: ${+a[1] + +b[1]}`;
 
-  // Si no coincide con ningún ejemplo
-  if (!output) {
-    output =
-      '<span style="color:red;">❌ Código PHP no soportado en la demo</span>';
-  }
-
-  preview.innerHTML = output;
+  preview.innerHTML =
+    salida || "<span style='color:red'>Código PHP no soportado</span>";
 }

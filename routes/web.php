@@ -36,7 +36,3 @@ Route::get('/nueva_contrasena', function () {
     return view('nueva_contrasena');
 });
 
-Route::get('/recuperar', function () {
-    return view('recuperar');
-});
-

@@ -311,9 +311,6 @@ $suma = $a + $b;
 echo "&lt;br&gt;La suma de $a y $b es: " . $suma;
 ?&gt;
 </textarea>
-
-
-                </textarea>
                     <button id="btn-php">Ejecutar</button>
                 </div>
             </div>

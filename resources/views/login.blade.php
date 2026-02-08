@@ -19,7 +19,7 @@
       <img src="{{ asset('images/gato.png') }}" alt="Mascota Varchate">
     </div>
     <div class="right">
-      <img src="{{ asset('images/logo.png') }}" alt="Logo Varchate" class="logo">
+      <img src="{{ asset('images/logo_azul.png') }}" alt="Logo Varchate" class="logo">
       <div class="login-box">
         <h2>Iniciar sesión</h2>
           <form>
@@ -31,7 +31,7 @@
               </i>
             </div>
 
-            <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+            <a href="recuperar">¿Olvidaste tu contraseña?</a>
             <button type="submit">Entrar</button>
           </form>
 

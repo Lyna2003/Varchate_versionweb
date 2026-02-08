@@ -1,115 +1,147 @@
 /* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Barlow Semi Condensed', sans-serif;
+    }
 
 /* Contenedor general */
-body {
-  background: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  flex-direction: column;
-  
-}
+   body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #f5f6fa;
+    }
 
-/* Logo */
-.logo {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #3a82f7;
-  margin-bottom: 2rem;
-}
-.logo .v {
-  font-size: 3rem;
-}
-.logo .cat {
-  position: relative;
-}
-.logo .cat::before {
-  content: "🐱";
-  position: absolute;
-  top: -1.8rem;
-  left: -0.5rem;
-  font-size: 1.5rem;
-}
 
-/* Caja central */
-.box {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-.icon-check {
-  color: #28a745;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-.box h2 {
-  margin-bottom: 1rem;
-  font-size: 1.4rem;
-  font-weight: bold;
-}
-.box p {
-  color: #555;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* Footer */
-footer {
-  margin-top: 1rem;
-  text-align: center;
-}
-footer p {
-  font-size: 0.9rem;
-  color: #333;
-}
-footer a {
-  color: #3a82f7;
-  text-decoration: none;
-}
-footer a:hover {
-  text-decoration: underline;
-}
 header {
   margin-bottom: 1rem;
   text-align: center;
 }
-/* --- Sección de olas en la parte inferior --- */
-    .wave-section {
-      position: relative;
-      width: 100%;
-      height: 140px;
-      overflow: hidden;
-      margin-top: auto;
-      background: transparent;
-    }
-    .wave-section img {
-      position: absolute;
-      width: 100%;
-      left: 0;
-      pointer-events: none;
-      user-select: none;
-      display: block;
-    }
-    .wave-section .vector1 {
-      bottom: 0;
-      z-index: 2;
-    }
-    .wave-section .vector2 {
-      bottom: 0;
-      z-index: 1;
+
+  .container{
+      margin-bottom: 130px;
     }
 
+       header .logo {
+      width: 250px;
+      margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+
+
+/* Caja central */
+.box {
+  
+  border: 1px solid #ddd;
+    background: #fff;
+      border-radius: 10px;
+      
+      border-color: #B3B3B3;
+      width: 420px;       /* más grande */
+      padding: 40px 30px; /* más espacio interno */
+      margin-bottom: 12px;
+  max-width: 400px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+ .icon-check {
+      font-size: 60px;
+      color: #4caf50;
+      margin-bottom: 10px;
+    }
+.box h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0 0 21px;
+}
+   .box p {
+      font-size: 15px;
+      color: #000000;
+      line-height: 1.5;
+    }
+
+
+/* Footer */
+   footer {
+      text-align: center;
+      margin-top: 8px;  /* más junto al cuadro */
+    }
+  footer p {
+      font-size: 14px;
+      color: #767676;
+      font-weight: 500;
+    }
+
+    footer a {
+      color: #0066ff;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .wave-section {
+      width: 100vw;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      z-index: -1;
+      text-align: center;
+    }
+
+        .wave-section img {
+      width: 100vw;
+      height: 230px;
+      max-width: 100%;
+      display: block;
+    }
+
+
+        /* --- Responsive --- */
+    @media (max-width: 780px) {
+      .container {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: auto;
+        padding: 30px 20px;
+      }
+      .left h1 {
+        font-size: 22px;
+      }
+      .left img {
+        max-width: 200px;
+      }
+      .right {
+        width: 100%;
+      }
+      .register-box {
+        width: 68%;
+      }
+      .olas {
+        margin: 0px 0px 120px 0px;
+      }
+       .wave-section {
+    height: 50px;
+    overflow: hidden;
+    margin-top: auto;
+    background: transparent;
+    }
+      .header{
+        margin: 0px 0px -120px 0px;
+      }
+    }
 /* Curva inferior
 body::after {
   content: "";

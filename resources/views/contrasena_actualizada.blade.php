@@ -4,14 +4,14 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contraseña actualizada - Varchate</title>
-  @vite(entrypoints: 'resources/css/contrasena_actualizada.css')
+  @vite('resources/css/contrasena_actualizada.css')
 </head>
 
 <body>
 
   <div class="main">
     <div class="left">
-      <img src="{{asset('images/logo.png')  }}" alt="Logo Varchate" class="logo">
+      <img src="{{asset('images/logo_azul.png')  }}" alt="Logo Varchate" class="logo">
       <div class="card">
         <div class="icon-check">✔</div>
         <h2>¡Contraseña actualizada!</h2>

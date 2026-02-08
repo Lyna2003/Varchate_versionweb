@@ -24,7 +24,7 @@
 
     <!-- Columna derecha -->
     <div class="right">
-      <img src="{{ asset('images/logo.png') }}" alt="Logo Varchate" class="logo">
+      <img src="{{ asset('images/logo_azul.png') }}" alt="Logo Varchate" class="logo">
       <div class="register-box">
         <h2>Crear cuenta</h2>
         <form>

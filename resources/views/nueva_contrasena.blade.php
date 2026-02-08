@@ -12,7 +12,7 @@
     </div>
 
     <div class="right">
-      <img src="{{ asset('images/logo.png ') }}" alt="Logo Varchate" class="logo">
+      <img src="{{ asset('images/logo_azul.png ') }}" alt="Logo Varchate" class="logo">
       <div class="recovery-box">
         <h2>Crea una contraseña nueva</h2>
         <p>Crea una contraseña nueva de ocho caracteres como mínimo. Una contraseña segura tiene una combinación de letras, números y signos de puntuación.</p>

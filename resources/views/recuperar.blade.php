@@ -14,18 +14,18 @@
     </div>
 
     <div class="right">
-      <img src="{{ asset('images/logo.png') }}" alt="Logo Varchate" class="logo">
+      <img src="{{ asset('images/logo_azul.png') }}" alt="Logo Varchate" class="logo">
       <div class="recovery-box">
         <h2>¿Olvidaste tu contraseña?</h2>
         <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
         <form>
           <input type="email" placeholder="Correo electrónico" required>
-          <a href="enlace.blade.php">
+          <a href="enlace">
             <button type="button">Entrar</button>
           </a>
         </form>
       </div>
-      <p class="register">¿Recordaste tu contraseña? <a href="login.blade.php">Iniciar sesión</a></p>
+      <p class="register">¿Recordaste tu contraseña? <a href="login">Iniciar sesión</a></p>
     </div>
   </div>
 
