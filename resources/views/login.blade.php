@@ -40,7 +40,7 @@
           <button class="facebook">Facebook</button>
           <button class="gmail">Gmail</button>
         </div>
-        
+
       </div>
       <p class="register">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
     </div>

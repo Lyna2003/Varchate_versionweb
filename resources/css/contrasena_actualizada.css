@@ -1,0 +1,169 @@
+ @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Barlow Semi Condensed', sans-serif;
+    }
+
+    body {
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 300px;
+      padding: 20px;
+      z-index: 2;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      width: 220px;
+      max-width: 100%;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #B3B3B3;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 40px 35px;
+      text-align: center;
+      width: 420px;
+      z-index: 2;
+      max-width: 450px;
+    }
+
+    .icon-check {
+      font-size: 48px;
+      color: #4caf50;
+      margin-bottom: 12px;
+    }
+
+    .card img {
+      width: 60px;
+      margin-bottom: 15px;
+    }
+
+    .card h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: #000000;
+    }
+
+    .card p {
+      font-size: 16px;
+      color: #000000;
+      margin-bottom: 25px;
+    }
+
+    .card a button {
+      background: #2a7bff;
+      color: white;
+      width: 100%;
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+
+    .card button:hover {
+      background: #1a5fcc;
+    }
+
+    .cat {
+      width: 300px;
+      height: auto;
+      max-width: 100%;
+    }
+
+    .footer {
+      position: relative;
+      width: 100%;
+      height: 280px; /* altura ajustada */
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .footer img {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+    }
+
+    .ola2 {
+      z-index: 0;
+    }
+
+    .ola1 {
+      z-index: 1;
+    }
+
+    .wave-section {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  overflow: hidden;
+  }
+
+.wave-section img {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  left: 0;
+  height: auto;
+  z-index: 0;
+
+}
+
+    /* --- Responsive --- */
+    @media (max-width: 780px) {
+      .main {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        padding: 75px;
+      }
+
+      .logo {
+        width: 160px;
+      }
+
+      .card {
+        width: 130%;
+      }
+
+      .cat {
+        max-width: 200px;
+        order: -1;
+      }
+
+      .left {
+        gap: 30px;
+      }
+    }
