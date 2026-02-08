@@ -1,0 +1,1288 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&display=swap');
+
+/* ======================= */
+/* Global: Fuente y Body   */
+
+/* ======================= */
+/* ======================= */
+button,a {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  text-decoration: none;
+}
+
+body {
+  margin: 0;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  min-height: 100vh;
+  
+  /* La imagen de fondo la manejamos desde Blade, así que no la ponemos aquí */
+  
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center 120%;
+  background-attachment: scroll;
+}
+
+
+/* ======================= */
+/* Navbar Superior         */
+/* ======================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  padding: 0 20px;
+  height: 60px;
+}
+
+.navbar .logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar .logo img {
+  height: 40px;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Barlow Semi Condensed", sans-serif;
+
+  /* Nuevas reglas para <a> dentro del botón */
+  text-decoration: none; /* quita el subrayado */
+}
+
+.login-btn a {
+  color: inherit; /* toma el color del botón */
+  text-decoration: none; /* quita subrayado */
+  display: flex; /* para que el ícono y texto se alineen como el botón */
+  align-items: center;
+}
+
+.login-btn i {
+  margin-right: 10px;
+  font-size: 13px;
+  color: #000;
+}
+
+.login-btn:hover {
+  background-color: #e0e0e0;
+}
+
+
+.icon-sun {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+/* ======================= */
+/* Navbar Inferior         */
+/* ======================= */
+.navbar-lower {
+  background-color: #276cdc;
+  position: relative;
+}
+
+.navbar-lower ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 139px;
+  max-width: 1390px;
+  height: 50px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.navbar-lower ul li a {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.navbar-lower ul li a:hover {
+  background-color: #3478e6;
+  cursor: pointer;
+}
+
+/* Botón hamburguesa */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Menú desplegable */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #276cdc;
+  flex-direction: column;
+  z-index: 1000;
+  border-top: 1px solid #3478e6;
+  overflow: hidden;
+}
+
+.dropdown-menu.show {
+  display: flex;
+  animation: slideDown 0.3s ease forwards;
+}
+
+.dropdown-menu a {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.dropdown-menu a:hover {
+  background-color: #3478e6;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================= */
+/* Contenido principal     */
+/* ======================= */
+.main-content {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+}
+
+.main-content h1 {
+  font-weight: 700;
+  font-size: 48px;
+  margin-bottom: 12px;
+  color: #000;
+}
+
+.main-content p {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.start-btn {
+  background-color: #276cdc;
+  color: white;
+  padding: 12px 30px;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+/* ======================= */
+/* Sección en dos columnas */
+/* ======================= */
+.main-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1346px;
+  margin: 40px auto;
+  padding: 0 20px;
+  gap: 40px;
+}
+
+/* Columna izquierda */
+.left-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.left-content h1 {
+  font-weight: 700;
+  font-size: 48px;
+  margin-bottom: 12px;
+  color: #000;
+}
+
+.left-content p {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* Columna derecha */
+.right-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+/* ======================= */
+/* Sección de características */
+/* ======================= */
+.features-section {
+  max-width: 1200px;
+  margin: 290px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 64px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.features-section p {
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #ffffff;
+}
+
+.icons-row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+/* ======================= */
+/* Contenedor HTML         */
+/* ======================= */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 10%;
+  gap: 40px;
+  border-radius: 12px;
+}
+
+.left-content-html {
+  margin: -337px 50px 50px -10px;
+  text-align: center;
+}
+
+.left-content-html h1 {
+  font-size: 90px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.left-content-html p {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+}
+.texto-justificado {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+  max-width: 296px;
+}
+
+.left-content-html .start-btn {
+  background: #007bff;
+  color: #fff;
+  font-size: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600; /* semi-bold */
+  font-family: "Barlow Semi Condensed", sans-serif;
+  box-shadow: 0 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+.left-content-html .start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+/* ======================= */
+/* Editor y vista previa  HTML */
+/* ======================= */
+.editor-container {
+  display: flex;
+  gap: 50px;
+  align-items: stretch;
+  margin: -97px 50px 50px -383px;
+}
+
+.editor {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  position: relative;
+}
+
+#code-editor {
+  width: 100%;
+  height: 250px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  outline: none;
+  color: #000;
+}
+
+.editor button {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.editor button:hover {
+  background: #0056b3;
+}
+
+.content-preview {
+  margin: -346px -59px 50px 110px;
+}
+
+#preview {
+  flex: 1;
+  min-width: 400px;
+  height: 400px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin: 20px 0 0 0;
+}
+
+/* ======================= */
+/* Sección CSS             */
+/* ======================= */
+.container-css {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 10%;
+  gap: 40px;
+  border-radius: 12px;
+}
+.left-content-css {
+  margin: -337px 50px 50px -10px;
+  text-align: center;
+}
+.left-content-css {
+  margin: -172px 439px 50px -10px;
+  text-align: center;
+}
+
+.left-content-css h1 {
+  font-size: 90px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.left-content-css p {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+}
+.texto-justificado-css {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+  max-width: 296px;
+}
+
+.left-content-css .start-btn {
+  background: #ffffff;
+  color: #000000;
+  font-size: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600; /* semi-bold */
+  font-family: "Barlow Semi Condensed", sans-serif;
+  box-shadow: 0 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+.left-content-css .start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+/* ======================= */
+/* Editor y vista previa CSS   */
+/* ======================= */
+.editor-container-css {
+  display: flex;
+  gap: 50px;
+  align-items: stretch;
+  margin: 81px 50px 50px -383px;
+}
+
+.editor-css {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  width: 400px;
+  position: relative;
+}
+
+#code-editor-css {
+  width: 100%;
+  height: 250px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  outline: none;
+  color: #000;
+}
+
+.editor-css button {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.editor-css button:hover {
+  background: #0056b3;
+}
+
+.content-preview-css {
+  margin: -346px -59px 50px 110px;
+}
+
+#preview-css {
+  flex: 1;
+  min-width: 400px;
+  height: 400px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin: 48px 0 0 0;
+}
+
+/* ======================= */
+/* Contenedor JS           */
+/* ======================= */
+.container-js {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 10%;
+  gap: 40px;
+  border-radius: 12px;
+}
+
+.left-content-js {
+  margin: -197px 50px 50px -10px;
+  text-align: center;
+}
+
+.left-content-js h1 {
+  font-size: 90px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.left-content-js p {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+}
+.texto-justificado-js {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+  max-width: 296px;
+}
+
+.left-content-js .start-btn {
+  background: #007bff;
+  color: #fff;
+  font-size: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  box-shadow: 0 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+.left-content-js .start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+/* ======================= */
+/* Editor y vista previa JS */
+/* ======================= */
+.editor-container-js {
+  display: flex;
+  gap: 50px;
+  align-items: stretch;
+  margin: 49px 50px 50px -383px;
+}
+
+.editor-js {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  width: 400px;
+  position: relative;
+}
+
+#code-editor-js {
+  width: 100%;
+  height: 250px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  outline: none;
+  color: #000;
+}
+
+.editor-js button {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.editor-js button:hover {
+  background: #0056b3;
+}
+
+.content-preview-js {
+  margin: -346px -59px 50px 110px;
+}
+
+#preview-js {
+  flex: 1;
+  min-width: 400px;
+  height: 400px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin: 20px 0 0 0;
+}
+
+/* ======================= */
+/* Contenedor SQL          */
+/* ======================= */
+.container-sql {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 10%;
+  gap: 40px;
+  border-radius: 12px;
+}
+
+.left-content-sql {
+  margin: -197px 50px 50px -10px;
+  text-align: center;
+}
+
+.left-content-sql h1 {
+  font-size: 90px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.left-content-sql p {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+}
+
+.texto-justificado-sql {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+  max-width: 296px;
+}
+
+.left-content-sql .start-btn {
+  background: #ffffff;
+  color: #000000;
+  font-size: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600; /* semi-bold */
+  font-family: "Barlow Semi Condensed", sans-serif;
+  box-shadow: 0 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+.left-content-sql .start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+.right-content-sql {
+  margin: 0px 1px -23px 0px;
+}
+/* ======================= */
+/* Editor y vista previa SQL */
+/* ======================= */
+.editor-container-sql {
+  display: flex;
+  gap: 50px;
+  align-items: stretch;
+  margin: 23px 0px 35px 0px;
+}
+
+.editor-sql {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 157px;
+  width: 618px;
+  position: relative;
+}
+
+#code-editor-sql {
+  width: 100%;
+  height: 250px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  outline: none;
+  color: #000;
+}
+
+.editor-sql button {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.editor-sql button:hover {
+  background: #0056b3;
+}
+
+.content-preview-sql {
+  margin: 0px 0px 0px 0px;
+}
+
+#preview-sql {
+  flex: 1;
+  min-width: 618px;
+  height: 255px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin: 20px 0 0 0;
+  padding: 15px;
+  overflow: auto;
+}
+
+/* ======================= */
+/* Contenedor PHP          */
+/* ======================= */
+.container-php {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 10%;
+  gap: 40px;
+  border-radius: 12px;
+  margin: 90px 0px -76px 0px;
+}
+
+.left-content-php {
+  margin: -197px 50px 50px -10px;
+  text-align: center;
+}
+
+.left-content-php h1 {
+  font-size: 90px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.left-content-php p {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+}
+
+.texto-justificado-php {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000;
+  margin-bottom: 15px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  text-align: justify;
+  max-width: 296px;
+}
+
+.left-content-php .start-btn {
+  background: #007bff;
+  color: #fff;
+  font-size: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600; /* semi-bold */
+  font-family: "Barlow Semi Condensed", sans-serif;
+  box-shadow: 0 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+.left-content-php .start-btn:hover {
+  background: #022c63;
+  color: white;
+}
+
+/* ======================= */
+/* Editor y vista previa PHP */
+/* ======================= */
+.editor-container-php {
+  display: flex;
+  gap: 50px;
+  align-items: stretch;
+  margin: 49px 50px 50px -383px;
+}
+
+.editor-php {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  width: 400px;
+  position: relative;
+}
+
+#code-editor-php {
+  width: 100%;
+  height: 250px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  outline: none;
+  color: #000;
+}
+
+.editor-php button {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.editor-php button:hover {
+  background: #0056b3;
+}
+
+.content-preview-php {
+  margin: -346px -59px 50px 110px;
+}
+
+#preview-php {
+  flex: 1;
+  min-width: 400px;
+  height: 400px;
+  border-radius: 12px;
+  background: rgb(255, 255, 255);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin: 20px 0 0 0;
+  padding: 15px;
+  overflow: auto;
+
+  font-family: "Courier New", monospace;
+  font-size: 22px;
+  color: #000000;
+  text-align: center;
+
+  line-height: 5.5; /* aumenta el espacio entre líneas */
+}
+
+/* configuracion footer */
+
+.footer-container {
+  width: 100%; /* ocupa todo el ancho */
+  display: flex; /* te permite centrarlo o moverlo */
+  justify-content: center; /* lo centra horizontalmente */
+}
+.custom-footer {
+  color: #fff;
+  font-family: "Barlow Semi Condensed", sans-serif;
+
+  padding: 56px 113px 20px;
+}
+
+.footer-top {
+  display: flex;
+
+  justify-content: space-between;
+  z-index: 1;
+}
+
+.footer-left {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 0 0 0 -114px;
+}
+
+.footer-logo {
+  width: 290px;
+  height: auto;
+  margin: -23px 43px; /* arriba/abajo 20px, centrado horizontalmente */
+}
+
+.footer-welcome h2 {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+}
+
+.footer-welcome p {
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 356px; /* ancho máximo del párrafo */
+  margin: 3px 0px -68px 0px; /* centra horizontalmente */
+}
+
+.footer-right {
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+  min-width: 250px;
+  margin: 151px 0px 12px 150px;
+}
+
+.footer-section h3 {
+  margin-bottom: 10px;
+  font-size: 23px;
+}
+
+.footer-section a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.footer-bottom {
+  text-align: center;
+}
+
+.footer-social a {
+  color: #fff;
+  margin: 0 10px;
+  font-size: 18px;
+}
+
+/* ======================= */
+/* CodeMirror              */
+/* ======================= */
+.CodeMirror {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  height: 250px;
+}
+
+/* ======================= */
+/* Responsive              */
+/* ======================= */
+
+@media (max-width: 450px) {
+  /* Fondo móvil */
+  body {
+    background-position: center 143px !important;
+    background-size: contain; /* se ajusta sin recortarse */
+    background-image: url("img/fondo3.jpg") !important;
+  }
+
+  /* Navbar */
+  .navbar-lower ul {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+
+  /* Sección columnas */
+  .main-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-content,
+  .right-content {
+    max-width: 100%;
+  }
+  .left-content h1 {
+    font-size: 32px;
+  }
+  .left-content p {
+    font-size: 16px;
+  }
+
+  /* Sección características */
+  .features-section {
+    margin: 53px 0px 0px 10px;
+    padding: 0 10px;
+  }
+  .features-section h2 {
+    margin: 8px;
+    font-size: 17px;
+  }
+  .features-section p {
+    margin: 3px;
+    font-size: 8px;
+    line-height: 1.4;
+  }
+
+  .icons-row {
+    margin: 8px;
+    justify-content: space-around;
+  }
+
+  .icon-item img {
+    max-width: 330px;
+    height: auto;
+    object-fit: contain;
+  }
+  /* Sección columnas */
+  .main-section {
+    flex-direction: column;
+    align-items: center;
+    align-items: flex-start;
+    margin: -32px 0px -63px -108px;
+  }
+
+  .editor-container,
+  .editor-container-css,
+  .editor-container-js,
+  .editor-container-php,
+  .editor-container-sql,
+  #preview,
+  #preview-css,
+  #preview-php,
+  #preview-sql,
+  #preview-js {
+    display: none;
+  }
+  /* Solo mostrar los left-content de cada sección */
+  .left-content,
+  .left-content-html,
+  .left-content-css,
+  .left-content-js,
+  .left-content-php,
+  .left-content-sql {
+    display: block !important;
+    margin: 0 auto; /* Centrado horizontal */
+    transform: scale(0.5);
+  }
+  .left-content-php {
+    margin: 27px 0 0 10px;
+  }
+  .left-content-sql {
+    margin: 4px 0 0 -52px;
+  }
+
+  /* Escalar ligeramente si quieres */
+  .container,
+  .container-css,
+  .container-js,
+  .container-php,
+  .container-sql {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -89px -101px -275px -28px;
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+  .footer-top {
+    flex-direction: column; /* De horizontal a vertical */
+    align-items: center; /* Centrado */
+    text-align: center;
+  }
+
+  .footer-left {
+    margin: 77px; /* Quitamos el margen negativo */
+    flex-direction: column; /* Logo y texto uno debajo del otro */
+    align-items: center;
+  }
+
+  .footer-logo {
+    width: 200px; /* Más pequeño en móvil */
+    margin: 0 auto 20px auto;
+  }
+
+  .footer-welcome p {
+    max-width: 100%;
+    margin: 10px auto;
+  }
+
+  .footer-right {
+    margin: -24px 0 0 0; /* Espacio superior */
+    flex-direction: column; /* Secciones en vertical */
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-section h3 {
+    font-size: 18px; /* Más compacto */
+  }
+
+  .footer-section a {
+    font-size: 14px;
+  }
+  .footer-bottom {
+    margin: 23px;
+  }
+}
+
+@media (min-width: 1700px) and (max-width: 1920px) {
+  body {
+    background-position: center -265px !important;
+  }
+
+  /* Sección columnas */
+  .main-section {
+    flex-direction: column;
+    align-items: center;
+    align-items: flex-start;
+    margin: 88px 0px 0px 215px;
+  }
+
+  .left-content,
+  .right-content {
+    max-width: 100%;
+  }
+  .left-content h1 {
+    font-size: 50px;
+  }
+  .left-content p {
+    font-size: 20px;
+  }
+
+  /* Sección características */
+  .features-section {
+    margin: 300 10px;
+  }
+  .features-section h2 {
+    margin: 8px;
+    font-size: 70px;
+  }
+  .features-section p {
+    margin: 21px;
+    font-size: 24px;
+    line-height: 1.4;
+  }
+
+  .icons-row {
+    margin: 8px;
+    justify-content: space-around;
+  }
+
+  .icon-item img {
+    max-width: 1100px;
+
+    margin: 55px 0px 211px 0px;
+  }
+  .editor-container {
+    margin: -61px 50px 50px -383px;
+  }
+
+  .container {
+    margin: 0px 62px 0px;
+  }
+
+  .container-css {
+    margin: 133px 50px -502px;
+  }
+  .container-js {
+    margin: 687px 50px -54px;
+  }
+  .container-sql {
+    margin: 303px 50px -54px;
+  }
+  .container-php {
+    margin: 303px 50px -54px;
+  }
+}

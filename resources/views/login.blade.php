@@ -42,7 +42,7 @@
         </div>
         
       </div>
-      <p class="register">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
+      <p class="register">¿No tienes cuenta? <a href="register">Regístrate</a></p>
     </div>
   </div>
 
