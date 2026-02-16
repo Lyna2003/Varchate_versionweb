@@ -27,24 +27,40 @@
       <img src="{{ asset('images/logo_azul.png') }}" alt="Logo Varchate" class="logo">
       <div class="register-box">
         <h2>Crear cuenta</h2>
-        <form>
-          <input type="text" placeholder="Nombre completo" required>
-          <input type="email" placeholder="Correo electrónico" required>
+        <form id="registerForm" method="POST" data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8000/api') }}">
+          <input type="text" name="nombre" placeholder="Nombre completo" required>
+          <input type="email" name="email" placeholder="Correo electrónico" required>
 
           <div class="input-pass">
-            <input type="password" class="input-password" id="regPass1" placeholder="Contraseña" required>
+            <input type="password" name='password'class="input-password" id="regPass1" placeholder="Contraseña" required>
             <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="regPass1"></i>
+          
+           <div class="password-requirements-tooltip">
+            <i class="fa-solid fa-circle-info info-icon"></i>
+            <div class="tooltip-content">
+              <strong>Requisitos de seguridad</strong>
+              <ul>
+                <li class="req-length">8+ caracteres</li>
+                <li class="req-uppercase">Una mayúscula (A-Z)</li>
+                <li class="req-lowercase">Una minúscula (a-z)</li>
+                <li class="req-number">Un número (0-9)</li>
+              </ul>
+            </div>
           </div>
+        </div>
+
+         
+        
 
           <div class="input-pass">
-            <input type="password" class="input-password" id="regPass2" placeholder="Confirmar contraseña" required>
+            <input type="password" name='password_confirmation' class="input-password" id="regPass2" placeholder="Confirmar contraseña" required>
             <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="regPass2"></i>
           </div>
 
           
           <div class="terms">
             <label for="terms">
-              <input type="checkbox" id="terms" required>
+              <input type="checkbox" name="terms_accepted" id="terms" required>
               Acepto los <a href="#">términos y condiciones</a>
             </label>
           </div>
@@ -72,3 +88,4 @@
 
 </body>
 </html>
+

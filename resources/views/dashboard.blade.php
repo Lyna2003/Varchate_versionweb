@@ -57,16 +57,12 @@
 
 </head>
 
-<body style="background-image: url('{{ asset('images/fondo.png') }}'); 
-             background-repeat: no-repeat;
-             background-size: cover;
-             background-position: center 120%;
-             background-attachment: scroll;">
+<body>
 
     <header>
         <nav class="navbar">
             <div class="logo">
-                <img src="{{ asset('images/logo_blanco.png') }}" alt="Logo">
+                <img src="{{ asset('../images/logo_blanco.png') }}" alt="Logo">
             </div>
             <a href="login" class="login-btn">
                 <i class="fa-slab-press fa-regular fa-user"></i>

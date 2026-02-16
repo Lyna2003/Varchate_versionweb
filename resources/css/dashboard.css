@@ -14,6 +14,7 @@ body {
   margin: 0;
   font-family: 'Barlow Semi Condensed', sans-serif;
   min-height: 100vh;
+  background-image: url("../images/fondo.png");
   
   /* La imagen de fondo la manejamos desde Blade, así que no la ponemos aquí */
   
@@ -1073,7 +1074,7 @@ body {
   body {
     background-position: center 143px !important;
     background-size: contain; /* se ajusta sin recortarse */
-    background-image: url("img/fondo3.jpg") !important;
+    background-image: url("../images/fondo3.jpg") !important;
   }
 
   /* Navbar */

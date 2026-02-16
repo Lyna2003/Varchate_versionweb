@@ -82,7 +82,7 @@ header {
 .register-box {
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 20px;
+  padding: 24px;
   width: 100%;
   max-width: 350px;
   text-align: center;
@@ -274,6 +274,196 @@ input:focus {
 
 .login-link a:hover {
   text-decoration: underline;
+}
+
+/* Mismos estilos que login pero adaptados a tu estructura */
+.register-error {
+  background-color: #ffe5e5;
+  color: #d93025;
+  border: 1px solid #d93025;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.register-success {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  border: 1px solid #1e7e34;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.input-error {
+  border: 2px solid #d93025 !important;
+  background-color: #fff5f5;
+}
+
+.input-pass .input-password.input-error {
+  border: 2px solid #d93025 !important;
+}
+
+.field-error {
+  color: #d93025;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+/* Para el contenedor de términos */
+.terms {
+  margin: 15px 0;
+  position: relative;
+}
+
+.terms label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.terms input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.terms .field-error {
+  margin-top: 8px;
+  margin-left: 24px; /* Alineado con el texto */
+}
+
+/* =========================
+   TOOLTIP DE REQUISITOS - VERSIÓN FUERA DEL INPUT
+   ========================= */
+
+/* Contenedor del tooltip - AHORA FUERA DEL INPUT-PASS */
+.password-requirements-tooltip {
+  position: absolute;
+  right: -25px; /* Se coloca completamente afuera del input */
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-block;
+  cursor: help;
+  z-index: 10;
+}
+
+/* Ajustar el contenedor input-pass para que no corte el tooltip */
+.input-pass {
+  width: 100%;
+  margin: 5px 0;
+  position: relative;
+  overflow: visible; /* ¡IMPORTANTE! Para que no corte el tooltip */
+}
+
+/* Icono de información */
+.info-icon {
+  color: #888;
+  font-size: 14px; /* Un poco más grande */
+  transition: color 0.2s ease;
+  background: white; /* Fondo blanco para destacar */
+  border-radius: 50%;
+  margin: 0 3px 0 0;
+  padding: 2px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.password-requirements-tooltip:hover .info-icon {
+  color: #3478E6;
+  transform: scale(1.1);
+}
+
+/* Contenido del tooltip - AHORA MÁS ESPACIADO */
+.tooltip-content {
+  position: absolute;
+  top: 50%;
+  left: 30px; /* Aparece hacia la derecha del icono */
+  transform: translateY(-50%) translateX(10px);
+  background: white;
+  color: #333;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  min-width: 220px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+  text-align: left;
+  white-space: normal;
+}
+
+/* Flecha del tooltip - APUNTA HACIA LA IZQUIERDA (AL ICONO) */
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px; /* Pegado al borde izquierdo */
+  transform: translateY(-50%);
+  border-width: 8px 8px 8px 0;
+  border-style: solid;
+  border-color: transparent white transparent transparent;
+  filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.1));
+}
+
+/* Mostrar tooltip al hacer hover */
+.password-requirements-tooltip:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Estilo del título en el tooltip */
+.tooltip-content strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #3478E6;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+/* Lista de requisitos */
+.tooltip-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tooltip-content li {
+  padding: 6px 0 6px 24px;
+  color: #666;
+  font-size: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Ícono de cada requisito (por defecto) */
+.tooltip-content li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: #aaa;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+/* Requisito válido */
+.tooltip-content li.valid {
+  color: #1e7e34;
+}
+
+.tooltip-content li.valid::before {
+  content: '✓';
+  color: #1e7e34;
+  font-weight: bold;
 }
 
 /* Responsive */
