@@ -21,7 +21,7 @@
           </a>
       </div>
     </div>
-    <img src="{{ asset('images/alegre 1.png') }}" alt="Gato feliz" class="cat">
+    <img src="{{ asset('images/alegre.png') }}" alt="Gato feliz" class="cat">
   </div>
 
   <div class="wave-section">

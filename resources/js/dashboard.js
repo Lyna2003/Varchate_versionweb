@@ -260,3 +260,6 @@ function ejecutarPHP() {
   preview.innerHTML =
     salida || "<span style='color:red'>Código PHP no soportado</span>";
 }
+
+
+

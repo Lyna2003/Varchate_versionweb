@@ -105,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (response.status === 401) {
           showFormError("Credenciales incorrectas. Verifica tu correo y contraseña");
         }
-
         // Error 403 - Usuario inactivo o no verificado
         else if (response.status === 403) {
           if (data.message && data.message.includes("verificar")) {
@@ -126,29 +125,43 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // =========================
-      // Login exitoso - VERSIÓN SEGURA
+      // LOGIN EXITOSO - VERSIÓN CORREGIDA
       // =========================
+      // Guardar token (verificar si viene como 'token' o 'access_token')
+      const token = data.access_token || data.token;
       
-      // Guardar token (necesario para auth)
-      if (data.access_token) {
-        localStorage.setItem('auth_token', data.access_token);
-        
-        // Guardar SOLO el nombre para la UI si existe
-        if (data.user && data.user.nombre) {
-          localStorage.setItem('user_nombre', data.user.nombre);
-        }
+      if (token) {
+          // Guardar token en localStorage
+          localStorage.setItem('auth_token', token);
+          
+          // Guardar datos del usuario
+          if (data.user) {
+              localStorage.setItem('user', JSON.stringify(data.user));
+              
+              // También guardar datos individuales para acceso rápido
+              const nombreCompleto = data.user.nombre || data.user.name || '';
+              const partes = nombreCompleto.split(' ');
+              localStorage.setItem('user_nombre', partes[0] || 'Usuario');
+              localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
+              localStorage.setItem('user_email', data.user.email || '');
+              if (data.user.avatar) {
+                  localStorage.setItem('user_avatar', data.user.avatar);
+              }
+          }
+          
+          // Mostrar mensaje de éxito
+          showSuccessMessage("¡Inicio de sesión exitoso! Redirigiendo...");
+          
+          // Redirigir a la vista de módulo principal
+          setTimeout(() => {
+              window.location.href = "/modulo";
+          }, 1500);
+      } else {
+          showFormError("Error: No se recibió el token de autenticación");
       }
-      
-      // Mostrar mensaje de éxito
-      showSuccessMessage("¡Inicio de sesión exitoso!");
-      
-      // Redirigir al dashboard
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1500);
 
     } catch (error) {
-      // Error de red - sin console.log
+      // Error de red
       if (!navigator.onLine) {
         showFormError("No hay conexión a internet. Verifica tu red");
       } else {
@@ -213,7 +226,7 @@ function removeFieldError(input) {
 }
 
 // =========================
-// Mostrar error general del formulario - CON TU CSS ORIGINAL
+// Mostrar error general del formulario
 // =========================
 function showFormError(message) {
   removeFormError();
@@ -292,7 +305,7 @@ function showResendEmailOption(form, email) {
         resendDiv.remove();
       }
     } catch (error) {
-      // Silencioso - sin console.log
+      // Silencioso
     }
   });
 }
