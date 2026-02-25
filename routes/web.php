@@ -27,9 +27,9 @@ Route::get('/recuperar', function () {
     return view('recuperar');
 });
 
-Route::get('/nueva_contrasena', function () {
+Route::get('/reset-password', function () {
     return view('nueva_contrasena');
-});
+})->name('password.reset');
 
 Route::get('/enlace', function () {
     return view('enlace');

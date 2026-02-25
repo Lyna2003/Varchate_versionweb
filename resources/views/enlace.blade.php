@@ -20,11 +20,12 @@
       </p>
     </main>
     <footer>
-      <p>¿No lo recibiste? <a href="/recuperar" id="resend-link">Reenviar enlace</a></p>
+      <p>¿No lo recibiste? <a href="/reset-password" id="resend-link">Reenviar enlace</a></p>
     </footer>
   </div>
   <div class="wave-section">
     <img src="{{ asset('images/ola2.png') }}" alt="Ola inferior" class="ola2">
   </div>
+  @vite('resources/js/enlace.js')
 </body>
 </html>
