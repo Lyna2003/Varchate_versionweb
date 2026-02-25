@@ -124,30 +124,30 @@
 
 /* Perfil */
 .perfil h2 {
-  margin-bottom: 15px;
-  font-size: 27px;
+  margin-bottom: 18px;
+  font-size: 28px;
 }
 .perfil-card {
   background: #AFCBFF7D;
-  height: 240px;
+  min-height: 220px;
   border-radius: 20px;
-  padding: 20px 40px;
+  padding: 22px 30px;
   display: flex;
-  gap: 60px;
-  align-items: center;
+  gap: 40px;
+  align-items: flex-start; /* permitir que los inputs fluyan desde arriba */
   flex-wrap: wrap;
 }
 .perfil-imagen {
   position: relative;
-  width: 175px;
+  width: 150px;
   display: flex;
-  flex-direction: column; 
-  align-items: center;    
+  flex-direction: column;
+  align-items: center;
 }
 
 .perfil-imagen img {
-  width: 175px;
-  height: 175px;
+  width: 150px;
+  height: 185px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -157,7 +157,7 @@
   display: flex;
   margin-bottom: -10px;
   justify-content: center;
-  gap: 35px; 
+  gap: 5px; 
   width: 100%; 
   margin-top: -10px;  
 }
@@ -194,26 +194,61 @@
   flex: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 18px 24px;
 }
 .campo {
   display: flex;
   flex-direction: column;
 }
 .campo label {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 .campo input {
-  padding: 8px;
-  border-radius: 8px;
-  color: #717171;
-  border: 1px solid #757575;
-  width: 90%;
-  max-width: 400px;
-  font-weight: 400;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #333;
+  border: 1px solid #cfcfcf;
+  width: 100%;
+  max-width: none;
+  font-weight: 500;
   font-size: 15px;
+}
+
+/* Estilos para inputs con icono de mostrar/ocultar contraseña */
+.input-pass {
+  position: relative;
+}
+.input-pass .toggle-pass {
+  position: absolute;
+  right: 8px;
+  top: 68%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  height: 32px;
+  width: 32px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.input-pass .toggle-pass svg {
+  width: 20px;
+  height: 20px;
+}
+.input-pass input {
+  padding-right: 40px; /* espacio para el icono */
+}
+
+/* Asegurar que el botón no desborde el contenedor del input */
+.input-pass {
+  overflow: visible; /* permitimos que el botón se muestre fuera si es necesario */
 }
 .campo small {
   font-size: 13px;

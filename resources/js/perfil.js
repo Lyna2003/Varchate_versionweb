@@ -113,6 +113,7 @@ window.addEventListener("DOMContentLoaded", () => {
   
 
   cargarDatosUsuario();
+  initPasswordToggles();
 });
 
 
@@ -131,6 +132,37 @@ function showSuccessToast(message = 'Perfil actualizado correctamente', timeout 
   toast.style.transform = 'translateX(-50%) translateY(-10px)';
   toast.style.background = 'linear-gradient(90deg,#198754,#2ecc71)';
   toast.style.color = 'white';
+  toast.style.padding = '12px 20px';
+  toast.style.borderRadius = '10px';
+  toast.style.boxShadow = '0 6px 20px rgba(0,0,0,0.18)';
+  toast.style.fontWeight = '600';
+  toast.style.zIndex = 99999;
+  toast.style.opacity = '0';
+  toast.style.transition = 'transform .28s ease, opacity .28s ease';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+  });
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(-10px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, timeout);
+}
+
+function showErrorToast(message = 'Ocurrió un error', timeout = 2200) {
+  // Evitar crear múltiples
+  if (document.getElementById('vc-error-toast')) return;
+  const toast = document.createElement('div');
+  toast.id = 'vc-error-toast';
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.left = '50%';
+  toast.style.top = '20px';
+  toast.style.transform = 'translateX(-50%) translateY(-10px)';
+  toast.style.background = 'linear-gradient(90deg,#f43f5e,#ef4444)';
+  toast.style.color = '#fff';
   toast.style.padding = '12px 20px';
   toast.style.borderRadius = '10px';
   toast.style.boxShadow = '0 6px 20px rgba(0,0,0,0.18)';
@@ -209,7 +241,7 @@ async function cargarDatosUsuario() {
         // Token inválido: limpiar y notificar
         localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
-        alert('Sesión inválida o expirada. Por favor, inicia sesión de nuevo.');
+        showErrorToast('Sesión inválida o expirada. Por favor, inicia sesión de nuevo.');
         // Opcional: redirigir a login
         // window.location.href = '/login';
       }
@@ -217,10 +249,46 @@ async function cargarDatosUsuario() {
   } catch (error) {
     console.error("Error cargando datos del usuario:", error);
     // Proveer mensaje específico cuando es un error de red
-    if (error instanceof TypeError) {
-      alert(`No se pudo conectar al servidor de API en ${url}. Verifica que el backend esté ejecutándose y que la URL sea correcta.`);
-    }
+    const msg = `No se pudo conectar al servidor de API en ${url}. Verifica que el backend esté ejecutándose y que la URL sea correcta.`;
+    showErrorToast(msg);
   }
+}
+
+// Inicializa los botones que muestran/ocultan contraseñas
+function initPasswordToggles() {
+  // SVGs para los estados (open = visible, closed = hidden/slash)
+  const eyeOpen = `
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#374151" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3" stroke="#374151" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+  const eyeSlash = `
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.16 20.16 0 0 1 5.06-6.06" stroke="#374151" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M1 1l22 22" stroke="#374151" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+  document.querySelectorAll('.toggle-pass').forEach(btn => {
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    // Inicializar icono según tipo actual
+    const setIcon = () => {
+      if (input.type === 'password') btn.innerHTML = eyeSlash; else btn.innerHTML = eyeOpen;
+    };
+    setIcon();
+
+    btn.addEventListener('click', () => {
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      setIcon();
+      // accesibilidad
+      btn.setAttribute('aria-pressed', String(isPassword));
+    });
+  });
 }
 
 
@@ -235,7 +303,7 @@ perfilForm.addEventListener("submit", async (e) => {
   // Obtener token usando helper (soporta claves antiguas)
   const token = getAuthToken();
   if (!token) {
-    alert("No hay sesión activa. Por favor inicia sesión.");
+    showErrorToast("No hay sesión activa. Por favor inicia sesión.");
     // Redirigir al login puede ser útil
     // window.location.href = '/login';
     return;
@@ -285,7 +353,7 @@ perfilForm.addEventListener("submit", async (e) => {
         if (res.status === 401) {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('token');
-          alert('Sesión inválida o expirada. Por favor, inicia sesión de nuevo.');
+          // El mensaje se mostrará en el catch global para evitar duplicados
           // window.location.href = '/login';
         }
         throw new Error(serverError || `Error al actualizar perfil (status ${res.status})`);
@@ -317,14 +385,26 @@ perfilForm.addEventListener("submit", async (e) => {
     if (new_password && new_password !== "********" && new_password.trim() !== "") {
       
       if (!current_password || current_password.trim() === "") {
-        alert("Debes ingresar tu contraseña actual en el campo de contraseña");
+        showErrorToast("Debes ingresar tu contraseña actual en el campo de contraseña");
+        return;
+      }
+
+      // Confirmación de contraseña (input añadido en la vista)
+      const confirm_password = (document.getElementById("password_confirmation") || { value: '' }).value;
+      if (confirm_password.trim() === "") {
+        showErrorToast("Debes confirmar la nueva contraseña");
+        return;
+      }
+
+      if (confirm_password !== new_password) {
+        showErrorToast("Las contraseñas no coinciden");
         return;
       }
 
       const passwordData = {
         current_password: current_password,
         password: new_password,
-        password_confirmation: new_password
+        password_confirmation: confirm_password
       };
 
       const resPass = await fetch(API_UPDATE_PASSWORD, {
@@ -348,7 +428,7 @@ perfilForm.addEventListener("submit", async (e) => {
         if (resPass.status === 401) {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('token');
-          alert('Sesión inválida o expirada. Por favor, inicia sesión de nuevo.');
+          // El mensaje se mostrará en el catch global para evitar duplicados
           // window.location.href = '/login';
         }
         throw new Error(serverError || `Error al cambiar contraseña (status ${resPass.status})`);
@@ -357,12 +437,14 @@ perfilForm.addEventListener("submit", async (e) => {
   
       passwordField.value = "********";
       document.getElementById("current_password").value = "";
+      const confirmField = document.getElementById("password_confirmation");
+      if (confirmField) confirmField.value = "";
       // Indicar que hubo cambios para redirigir
       _perfilGuardado = true;
     }
 
     // Mostrar toast de éxito y luego redirigir a módulo
-    showSuccessToast('Perfil actualizado correctamente', 1200);
+    showSuccessToast('Perfil actualizado correctamente', 1500);
     if (modal.classList.contains("show")) {
       cerrarModal();
     }
@@ -372,14 +454,14 @@ perfilForm.addEventListener("submit", async (e) => {
       if (_perfilGuardado) {
         window.location.href = '/modulo';
       }
-    }, 1250);
+    }, 1500);
 
   } catch (err) {
     console.error("Error:", err);
     if (err instanceof TypeError) {
-      alert(`Error de red al conectar con ${API_BASE}. Verifica que el servidor API esté corriendo y que no haya problemas de CORS.`);
+      showErrorToast(`Error de red al conectar con ${API_BASE}. Verifica que el servidor API esté corriendo y que no haya problemas de CORS.`);
     } else {
-      alert(err.message || "Error al conectar con el servidor");
+      showErrorToast(err.message || "Error al conectar con el servidor");
     }
   } finally {
     
@@ -398,6 +480,8 @@ cancelarBtn2.addEventListener("click", () => {
 
   document.getElementById("password").value = "********";
   document.getElementById("current_password").value = "";
+  const confirmField = document.getElementById("password_confirmation");
+  if (confirmField) confirmField.value = "";
 
   opciones.forEach(o => o.classList.remove("selected"));
 });
