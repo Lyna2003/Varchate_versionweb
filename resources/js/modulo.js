@@ -141,6 +141,22 @@ function cargarDatosUsuario() {
         if (firstNameSpan) firstNameSpan.textContent = nombre;
         if (lastNameSpan) lastNameSpan.textContent = apellido;
     }
+
+    // Mostrar avatar si está guardado en localStorage (puede ser filename o URL)
+    const savedAvatar = localStorage.getItem('user_avatar');
+    if (savedAvatar) {
+        const buildUrl = (val) => {
+            if (!val) return null;
+            // Si viene con ruta absoluta o ya contiene 'avatars/' usar tal cual
+            if (val.startsWith('http') || val.startsWith('/') || val.includes('avatars/')) return val;
+            return `/avatars/${val}`;
+        };
+        const avatarUrl = buildUrl(savedAvatar);
+        const profilePic = document.getElementById('profile-pic');
+        const profilePicMobile = document.getElementById('profile-pic-mobile');
+        if (profilePic && avatarUrl) profilePic.src = avatarUrl;
+        if (profilePicMobile && avatarUrl) profilePicMobile.src = avatarUrl;
+    }
 }
 
 // ===============================

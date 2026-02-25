@@ -24,29 +24,33 @@
 
     <main class="container">
       <div class="volver-header">
-      <button class="btn-regresar">
+      <a href="{{ route('modulo') }}" class="btn-regresar">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
         fill="currentColor" viewBox="0 0 16 16">
       <path fill-rule="evenodd" 
             d="M15 8a.5.5 0 0 1-.5.5H3.707l4.147 4.146a.5.5 
             0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 
             0 0 1 .708.708L3.707 7.5H14.5A.5.5 0 0 1 15 8z"/>
-    </svg>Regresar</button>
+    </svg>Regresar</a>
     </div>
     
     <section class="perfil">
       <h2>Perfil de usuario</h2>
       <form id="perfilForm" class="perfil-card">
         <div class="perfil-imagen">
-       
-          <img src="images/foto-de-perfil.png" alt="Foto de perfil" id="perfil-imagen" data-default="images/foto-de-perfil.png">
-          
+        @php
+          $currentUser = auth()->user();
+          $avatarFile = ($currentUser && !empty($currentUser->avatar)) ? $currentUser->avatar : 'default.png';
+        @endphp
+
+          <img src="{{ asset('avatars/' . $avatarFile) }}" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}">
+
              <div class="acciones-foto">
               <button type="button" class="eliminar-foto" aria-label="Eliminar foto">
-                <img src="images/delete-icon.svg" alt="Eliminar">
+                <img src="{{ asset('images/delete-icon.svg') }}" alt="Eliminar">
               </button>
               <button type="button" class="editar-foto" aria-label="Editar foto">
-                <img src="images/editar-cuadrado.svg" alt="Editar">
+                <img src="{{ asset('images/editar-cuadrado.svg') }}" alt="Editar">
               </button>
             </div>
         </div>
@@ -129,14 +133,17 @@
       <h2>Selecciona un avatar</h2>
       <div class="avatar-grid">
 
-        <div class="avatar-option" data-id="1" tabindex="0"><img src="images/pinguino.png" alt="Pinguino"></div>
-        <div class="avatar-option" data-id="2" tabindex="0"><img src="images/gatoavatar.png" alt="Gato"></div>
-        <div class="avatar-option" data-id="3" tabindex="0"><img src="images/panda.png" alt="Panda"></div>
-        <div class="avatar-option" data-id="4" tabindex="0"><img src="images/zorro.png" alt="Zorro"></div>
-        <div class="avatar-option" data-id="5" tabindex="0"><img src="images/loro.png" alt="Loro"></div>
-        <div class="avatar-option" data-id="6" tabindex="0"><img src="images/pig.png" alt="Cerdo"></div>
-        <div class="avatar-option" data-id="7" tabindex="0"><img src="images/flamenco.png" alt="Flamenco"></div>
-        <div class="avatar-option" data-id="8" tabindex="0"><img src="images/koala.png" alt="Koala"></div>
+        <div class="avatar-option" data-id="1" tabindex="0"><img src="{{ asset('avatars/avatar_01.png') }}" alt="avatar_1"></div>
+        <div class="avatar-option" data-id="2" tabindex="0"><img src="{{ asset('avatars/avatar_02.png') }}" alt="avatar_2"></div>
+        <div class="avatar-option" data-id="3" tabindex="0"><img src="{{ asset('avatars/avatar_03.png') }}" alt="avatar_3"></div>
+        <div class="avatar-option" data-id="4" tabindex="0"><img src="{{ asset('avatars/avatar_04.png') }}" alt="avatar_4"></div>
+        <div class="avatar-option" data-id="5" tabindex="0"><img src="{{ asset('avatars/avatar_05.png') }}" alt="avatar_5"></div>
+        <div class="avatar-option" data-id="6" tabindex="0"><img src="{{ asset('avatars/avatar_06.png') }}" alt="avatar_6"></div>
+        <div class="avatar-option" data-id="7" tabindex="0"><img src="{{ asset('avatars/avatar_07.png') }}" alt="avatar_7"></div>
+        <div class="avatar-option" data-id="8" tabindex="0"><img src="{{ asset('avatars/avatar_08.png') }}" alt="avatar_8"></div>
+        <div class="avatar-option avatar-default" data-id="default" tabindex="0">
+          <img src="{{ asset('avatars/default.png') }}" alt="Avatar por defecto">
+        </div>
       </div>
       <div class="modal-buttons">
         <button class="btn btn-cancel">Cancelar</button>
