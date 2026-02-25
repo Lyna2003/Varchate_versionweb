@@ -58,7 +58,14 @@ function cerrarModalEliminar() {
 }
 cancelarEliminarBtn.addEventListener("click", cerrarModalEliminar);
 confirmarEliminarBtn.addEventListener("click", () => {
-  perfilImg.src = "images/foto-de-perfil.png";
+  // Obtener el valor por defecto desde el atributo data-default si existe
+  const perfilImgEl = document.getElementById('perfil-imagen');
+  const defaultSrc = (perfilImgEl && perfilImgEl.dataset && perfilImgEl.dataset.default) ? perfilImgEl.dataset.default : '/avatars/default.png';
+  perfilImg.src = defaultSrc;
+  // Actualizar localStorage para que otras vistas usen el avatar por defecto
+  try { localStorage.setItem('user_avatar', defaultSrc); } catch (e) { /* noop */ }
+  // Limpiar selección en el modal de avatares si está abierto
+  opciones.forEach(o => o.classList.remove('selected'));
   cerrarModalEliminar();
 });
 window.addEventListener("click", (e) => { if (e.target === modalEliminar) cerrarModalEliminar(); });
@@ -110,6 +117,38 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+let _perfilGuardado = false;
+
+function showSuccessToast(message = 'Perfil actualizado correctamente', timeout = 1200) {
+  // Evitar crear múltiples
+  if (document.getElementById('vc-success-toast')) return;
+  const toast = document.createElement('div');
+  toast.id = 'vc-success-toast';
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.left = '50%';
+  toast.style.top = '20px';
+  toast.style.transform = 'translateX(-50%) translateY(-10px)';
+  toast.style.background = 'linear-gradient(90deg,#198754,#2ecc71)';
+  toast.style.color = 'white';
+  toast.style.padding = '12px 20px';
+  toast.style.borderRadius = '10px';
+  toast.style.boxShadow = '0 6px 20px rgba(0,0,0,0.18)';
+  toast.style.fontWeight = '600';
+  toast.style.zIndex = 99999;
+  toast.style.opacity = '0';
+  toast.style.transition = 'transform .28s ease, opacity .28s ease';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+  });
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(-10px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, timeout);
+}
 
 /**
  * Devuelve el token de autenticación (compatibilidad con claves antiguas)
@@ -265,8 +304,8 @@ perfilForm.addEventListener("submit", async (e) => {
       if (updatedUser && updatedUser.avatar) {
         try { localStorage.setItem('user_avatar', updatedUser.avatar); } catch (e) { /* noop */ }
       }
-      // Redirigir a módulo después de guardar los cambios
-      window.location.href = '/modulo';
+      // Marcar que al menos hubo una actualización del perfil (para redirigir más tarde)
+      _perfilGuardado = true;
     }
 
    
@@ -318,13 +357,22 @@ perfilForm.addEventListener("submit", async (e) => {
   
       passwordField.value = "********";
       document.getElementById("current_password").value = "";
+      // Indicar que hubo cambios para redirigir
+      _perfilGuardado = true;
     }
 
-    alert("Perfil actualizado correctamente");
-   
+    // Mostrar toast de éxito y luego redirigir a módulo
+    showSuccessToast('Perfil actualizado correctamente', 1200);
     if (modal.classList.contains("show")) {
       cerrarModal();
     }
+    // Redirigir tras breve espera para que el usuario vea el toast
+    setTimeout(() => {
+      // Si el perfil o la contraseña se actualizaron, redirigir a módulo
+      if (_perfilGuardado) {
+        window.location.href = '/modulo';
+      }
+    }, 1250);
 
   } catch (err) {
     console.error("Error:", err);
