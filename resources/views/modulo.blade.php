@@ -103,7 +103,9 @@
   </div>
 </div>
 
-<main class="container">
+<main class="container" 
+      data-modulo-base-url="{{ url('/modulo') }}"
+      data-lock-url="{{ asset('images/Lock.svg') }}">
 
   <!-- Nueva barra que incluye el hamburguesa + los top-buttons -->
   <div class="topbar">

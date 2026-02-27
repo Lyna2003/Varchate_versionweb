@@ -442,7 +442,8 @@ function renderizarBotonesModulos(modulos) {
         }
 
         button.addEventListener('click', () => {
-            window.location.href = `/modulo/${modulo.slug}`;
+            const baseUrl = document.querySelector('main.container')?.dataset.moduloBaseUrl || '/modulo';
+            window.location.href = `${baseUrl}/${modulo.slug}`;
         });
 
         container.appendChild(button);
@@ -495,7 +496,8 @@ function renderizarLecciones(lecciones) {
         const desbloqueadaFinal = todasDesbloqueadas ? true : estaDesbloqueada;
 
         const claseBloqueo = desbloqueadaFinal ? '' : 'locked';
-        const iconoLlave = desbloqueadaFinal ? '' : '<img src="/images/Lock.svg" alt="Bloqueado" class="icon-lock">';
+        const lockUrl = document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg';
+        const iconoLlave = desbloqueadaFinal ? '' : `<img src="${lockUrl}" alt="Bloqueado" class="icon-lock">`;
 
         // Marcar como vista si ya fue completada
         const claseVista = index < leccionesCompletadas ? 'vista' : '';
@@ -520,7 +522,7 @@ function renderizarLecciones(lecciones) {
 
     sidebarHTML += `
         <button class="${evaluacionDesbloqueada ? '' : 'locked'}" data-tipo="evaluacion" data-evaluacion-id="${moduloActual?.id || 1}">
-            EVALUACIÓN ${evaluacionDesbloqueada ? '' : '<img src="/images/Lock.svg" alt="Bloqueado" class="icon-lock">'}
+            EVALUACIÓN ${evaluacionDesbloqueada ? '' : `<img src="${document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg'}" alt="Bloqueado" class="icon-lock">`}
         </button>
     `;
 
