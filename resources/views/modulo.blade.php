@@ -52,7 +52,7 @@
             <img src="{{ asset('images/foto-perfil.png') }}" alt="Usuario" id="profile-pic" tabindex="0" aria-haspopup="true" aria-expanded="false">
 
             <div class="user-menu" id="user-menu" role="menu">
-              <a href="/perfil" class="menu-item" role="menuitem" tabindex="0">
+              <a href="{{ route('perfil') }}" class="menu-item" role="menuitem" tabindex="0">
                 <span>Editar perfil</span>
                 <img src="{{ asset('images/editar-cuadrado.svg') }}" alt="Editar" class="menu-svg">
               </a>
@@ -107,7 +107,8 @@
 
 <main class="container" 
       data-modulo-base-url="{{ url('/modulo') }}"
-      data-lock-url="{{ asset('images/Lock.svg') }}">
+      data-lock-url="{{ asset('images/Lock.svg') }}"
+      data-avatars-url="{{ asset('avatars') }}">
 
   <!-- Nueva barra que incluye el hamburguesa + los top-buttons -->
   <div class="topbar">

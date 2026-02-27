@@ -79,7 +79,7 @@ function trapFocus(element) {
   const firstFocusable = focusableEls[0];
   const lastFocusable = focusableEls[focusableEls.length - 1];
 
-  element.addEventListener("keydown", function(e) {
+  element.addEventListener("keydown", function (e) {
     if (e.key === "Tab") {
       if (e.shiftKey) {
         if (document.activeElement === firstFocusable) { e.preventDefault(); lastFocusable.focus(); }
@@ -108,7 +108,7 @@ window.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => { barra.style.width = modulos[index].progreso + "%"; }, 300);
     }
   });
-  
+
 
   cargarDatosUsuario();
   initPasswordToggles();
@@ -145,7 +145,7 @@ function initDarkMode() {
   btn.addEventListener('click', () => {
     const enabled = document.documentElement.classList.toggle('dark-mode');
     if (img) img.classList.toggle('dark-icon');
-    try { localStorage.setItem('dark_mode', enabled ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('dark_mode', enabled ? '1' : '0'); } catch (e) { }
   });
 }
 
@@ -254,20 +254,20 @@ async function cargarDatosUsuario() {
     });
 
     if (res.ok) {
-  const user = await parseJsonSafe(res) || {};
-  // Recuperar datos guardados en localStorage como fallback (login guarda 'user')
-  let storedUser = null;
-  try { storedUser = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { storedUser = null; }
+      const user = await parseJsonSafe(res) || {};
+      // Recuperar datos guardados en localStorage como fallback (login guarda 'user')
+      let storedUser = null;
+      try { storedUser = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { storedUser = null; }
 
-  // Preferir campos explícitos de 'username' o 'usuario', si existen; si no, usar 'name'
-  const usuarioEl = document.getElementById('usuario');
-  if (usuarioEl) {
-    usuarioEl.value = (
-      user.username || user.usuario || user.user_name || user.name ||
-      (storedUser && (storedUser.username || storedUser.usuario || storedUser.name)) ||
-      usuarioEl.value || ''
-    );
-  }
+      // Preferir campos explícitos de 'username' o 'usuario', si existen; si no, usar 'name'
+      const usuarioEl = document.getElementById('usuario');
+      if (usuarioEl) {
+        usuarioEl.value = (
+          user.username || user.usuario || user.user_name || user.name ||
+          (storedUser && (storedUser.username || storedUser.usuario || storedUser.name)) ||
+          usuarioEl.value || ''
+        );
+      }
 
       if (user.avatar_id) {
         const avatarOption = modal.querySelector(`.avatar-option[data-id="${user.avatar_id}"]`);
@@ -359,7 +359,7 @@ const API_UPDATE_PASSWORD = `${API_BASE}/me/password`;
 
 perfilForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  
+
   // Obtener token usando helper (soporta claves antiguas)
   const token = getAuthToken();
   if (!token) {
@@ -369,19 +369,19 @@ perfilForm.addEventListener("submit", async (e) => {
     return;
   }
 
- 
+
   const guardarBtn = document.querySelector(".guardar");
   const originalText = guardarBtn.textContent;
   guardarBtn.textContent = "Guardando...";
   guardarBtn.disabled = true;
 
   try {
-    
+
     const usuario = document.getElementById("usuario").value;
     const avatarSeleccionado = modal.querySelector(".avatar-option.selected");
     const avatar_id = avatarSeleccionado ? avatarSeleccionado.dataset.id : null;
 
-   
+
     if (usuario || avatar_id) {
       const profileData = {};
       if (usuario) {
@@ -422,9 +422,13 @@ perfilForm.addEventListener("submit", async (e) => {
       if (avatarSeleccionado) {
         const selectedSrc = avatarSeleccionado.querySelector("img").src;
         perfilImg.src = selectedSrc;
-        // Guardar versión visible del avatar en localStorage para que otras vistas lo usen
+        // Guardar en localStorage para que modulo.js lo muestre de inmediato
         try {
           localStorage.setItem('user_avatar', selectedSrc);
+          // También actualizar la clave por-usuario que modulo.js prioriza
+          const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+          const uid = storedUser && (storedUser.id || storedUser.user_id);
+          if (uid) localStorage.setItem(`user_avatar_for_${uid}`, selectedSrc);
         } catch (e) { /* noop */ }
       }
       // Intentar parsear respuesta con usuario actualizado y guardar datos en localStorage
@@ -454,14 +458,14 @@ perfilForm.addEventListener("submit", async (e) => {
       _perfilGuardado = true;
     }
 
-   
+
     const passwordField = document.getElementById("password");
     const new_password = passwordField.value;
     const current_password = document.getElementById("current_password").value;
 
-    
+
     if (new_password && new_password !== "********" && new_password.trim() !== "") {
-      
+
       if (!current_password || current_password.trim() === "") {
         showErrorToast("Debes ingresar tu contraseña actual en el campo de contraseña");
         return;
@@ -512,7 +516,7 @@ perfilForm.addEventListener("submit", async (e) => {
         throw new Error(serverError || `Error al cambiar contraseña (status ${resPass.status})`);
       }
 
-  
+
       passwordField.value = "********";
       document.getElementById("current_password").value = "";
       const confirmField = document.getElementById("password_confirmation");
@@ -563,9 +567,10 @@ perfilForm.addEventListener("submit", async (e) => {
     }
     // Redirigir tras breve espera para que el usuario vea el toast
     setTimeout(() => {
-      // Si el perfil o la contraseña se actualizaron, redirigir a módulo
+      // Si el perfil o la contraseña se actualizaron, redirigir a módulos
       if (_perfilGuardado) {
-        window.location.href = '/modulo';
+        const modulosUrl = document.getElementById('perfilForm')?.dataset.modulosUrl || '/modulos';
+        window.location.href = modulosUrl;
       }
     }, 1500);
 
@@ -577,7 +582,7 @@ perfilForm.addEventListener("submit", async (e) => {
       showErrorToast(err.message || "Error al conectar con el servidor");
     }
   } finally {
-    
+
     guardarBtn.textContent = originalText;
     guardarBtn.disabled = false;
   }

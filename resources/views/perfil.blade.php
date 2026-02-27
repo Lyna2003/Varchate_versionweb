@@ -36,14 +36,11 @@
     
     <section class="perfil">
       <h2>Perfil de usuario</h2>
-      <form id="perfilForm" class="perfil-card">
+      <form id="perfilForm" class="perfil-card"
+            data-modulos-url="{{ route('modulos') }}"
+            data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8000/api') }}">
         <div class="perfil-imagen">
-        @php
-          $currentUser = auth()->user();
-          $avatarFile = ($currentUser && !empty($currentUser->avatar)) ? $currentUser->avatar : 'default.png';
-        @endphp
-
-          <img src="{{ asset('avatars/' . $avatarFile) }}" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}">
+          <img src="{{ asset('avatars/default.png') }}" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}">
 
              <div class="acciones-foto">
               <button type="button" class="eliminar-foto" aria-label="Eliminar foto">
@@ -63,7 +60,7 @@
           <!-- Nombre completo removed from modal per request -->
           <div class="campo">
             <label for="correo">Correo electrónico</label>
-            <input type="email" id="correo" name="correo" value="{{ $currentUser->email ?? '' }}">
+            <input type="email" id="correo" name="correo" value="{{ $currentUser->email ?? '' }}" disabled>
           </div>
           <div class="campo input-pass">
             <label for="current_password">Contraseña actual</label>

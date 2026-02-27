@@ -67,12 +67,12 @@ Route::middleware('auth')->group(function () {
             return view('modulo', ['slug' => $slug]);
         }
         )->name('modulo.detalle');
-
-        Route::get('/perfil', function () {
-            return view('perfil');
-        }
-        );
     });
+
+// Perfil: accesible públicamente, la auth real es JWT manejada en JS
+Route::get('/perfil', function () {
+    return view('perfil');
+})->name('perfil');
 
 // ===============================
 // API LOCAL PARA MANEJAR SESIÓN

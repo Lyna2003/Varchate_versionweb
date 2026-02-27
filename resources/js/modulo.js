@@ -73,6 +73,27 @@ async function verificarTokenEnSegundoPlano(token) {
                 localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
                 localStorage.setItem('user_email', userData.email || '');
 
+                // Sincronizar avatar desde avatar_id de la API (fuente de verdad: DB)
+                const avatarId = userData.avatar_id;
+                if (avatarId) {
+                    const avatarsBase = document.querySelector('main.container')?.dataset.avatarsUrl || '/avatars';
+                    const num = parseInt(avatarId);
+                    const filename = isNaN(num)
+                        ? 'default.png'
+                        : `avatar_${String(num).padStart(2, '0')}.png`;
+                    const avatarUrl = `${avatarsBase}/${filename}`;
+
+                    // Actualizar ambas claves para que cargarDatosUsuario() siempre lea el valor correcto
+                    localStorage.setItem('user_avatar', avatarUrl);
+                    if (userData.id) localStorage.setItem(`user_avatar_for_${userData.id}`, avatarUrl);
+
+                    // Actualizar el DOM directamente
+                    const profilePic = document.getElementById('profile-pic');
+                    const profilePicMobile = document.getElementById('profile-pic-mobile');
+                    if (profilePic) profilePic.src = avatarUrl;
+                    if (profilePicMobile) profilePicMobile.src = avatarUrl;
+                }
+
                 cargarDatosUsuario();
             }
         } else {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 19-02-2026 a las 21:36:56
+-- Tiempo de generación: 27-02-2026 a las 22:36:29
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -39,15 +39,16 @@ CREATE TABLE `avatars` (
 --
 
 INSERT INTO `avatars` (`id`, `nombre`, `created_at`, `updated_at`) VALUES
-(1, 'avatar_01', NULL, NULL),
-(2, 'avatar_02', NULL, NULL),
-(3, 'avatar_03', NULL, NULL),
-(4, 'avatar_04', NULL, NULL),
-(5, 'avatar_05', NULL, NULL),
-(6, 'avatar_06', NULL, NULL),
-(7, 'avatar_07', NULL, NULL),
-(8, 'avatar_08', NULL, NULL),
-(9, 'avatar_09', NULL, NULL);
+(1, 'default', NULL, NULL),
+(2, 'avatar_01', NULL, NULL),
+(3, 'avatar_02', NULL, NULL),
+(4, 'avatar_03', NULL, NULL),
+(5, 'avatar_04', NULL, NULL),
+(6, 'avatar_05', NULL, NULL),
+(7, 'avatar_06', NULL, NULL),
+(8, 'avatar_07', NULL, NULL),
+(9, 'avatar_08', NULL, NULL),
+(10, 'avatar_09', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -273,16 +274,16 @@ CREATE TABLE `lecciones` (
 --
 
 INSERT INTO `lecciones` (`id`, `modulo_id`, `titulo`, `slug`, `contenido`, `orden`, `tiene_editor_codigo`, `tiene_ejercicios`, `cantidad_ejercicios`, `estado`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 1, '¿Qué es HTML?', 'que-es-html', '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:14px; font-weight:400; font-style:normal;\">\n<h1 align=\"center\" style=\" margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:20pt; font-weight:600; color:#ff0004;\">Introducción a HTML</span></h1>\n<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Sans Serif\'; font-size:18pt;\">HTML (HyperText Markup Language) es el lenguaje estándar para crear páginas web. Describe la estructura de una página web mediante etiquetas (tags).</span><img src=\"placeholder.jpg\" alt=\"Imagen\" /></p>\n<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-style:italic;\">HTML no es un lenguaje de programación, sino de marcado que define la estructura del contenido.</span></p></body></html>', 1, 0, 1, 4, 'activo', 6, '2026-02-01 15:30:00', '2026-02-14 04:22:22'),
-(2, 1, 'Estructura básica de un documento HTML', 'estructura-basica-html', '<h1>Estructura básica</h1><p>Todas las páginas HTML tienen una estructura básica:</p><pre>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>  &lt;title&gt;Título de la página&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>  &lt;h1&gt;Mi primera página&lt;/h1&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;</pre>', 2, 1, 1, 2, 'activo', 6, '2026-02-01 16:00:00', '2026-02-01 16:00:00'),
-(3, 1, 'Etiquetas HTML esenciales', 'etiquetas-html-esenciales', '<h1>Etiquetas esenciales</h1><p>Algunas etiquetas básicas que debes conocer:</p><ul><li><strong>&lt;h1&gt; a &lt;h6&gt;</strong>: Encabezados</li><li><strong>&lt;p&gt;</strong>: Párrafos</li><li><strong>&lt;a&gt;</strong>: Enlaces</li><li><strong>&lt;img&gt;</strong>: Imágenes</li><li><strong>&lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;</strong>: Listas</li></ul>', 3, 1, 1, 4, 'activo', 6, '2026-02-01 16:30:00', '2026-02-01 16:30:00'),
-(4, 1, 'Atributos en HTML', 'atributos-html', '<h1>Atributos HTML</h1><p>Los atributos proporcionan información adicional sobre los elementos HTML.</p><p>Ejemplo:</p><pre>&lt;a href=\"https://www.ejemplo.com\" target=\"_blank\"&gt;Visitar sitio&lt;/a&gt;</pre><p>En este ejemplo, <code>href</code> y <code>target</code> son atributos.</p>', 4, 1, 0, 0, 'activo', 6, '2026-02-01 17:00:00', '2026-02-01 17:00:00'),
-(5, 1, 'Formularios HTML', 'formularios-html', '<h1>Formularios HTML</h1><p>Los formularios permiten la interacción con el usuario:</p><pre>&lt;form action=\"/procesar\" method=\"POST\"&gt;<br>  &lt;label for=\"nombre\"&gt;Nombre:&lt;/label&gt;<br>  &lt;input type=\"text\" id=\"nombre\" name=\"nombre\"&gt;<br>  &lt;input type=\"submit\" value=\"Enviar\"&gt;<br>&lt;/form&gt;</pre>', 5, 1, 1, 3, 'activo', 6, '2026-02-01 17:30:00', '2026-02-01 17:30:00'),
-(6, 2, '¿Qué es CSS?', 'que-es-css', '<h1>Introducción a CSS</h1><p>CSS (Cascading Style Sheets) es el lenguaje utilizado para describir la presentación de documentos HTML.</p>', 1, 0, 1, 2, 'activo', 6, '2026-02-03 15:30:00', '2026-02-03 15:30:00'),
-(7, 2, 'Selectores CSS', 'selectores-css', '<h1>Selectores CSS</h1><p>Los selectores permiten seleccionar elementos HTML para aplicar estilos.</p>', 2, 1, 1, 3, 'activo', 6, '2026-02-03 16:00:00', '2026-02-03 16:00:00'),
-(8, 2, 'Propiedades de texto', 'propiedades-texto-css', '<h1>Propiedades de texto</h1><p>Aprende a controlar la apariencia del texto con CSS.</p>', 3, 1, 0, 0, 'activo', 6, '2026-02-03 16:30:00', '2026-02-03 16:30:00'),
-(9, 2, 'Box Model', 'box-model-css', '<h1>Box Model</h1><p>El modelo de caja es fundamental para el diseño web con CSS.</p>', 4, 1, 1, 2, 'activo', 6, '2026-02-03 17:00:00', '2026-02-03 17:00:00'),
-(10, 3, 'Prueba', 'prueba', '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:14px; font-weight:400; font-style:normal;\">\n<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Hola prueba</p></body></html>', 1, 0, 0, 0, 'activo', 11, '2026-02-14 03:29:16', '2026-02-14 03:29:16');
+(1, 1, '¿Qué es HTML?', 'que-es-html', '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:14px; font-weight:400; font-style:normal;\">\n<h1 align=\"center\" style=\" margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:20pt; font-weight:600; color:#ff0004;\">Introducción a HTML</span></h1>\n<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Sans Serif\'; font-size:18pt;\">HTML (HyperText Markup Language) es el lenguaje estándar para crear páginas web. Describe la estructura de una página web mediante etiquetas (tags).</span><img src=\"placeholder.jpg\" alt=\"Imagen\" /></p>\n<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-style:italic;\">HTML no es un lenguaje de programación, sino de marcado que define la estructura del contenido.</span></p></body></html>', 1, 0, 1, 4, 'activo', 6, '2026-02-01 15:30:00', '2026-02-25 17:52:44'),
+(2, 1, 'Estructura básica de un documento HTML', 'estructura-basica-html', '<h1>Estructura básica</h1><p>Todas las páginas HTML tienen una estructura básica:</p><pre>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>  &lt;title&gt;Título de la página&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>  &lt;h1&gt;Mi primera página&lt;/h1&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;</pre>', 2, 1, 1, 2, 'activo', 6, '2026-02-01 16:00:00', '2026-02-25 17:52:47'),
+(3, 1, 'Etiquetas HTML esenciales', 'etiquetas-html-esenciales', '<h1>Etiquetas esenciales</h1><p>Algunas etiquetas básicas que debes conocer:</p><ul><li><strong>&lt;h1&gt; a &lt;h6&gt;</strong>: Encabezados</li><li><strong>&lt;p&gt;</strong>: Párrafos</li><li><strong>&lt;a&gt;</strong>: Enlaces</li><li><strong>&lt;img&gt;</strong>: Imágenes</li><li><strong>&lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;</strong>: Listas</li></ul>', 3, 1, 1, 4, 'activo', 6, '2026-02-01 16:30:00', '2026-02-25 17:52:50'),
+(4, 1, 'Atributos en HTML', 'atributos-html', '<h1>Atributos HTML</h1><p>Los atributos proporcionan información adicional sobre los elementos HTML.</p><p>Ejemplo:</p><pre>&lt;a href=\"https://www.ejemplo.com\" target=\"_blank\"&gt;Visitar sitio&lt;/a&gt;</pre><p>En este ejemplo, <code>href</code> y <code>target</code> son atributos.</p>', 4, 1, 0, 0, 'activo', 6, '2026-02-01 17:00:00', '2026-02-25 17:52:53'),
+(5, 1, 'Formularios HTML', 'formularios-html', '<h1>Formularios HTML</h1><p>Los formularios permiten la interacción con el usuario:</p><pre>&lt;form action=\"/procesar\" method=\"POST\"&gt;<br>  &lt;label for=\"nombre\"&gt;Nombre:&lt;/label&gt;<br>  &lt;input type=\"text\" id=\"nombre\" name=\"nombre\"&gt;<br>  &lt;input type=\"submit\" value=\"Enviar\"&gt;<br>&lt;/form&gt;</pre>', 5, 1, 1, 3, 'activo', 6, '2026-02-01 17:30:00', '2026-02-25 17:52:56'),
+(6, 2, '¿Qué es CSS?', 'que-es-css', '<h1>Introducción a CSS</h1><p>CSS (Cascading Style Sheets) es el lenguaje utilizado para describir la presentación de documentos HTML.</p>', 1, 0, 1, 2, 'activo', 6, '2026-02-03 15:30:00', '2026-02-25 17:53:00'),
+(7, 2, 'Selectores CSS', 'selectores-css', '<h1>Selectores CSS</h1><p>Los selectores permiten seleccionar elementos HTML para aplicar estilos.</p>', 2, 1, 1, 3, 'activo', 6, '2026-02-03 16:00:00', '2026-02-25 17:53:02'),
+(8, 2, 'Propiedades de texto', 'propiedades-texto-css', '<h1>Propiedades de texto</h1><p>Aprende a controlar la apariencia del texto con CSS.</p>', 3, 1, 0, 0, 'activo', 6, '2026-02-03 16:30:00', '2026-02-25 17:53:04'),
+(9, 2, 'Box Model', 'box-model-css', '<h1>Box Model</h1><p>El modelo de caja es fundamental para el diseño web con CSS.</p>', 4, 1, 1, 2, 'activo', 6, '2026-02-03 17:00:00', '2026-02-25 17:53:07'),
+(10, 3, 'Prueba', 'prueba', '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:14px; font-weight:400; font-style:normal;\">\n<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Hola prueba</p></body></html>', 1, 0, 0, 0, 'activo', 11, '2026-02-14 03:29:16', '2026-02-25 17:53:10');
 
 -- --------------------------------------------------------
 
@@ -689,7 +690,26 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 (166, 'App\\Models\\Usuario', 14, 'auth_token', '7cdf6342b9ec01ca2dd52b8aa20545e6356a2d7d761580a4b033d60b173f3277', '[\"*\"]', '2026-02-19 00:14:34', NULL, '2026-02-18 23:21:11', '2026-02-19 00:14:34'),
 (167, 'App\\Models\\Usuario', 14, 'auth_token', '58ca1fa0306eaeb367da1fe74e1251a5ebd689d902bdb4c231d5ba3047a43ab7', '[\"*\"]', '2026-02-19 22:34:00', NULL, '2026-02-19 21:34:38', '2026-02-19 22:34:00'),
 (168, 'App\\Models\\Usuario', 14, 'auth_token', '037cf9b2c90128fe7fbc764c76792ad45114ee511a670b3531c5b6ef1076af8a', '[\"*\"]', '2026-02-19 22:57:40', NULL, '2026-02-19 22:42:43', '2026-02-19 22:57:40'),
-(170, 'App\\Models\\Usuario', 11, 'auth_token', 'c9b2232deb01e124c56d0bd5b1ca18d42bef8a6c0fa9147045ed1f782ebc61ee', '[\"*\"]', '2026-02-20 01:35:46', NULL, '2026-02-20 01:08:54', '2026-02-20 01:35:46');
+(177, 'App\\Models\\Usuario', 14, 'auth_token', '34423443e864b70879784b075ee5d0ce546733c76d0c6acf54c34ca17e2cb0f5', '[\"*\"]', NULL, NULL, '2026-02-25 21:43:23', '2026-02-25 21:43:23'),
+(178, 'App\\Models\\Usuario', 14, 'auth_token', '3935a6d8f53b6514c1194aacf69243bb9d95d3eb2ab507fa8633fb6aa0765fd2', '[\"*\"]', NULL, NULL, '2026-02-25 21:44:30', '2026-02-25 21:44:30'),
+(179, 'App\\Models\\Usuario', 14, 'auth_token', '1a481f84482d22a055dbde5ff0461041930bc278eee254a1b808ea43b3fe7988', '[\"*\"]', NULL, NULL, '2026-02-25 21:44:51', '2026-02-25 21:44:51'),
+(180, 'App\\Models\\Usuario', 14, 'auth_token', '728a26df4ae62310d621f2f3ae4f906081a8d74b8de7cbfb98716f9fbb267b4a', '[\"*\"]', NULL, NULL, '2026-02-25 21:46:12', '2026-02-25 21:46:12'),
+(181, 'App\\Models\\Usuario', 14, 'auth_token', '84db6b989df581e003ae9fe5c002da08ca90eb6d951ca97dc655c9ed7e09d8fe', '[\"*\"]', NULL, NULL, '2026-02-25 21:46:52', '2026-02-25 21:46:52'),
+(182, 'App\\Models\\Usuario', 14, 'auth_token', 'a9e7c18ebbd1e9e7b17e4fdd63dcc1fe4b53595e9fcbf9dfb8a6d805159a22db', '[\"*\"]', NULL, NULL, '2026-02-25 21:47:33', '2026-02-25 21:47:33'),
+(186, 'App\\Models\\Usuario', 14, 'auth_token', '4da4bbfc9e177773d189d51df0bfe267c1da42e8d6d456645739d2bc35ba37b4', '[\"*\"]', NULL, NULL, '2026-02-25 23:43:50', '2026-02-25 23:43:50'),
+(187, 'App\\Models\\Usuario', 14, 'auth_token', '5f2ba6ebb7947e4006b571ff3de77e820894eeef19559e0b1d2e1820dab5bae9', '[\"*\"]', NULL, NULL, '2026-02-25 23:45:19', '2026-02-25 23:45:19'),
+(188, 'App\\Models\\Usuario', 14, 'auth_token', '042fe95747527bbf31260051c7292cd26e033eaf451ad0bf840458dc44478ff3', '[\"*\"]', NULL, NULL, '2026-02-25 23:46:11', '2026-02-25 23:46:11'),
+(189, 'App\\Models\\Usuario', 14, 'auth_token', 'b62ad2e7caec7d0ba8c6ac92acb09d981985be8b03aad20875fb523d22517edc', '[\"*\"]', NULL, NULL, '2026-02-25 23:49:21', '2026-02-25 23:49:21'),
+(190, 'App\\Models\\Usuario', 14, 'auth_token', 'd42407d9e28d5db30a10fc6f10d5550cca1f44f3300928cc0961bed1c7b65fb1', '[\"*\"]', NULL, NULL, '2026-02-25 23:52:49', '2026-02-25 23:52:49'),
+(191, 'App\\Models\\Usuario', 14, 'auth_token', 'a7dac24663d7570c4ac258bae8758f38fe5796702ac9c334683ce4e9a836a77a', '[\"*\"]', NULL, NULL, '2026-02-25 23:53:11', '2026-02-25 23:53:11'),
+(195, 'App\\Models\\Usuario', 14, 'auth_token', '38288a519b7d3487634b007045a81dd6ee239de6dac8af75fb17360818a9568e', '[\"*\"]', '2026-02-26 01:03:36', NULL, '2026-02-26 00:46:09', '2026-02-26 01:03:36'),
+(196, 'App\\Models\\Usuario', 14, 'auth_token', '163742847e8d7b973f0b46199811260aa10c584f65f0416a2b7a61c4216ca952', '[\"*\"]', '2026-02-26 02:56:33', NULL, '2026-02-26 01:35:33', '2026-02-26 02:56:33'),
+(197, 'App\\Models\\Usuario', 14, 'auth_token', '28eb548af41ae4dce4367c2e0f077656fa71e05d1b668f8b6640929f6d66e5f2', '[\"*\"]', '2026-02-26 02:55:29', NULL, '2026-02-26 02:19:37', '2026-02-26 02:55:29'),
+(198, 'App\\Models\\Usuario', 14, 'auth_token', 'ada5dd7bdc4218b33e466095db873c19279b46b0d68d61876b97d357ddf9f03e', '[\"*\"]', '2026-02-28 00:17:47', NULL, '2026-02-28 00:15:29', '2026-02-28 00:17:47'),
+(199, 'App\\Models\\Usuario', 14, 'auth_token', 'c233f022ce2c56cc86f42d1efc40fabb18c30292d7469865280a0b51b9b7c874', '[\"*\"]', '2026-02-28 00:30:59', NULL, '2026-02-28 00:24:44', '2026-02-28 00:30:59'),
+(202, 'App\\Models\\Usuario', 14, 'auth_token', '1074a98c834c2c283a45e4687de2349a9c636f53f9f1e5b7b2a219504c27c96c', '[\"*\"]', '2026-02-28 01:09:29', NULL, '2026-02-28 01:09:04', '2026-02-28 01:09:29'),
+(203, 'App\\Models\\Usuario', 15, 'auth_token', 'bc6a35d54122563bf6660ea63052d98a782d449ac4adcb4530a8ab7c85ed4f52', '[\"*\"]', NULL, NULL, '2026-02-28 01:33:28', '2026-02-28 01:33:28'),
+(204, 'App\\Models\\Usuario', 15, 'auth_token', '0a70fc7483b83576a4942d0d0aa31dedda8356b7661b902e227859adae7efe16', '[\"*\"]', '2026-02-28 02:36:26', NULL, '2026-02-28 01:36:38', '2026-02-28 02:36:26');
 
 -- --------------------------------------------------------
 
@@ -759,13 +779,29 @@ INSERT INTO `progreso_lecciones` (`id`, `usuario_id`, `leccion_id`, `vista`, `fe
 (13, 10, 3, 1, '2026-02-02 10:00:00', '2026-02-02 15:00:00', '2026-02-02 15:00:00'),
 (14, 10, 4, 1, '2026-02-02 11:00:00', '2026-02-02 16:00:00', '2026-02-02 16:00:00'),
 (15, 10, 5, 1, '2026-02-02 12:00:00', '2026-02-02 17:00:00', '2026-02-02 17:00:00'),
-(31, 11, 6, 1, '2026-02-08 20:10:27', '2026-02-09 01:10:27', '2026-02-09 01:10:27'),
-(32, 11, 7, 1, '2026-02-08 20:10:33', '2026-02-09 01:10:33', '2026-02-09 01:10:33'),
-(33, 11, 8, 1, '2026-02-08 20:10:36', '2026-02-09 01:10:36', '2026-02-09 01:10:36'),
-(34, 11, 9, 1, '2026-02-08 20:10:40', '2026-02-09 01:10:40', '2026-02-09 01:10:40'),
-(35, 14, 1, 1, '2026-02-19 20:06:20', '2026-02-19 23:06:50', '2026-02-20 01:06:20'),
-(36, 14, 2, 1, '2026-02-19 20:06:23', '2026-02-19 23:11:06', '2026-02-20 01:06:23'),
-(37, 14, 6, 1, '2026-02-19 20:06:07', '2026-02-20 01:06:07', '2026-02-20 01:06:07');
+(31, 11, 6, 1, '2026-02-20 17:15:34', '2026-02-09 01:10:27', '2026-02-20 22:15:34'),
+(32, 11, 7, 1, '2026-02-20 17:15:35', '2026-02-09 01:10:33', '2026-02-20 22:15:35'),
+(33, 11, 8, 1, '2026-02-20 17:02:09', '2026-02-09 01:10:36', '2026-02-20 22:02:09'),
+(34, 11, 9, 1, '2026-02-20 17:02:58', '2026-02-09 01:10:40', '2026-02-20 22:02:58'),
+(35, 14, 1, 1, '2026-02-25 21:36:23', '2026-02-19 23:06:50', '2026-02-26 02:36:23'),
+(36, 14, 2, 1, '2026-02-25 21:36:25', '2026-02-19 23:11:06', '2026-02-26 02:36:25'),
+(37, 14, 6, 1, '2026-02-25 21:50:55', '2026-02-20 01:06:07', '2026-02-26 02:50:55'),
+(38, 11, 1, 1, '2026-02-20 16:49:39', '2026-02-20 21:49:39', '2026-02-20 21:49:39'),
+(39, 14, 3, 1, '2026-02-25 21:42:37', '2026-02-22 23:30:38', '2026-02-26 02:42:37'),
+(40, 14, 10, 1, '2026-02-25 21:49:49', '2026-02-23 00:13:22', '2026-02-26 02:49:49'),
+(41, 11, 2, 1, '2026-02-22 19:18:29', '2026-02-23 00:18:29', '2026-02-23 00:18:29'),
+(42, 11, 3, 1, '2026-02-22 19:18:31', '2026-02-23 00:18:31', '2026-02-23 00:18:31'),
+(43, 11, 4, 1, '2026-02-22 19:18:33', '2026-02-23 00:18:33', '2026-02-23 00:18:33'),
+(44, 11, 5, 1, '2026-02-22 19:18:37', '2026-02-23 00:18:37', '2026-02-23 00:18:37'),
+(45, 11, 10, 1, '2026-02-22 19:21:51', '2026-02-23 00:21:51', '2026-02-23 00:21:51'),
+(46, 15, 1, 1, '2026-02-25 17:52:35', '2026-02-25 22:52:35', '2026-02-25 22:52:35'),
+(47, 15, 6, 1, '2026-02-25 17:54:08', '2026-02-25 22:54:08', '2026-02-25 22:54:08'),
+(48, 15, 10, 1, '2026-02-25 17:55:04', '2026-02-25 22:55:04', '2026-02-25 22:55:04'),
+(49, 14, 7, 1, '2026-02-25 21:42:00', '2026-02-26 02:40:34', '2026-02-26 02:42:00'),
+(50, 14, 8, 1, '2026-02-25 21:42:12', '2026-02-26 02:42:01', '2026-02-26 02:42:12'),
+(51, 14, 9, 1, '2026-02-25 21:42:23', '2026-02-26 02:42:13', '2026-02-26 02:42:23'),
+(52, 14, 4, 1, '2026-02-25 21:44:39', '2026-02-26 02:42:38', '2026-02-26 02:44:39'),
+(53, 14, 5, 1, '2026-02-25 21:46:30', '2026-02-26 02:44:41', '2026-02-26 02:46:30');
 
 -- --------------------------------------------------------
 
@@ -798,12 +834,15 @@ INSERT INTO `progreso_modulo` (`id`, `usuario_id`, `modulo_id`, `porcentaje_comp
 (5, 10, 1, 100.00, 5, 5, NULL, 1, 1, '2026-02-02 12:00:00', '2026-02-01 18:00:00', '2026-02-02 17:00:00'),
 (6, 6, 2, 50.00, 2, 4, NULL, 0, 0, '2026-02-03 11:30:00', '2026-02-03 15:30:00', '2026-02-03 16:30:00'),
 (7, 10, 2, 75.00, 3, 4, NULL, 0, 0, '2026-02-03 12:00:00', '2026-02-03 16:00:00', '2026-02-03 17:00:00'),
-(14, 11, 1, 100.00, 0, 0, NULL, 1, 1, '2026-02-08 20:33:49', '2026-02-09 01:10:57', '2026-02-09 01:33:49'),
-(15, 11, 2, 100.00, 4, 4, 9, 1, 1, '2026-02-08 20:28:00', '2026-02-09 01:10:57', '2026-02-09 01:28:00'),
-(16, 14, 1, 40.00, 2, 5, 2, 0, 0, '2026-02-19 20:07:18', '2026-02-18 23:33:27', '2026-02-20 01:07:18'),
-(17, 14, 2, 25.00, 1, 4, 6, 0, 0, '2026-02-19 20:06:18', '2026-02-18 23:33:27', '2026-02-20 01:06:18'),
-(18, 14, 3, 0.00, 0, 0, NULL, 0, 0, NULL, '2026-02-18 23:33:27', '2026-02-18 23:33:27'),
-(20, 11, 3, 0.00, 0, 0, NULL, 0, 0, NULL, '2026-02-20 01:08:59', '2026-02-20 01:08:59');
+(14, 11, 1, 100.00, 5, 5, NULL, 1, 1, '2026-02-08 20:33:49', '2026-02-09 01:10:57', '2026-02-22 19:24:08'),
+(15, 11, 2, 100.00, 4, 4, 9, 1, 1, '2026-02-20 17:15:35', '2026-02-09 01:10:57', '2026-02-20 22:15:35'),
+(16, 14, 1, 100.00, 5, 5, 5, 0, 0, '2026-02-25 21:46:30', '2026-02-18 23:33:27', '2026-02-26 02:46:30'),
+(17, 14, 2, 100.00, 4, 4, 9, 0, 0, '2026-02-25 21:50:55', '2026-02-18 23:33:27', '2026-02-26 02:50:55'),
+(18, 14, 3, 100.00, 1, 1, 10, 0, 0, '2026-02-25 21:49:49', '2026-02-18 23:33:27', '2026-02-26 02:49:49'),
+(20, 11, 3, 100.00, 1, 1, 10, 0, 0, '2026-02-22 19:21:59', '2026-02-20 01:08:59', '2026-02-23 00:21:59'),
+(21, 15, 1, 20.00, 1, 5, 1, 0, 0, '2026-02-25 17:53:54', '2026-02-25 22:52:30', '2026-02-25 22:53:54'),
+(22, 15, 2, 25.00, 1, 4, 6, 0, 0, '2026-02-25 17:54:15', '2026-02-25 22:52:30', '2026-02-25 22:54:15'),
+(23, 15, 3, 100.00, 1, 1, 10, 0, 0, '2026-02-25 17:55:10', '2026-02-25 22:52:30', '2026-02-25 22:55:10');
 
 -- --------------------------------------------------------
 
@@ -831,8 +870,11 @@ INSERT INTO `ranking` (`id`, `modulo_id`, `usuario_id`, `porcentaje_progreso`, `
 (16, 1, 9, 20.00, 5, '2026-02-02 15:00:00', '2026-02-02 20:00:00'),
 (17, 2, 10, 75.00, 1, '2026-02-03 12:00:00', '2026-02-03 17:00:00'),
 (18, 2, 6, 50.00, 2, '2026-02-03 11:30:00', '2026-02-03 16:30:00'),
-(19, 2, 11, 100.00, NULL, '2026-02-08 20:28:00', '2026-02-08 20:26:47'),
-(20, 1, 11, 100.00, NULL, '2026-02-08 20:33:49', '2026-02-08 20:29:41');
+(19, 2, 11, 100.00, NULL, '2026-02-20 17:15:35', '2026-02-08 20:26:47'),
+(20, 1, 11, 100.00, NULL, '2026-02-08 20:33:49', '2026-02-08 20:29:41'),
+(21, 1, 14, 100.00, NULL, '2026-02-25 21:46:30', '2026-02-19 21:31:15'),
+(22, 2, 14, 100.00, NULL, '2026-02-25 21:50:55', '2026-02-25 21:39:38'),
+(23, 3, 14, 100.00, NULL, '2026-02-25 21:49:49', '2026-02-25 21:49:49');
 
 -- --------------------------------------------------------
 
@@ -1139,7 +1181,49 @@ INSERT INTO `user_attempts` (`id`, `user_id`, `email`, `action`, `success`, `ip`
 (207, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-19 21:34:38', '2026-02-19 21:34:38'),
 (208, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-19 22:42:43', '2026-02-19 22:42:43'),
 (209, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-19 22:58:53', '2026-02-19 22:58:53'),
-(210, NULL, 'alejo29.c@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-20 01:08:54', '2026-02-20 01:08:54');
+(210, NULL, 'alejo29.c@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-20 01:08:54', '2026-02-20 01:08:54'),
+(211, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-20 01:58:44', '2026-02-20 01:58:44'),
+(212, NULL, 'alejo29.c@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-20 21:03:57', '2026-02-20 21:03:57'),
+(213, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-22 22:16:28', '2026-02-22 22:16:28'),
+(214, NULL, 'alejo29.c@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-23 00:18:15', '2026-02-23 00:18:15'),
+(215, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-23 00:25:57', '2026-02-23 00:25:57'),
+(216, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 20:38:36', '2026-02-25 20:38:36'),
+(217, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:43:23', '2026-02-25 21:43:23'),
+(218, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:44:30', '2026-02-25 21:44:30'),
+(219, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:44:51', '2026-02-25 21:44:51'),
+(220, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:46:12', '2026-02-25 21:46:12'),
+(221, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:46:52', '2026-02-25 21:46:52'),
+(222, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:47:33', '2026-02-25 21:47:33'),
+(223, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:48:39', '2026-02-25 21:48:39'),
+(224, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 21:50:20', '2026-02-25 21:50:20'),
+(225, 15, 'liinasotto14@gmail.com', 'register', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 22:50:47', '2026-02-25 22:50:47'),
+(226, NULL, 'liinasotto14@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 22:51:53', '2026-02-25 22:51:53'),
+(227, NULL, 'liinasotto14@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 22:52:25', '2026-02-25 22:52:25'),
+(228, NULL, 'test@test.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:30:38', '2026-02-25 23:30:38'),
+(229, NULL, 'varchate25@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:31:05', '2026-02-25 23:31:05'),
+(230, NULL, 'lynaszk97@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:32:51', '2026-02-25 23:32:51'),
+(231, NULL, 'lynaszk97@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:35:44', '2026-02-25 23:35:44'),
+(232, NULL, 'lynaszk97@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:36:02', '2026-02-25 23:36:02'),
+(233, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:43:50', '2026-02-25 23:43:50'),
+(234, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:45:19', '2026-02-25 23:45:19'),
+(235, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:46:11', '2026-02-25 23:46:11'),
+(236, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:49:21', '2026-02-25 23:49:21'),
+(237, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:52:49', '2026-02-25 23:52:49'),
+(238, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-25 23:53:11', '2026-02-25 23:53:11'),
+(239, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 00:36:02', '2026-02-26 00:36:02'),
+(240, NULL, 'Password123lynaskz97@gmail.com', 'login', 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 00:36:30', '2026-02-26 00:36:30'),
+(241, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 00:36:59', '2026-02-26 00:36:59'),
+(242, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 00:41:09', '2026-02-26 00:41:09'),
+(243, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 00:46:09', '2026-02-26 00:46:09'),
+(244, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 01:35:33', '2026-02-26 01:35:33'),
+(245, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-26 02:19:37', '2026-02-26 02:19:37'),
+(246, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 00:15:29', '2026-02-28 00:15:29'),
+(247, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '2026-02-28 00:24:44', '2026-02-28 00:24:44'),
+(248, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 00:58:31', '2026-02-28 00:58:31'),
+(249, NULL, 'liinasotto14@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 01:05:10', '2026-02-28 01:05:10'),
+(250, NULL, 'lynaskz97@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 01:09:04', '2026-02-28 01:09:04'),
+(251, NULL, 'liinasotto14@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 01:33:28', '2026-02-28 01:33:28'),
+(252, NULL, 'liinasotto14@gmail.com', 'login', 1, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-28 01:36:38', '2026-02-28 01:36:38');
 
 -- --------------------------------------------------------
 
@@ -1181,7 +1265,8 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `email_verified_at`, `password`
 (10, 'Pedro Martínez', 'pedro.martinez@email.com', NULL, '$2y$12$VKOgkBP3yqcffq6Lk.GSNeOgKQDVgkr6EIhsa2hJ6P4NkJy2Gt8ha', 'aprendiz', 'activo', 'oscuro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, NULL, '2026-02-01 16:00:00', '2026-02-01 16:00:00', 5),
 (11, 'Alejandro', 'alejo29.c@gmail.com', '2026-02-07 00:55:36', '$2y$12$DZ8/FvhydBbUS14vFKrm5uu4q.xqnengw1BlX.MC5snB7uAv9l6Wm', 'administrador', 'activo', 'claro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, '2026-02-07 00:55:24', '2026-02-07 00:55:24', '2026-02-15 18:01:40', 1),
 (13, 'Gerard', 'gerardtri06@gmail.com', NULL, '$2y$12$jg8pej4mAONLULSvLnTRbOWd4JpYFYtkJ.8fVV8GdL94Bk/4EV786', 'aprendiz', 'activo', 'claro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, '2026-02-17 23:20:46', '2026-02-17 23:20:46', '2026-02-17 23:20:46', 1),
-(14, 'Lyna', 'lynaskz97@gmail.com', '2026-02-18 23:20:36', '$2y$12$2KFyuSZKTw/5r32flt9UiO06GwFkYL9033kaRa.DSk3zSEXlsqVMq', 'aprendiz', 'activo', 'claro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, '2026-02-18 23:18:57', '2026-02-18 23:18:58', '2026-02-18 23:20:36', 1);
+(14, 'Lyna', 'lynaskz97@gmail.com', '2026-02-18 23:20:36', '$2y$12$2KFyuSZKTw/5r32flt9UiO06GwFkYL9033kaRa.DSk3zSEXlsqVMq', 'aprendiz', 'activo', 'claro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, '2026-02-18 23:18:57', '2026-02-18 23:18:58', '2026-02-18 23:20:36', 1),
+(15, 'Lina Soto', 'liinasotto14@gmail.com', '2026-02-25 22:51:20', '$2y$12$wYmnxzSvSk07u5dnnNaU.ezbFgI3juuGJUOYl3xXELLYxJyE4Cc2C', 'aprendiz', 'activo', 'claro', 'email', NULL, NULL, NULL, NULL, 0, NULL, NULL, 1, '2026-02-25 22:50:47', '2026-02-25 22:50:47', '2026-02-28 02:34:42', 5);
 
 --
 -- Índices para tablas volcadas
@@ -1380,7 +1465,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `avatars`
 --
 ALTER TABLE `avatars`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `certificaciones`
@@ -1452,7 +1537,7 @@ ALTER TABLE `opciones_evaluacion`
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=171;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=205;
 
 --
 -- AUTO_INCREMENT de la tabla `preguntas_evaluacion`
@@ -1464,19 +1549,19 @@ ALTER TABLE `preguntas_evaluacion`
 -- AUTO_INCREMENT de la tabla `progreso_lecciones`
 --
 ALTER TABLE `progreso_lecciones`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT de la tabla `progreso_modulo`
 --
 ALTER TABLE `progreso_modulo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `ranking`
 --
 ALTER TABLE `ranking`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `respuestas_evaluacion`
@@ -1488,13 +1573,13 @@ ALTER TABLE `respuestas_evaluacion`
 -- AUTO_INCREMENT de la tabla `user_attempts`
 --
 ALTER TABLE `user_attempts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=253;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Restricciones para tablas volcadas
