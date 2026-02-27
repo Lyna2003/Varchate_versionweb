@@ -66,7 +66,7 @@
 <div class="mobile-header">
   <div class="mobile-top">
     <a href="#" class="logo-link">
-      <img src="{{ asset('images/logo.svg') }}" alt="Logo Varchate" class="logo-mobile">
+      <img src="{{ asset('images/logo_blanco.png') }}" alt="Logo Varchate" class="logo-mobile">
     </a>
 
     <div class="mobile-user">
