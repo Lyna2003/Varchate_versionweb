@@ -152,16 +152,27 @@ function cargarDatosUsuario() {
         if (lastNameSpan) lastNameSpan.textContent = apellido;
     }
 
-    // Mostrar avatar si está guardado en localStorage (puede ser filename o URL)
-    const savedAvatar = localStorage.getItem('user_avatar');
-    if (savedAvatar) {
+    // Mostrar avatar: preferir avatar específico del usuario (user_avatar_for_{id}), si no, fallback a user_avatar
+    let avatarToShow = null;
+    try {
+        const userObj = JSON.parse(localStorage.getItem('user') || 'null');
+        const userId = userObj && (userObj.id || userObj.user_id) ? (userObj.id || userObj.user_id) : localStorage.getItem('user_id');
+        if (userId) {
+            const perUser = localStorage.getItem(`user_avatar_for_${userId}`);
+            if (perUser) avatarToShow = perUser;
+        }
+    } catch (e) {
+        // ignore
+    }
+    if (!avatarToShow) avatarToShow = localStorage.getItem('user_avatar');
+
+    if (avatarToShow) {
         const buildUrl = (val) => {
             if (!val) return null;
-            // Si viene con ruta absoluta o ya contiene 'avatars/' usar tal cual
             if (val.startsWith('http') || val.startsWith('/') || val.includes('avatars/')) return val;
             return `/avatars/${val}`;
         };
-        const avatarUrl = buildUrl(savedAvatar);
+        const avatarUrl = buildUrl(avatarToShow);
         const profilePic = document.getElementById('profile-pic');
         const profilePicMobile = document.getElementById('profile-pic-mobile');
         if (profilePic && avatarUrl) profilePic.src = avatarUrl;
@@ -1331,7 +1342,7 @@ async function cerrarSesion(e) {
     } catch (error) {
         console.error('Error en logout:', error);
     } finally {
-        // Limpiar localStorage
+        // Limpiar localStorage (no eliminar user_avatar para mantener avatar persistente)
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         localStorage.removeItem('user_nombre');
@@ -1546,7 +1557,7 @@ function manejarNavegacion() {
 
                     if (esCritica) {
                         redirigiendo = true;
-                        // Limpiar localStorage
+                        // Limpiar localStorage parcialmente (mantener user_avatar para persistencia)
                         localStorage.removeItem('auth_token');
                         localStorage.removeItem('user');
                         localStorage.removeItem('user_nombre');

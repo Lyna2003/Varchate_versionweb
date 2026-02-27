@@ -95,9 +95,7 @@ const modulos = [
   { nombre: "INTRODUCCIÓN A LA PROGRAMACIÓN", progreso: 50 },
   { nombre: "HTML", progreso: 30 },
   { nombre: "CSS", progreso: 20 },
-  { nombre: "JS", progreso: 10 },
-  { nombre: "SQL", progreso: 0 },
-  { nombre: "PHP", progreso: 0 }
+  { nombre: "JS", progreso: 10 }
 ];
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -114,7 +112,42 @@ window.addEventListener("DOMContentLoaded", () => {
 
   cargarDatosUsuario();
   initPasswordToggles();
+  initDarkMode();
 });
+
+// Dark mode: toggle class on <html> and persist preference
+function initDarkMode() {
+  const btn = document.getElementById('btn-darkmode');
+  if (!btn) return;
+  const img = btn.querySelector('img');
+
+  const apply = (enabled) => {
+    const root = document.documentElement;
+    if (enabled) {
+      root.classList.add('dark-mode');
+      if (img) img.classList.add('dark-icon');
+    } else {
+      root.classList.remove('dark-mode');
+      if (img) img.classList.remove('dark-icon');
+    }
+  };
+
+  // Initialize from localStorage or system preference
+  let stored = null;
+  try { stored = localStorage.getItem('dark_mode'); } catch (e) { stored = null; }
+  if (stored === null) {
+    const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    apply(prefers);
+  } else {
+    apply(stored === '1');
+  }
+
+  btn.addEventListener('click', () => {
+    const enabled = document.documentElement.classList.toggle('dark-mode');
+    if (img) img.classList.toggle('dark-icon');
+    try { localStorage.setItem('dark_mode', enabled ? '1' : '0'); } catch (e) {}
+  });
+}
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
@@ -222,8 +255,19 @@ async function cargarDatosUsuario() {
 
     if (res.ok) {
   const user = await parseJsonSafe(res) || {};
-  // El backend usa 'nombre' en varios endpoints; soportar ambos
-  document.getElementById("usuario").value = user.nombre || user.name || '';
+  // Recuperar datos guardados en localStorage como fallback (login guarda 'user')
+  let storedUser = null;
+  try { storedUser = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { storedUser = null; }
+
+  // Preferir campos explícitos de 'username' o 'usuario', si existen; si no, usar 'name'
+  const usuarioEl = document.getElementById('usuario');
+  if (usuarioEl) {
+    usuarioEl.value = (
+      user.username || user.usuario || user.user_name || user.name ||
+      (storedUser && (storedUser.username || storedUser.usuario || storedUser.name)) ||
+      usuarioEl.value || ''
+    );
+  }
 
       if (user.avatar_id) {
         const avatarOption = modal.querySelector(`.avatar-option[data-id="${user.avatar_id}"]`);
@@ -231,6 +275,20 @@ async function cargarDatosUsuario() {
           avatarOption.classList.add("selected");
           perfilImg.src = avatarOption.querySelector("img").src;
         }
+      }
+      // Asegurar que el nombre completo y el correo se muestren con los datos de registro
+      const nombreEl = document.getElementById('nombre');
+      const correoEl = document.getElementById('correo');
+      if (nombreEl) {
+        // Mostrar nombre registrado si existe (campo 'nombre' o 'name'); si no, usar lo renderizado por Blade
+        nombreEl.value = (
+          user.nombre || user.full_name || user.name ||
+          (storedUser && (storedUser.nombre || storedUser.name || storedUser.full_name)) ||
+          nombreEl.value || ''
+        );
+      }
+      if (correoEl) {
+        correoEl.value = user.email || (storedUser && storedUser.email) || correoEl.value || '';
       }
     } else {
       // Intentar parsear JSON de error, si no, leer texto
@@ -241,6 +299,8 @@ async function cargarDatosUsuario() {
         // Token inválido: limpiar y notificar
         localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
+        // Limpiar datos de usuario (no eliminar user_avatar to persist avatar across sessions)
+        localStorage.removeItem('user');
         showErrorToast('Sesión inválida o expirada. Por favor, inicia sesión de nuevo.');
         // Opcional: redirigir a login
         // window.location.href = '/login';
@@ -367,11 +427,29 @@ perfilForm.addEventListener("submit", async (e) => {
           localStorage.setItem('user_avatar', selectedSrc);
         } catch (e) { /* noop */ }
       }
-      // Intentar parsear respuesta con usuario actualizado y guardar avatar si viene del servidor
+      // Intentar parsear respuesta con usuario actualizado y guardar datos en localStorage
       const updatedUser = await parseJsonSafe(res);
-      if (updatedUser && updatedUser.avatar) {
-        try { localStorage.setItem('user_avatar', updatedUser.avatar); } catch (e) { /* noop */ }
-      }
+      try {
+        if (updatedUser && typeof updatedUser === 'object') {
+          // Guardar el objeto de usuario actualizado
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+
+          // Guardar nombre(s) para mostrar en el módulo
+          const nombreCompleto = updatedUser.nombre || updatedUser.name || '';
+          const partes = nombreCompleto.split(' ');
+          localStorage.setItem('user_nombre', partes[0] || 'Usuario');
+          localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
+
+          // Preferir la ruta de avatar que venga del servidor, si no, usar la seleccionada en UI
+          const avatarFromServer = updatedUser.avatar;
+          if (avatarFromServer && avatarFromServer !== '') {
+            localStorage.setItem('user_avatar', avatarFromServer);
+          } else if (avatarSeleccionado) {
+            // Normalizar a ruta relativa si es necesario
+            try { localStorage.setItem('user_avatar', avatarSeleccionado.querySelector('img').src); } catch (e) { /* noop */ }
+          }
+        }
+      } catch (e) { /* noop: no bloquear flujo por errores de localStorage */ }
       // Marcar que al menos hubo una actualización del perfil (para redirigir más tarde)
       _perfilGuardado = true;
     }
@@ -444,6 +522,41 @@ perfilForm.addEventListener("submit", async (e) => {
     }
 
     // Mostrar toast de éxito y luego redirigir a módulo
+    // Intentar obtener el estado actualizado desde el servidor y persistirlo
+    if (_perfilGuardado) {
+      try {
+        const meRes = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json'
+          }
+        });
+        if (meRes.ok) {
+          const meData = await parseJsonSafe(meRes) || {};
+          try {
+            localStorage.setItem('user', JSON.stringify(meData));
+            const nombreCompleto = meData.nombre || meData.name || '';
+            const partes = nombreCompleto.split(' ');
+            localStorage.setItem('user_nombre', partes[0] || 'Usuario');
+            localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
+            // Persistir avatar por usuario para soportar múltiples cuentas en el mismo navegador
+            const userId = meData.id || (meData.user && meData.user.id) || null;
+            const avatarVal = meData.avatar || (avatarSeleccionado ? avatarSeleccionado.querySelector('img').src : null);
+            if (userId && avatarVal) {
+              try { localStorage.setItem(`user_avatar_for_${userId}`, avatarVal); } catch (e) { /* noop */ }
+              try { localStorage.setItem('user_avatar', avatarVal); } catch (e) { /* noop */ }
+              try { localStorage.setItem('user_id', String(userId)); } catch (e) { /* noop */ }
+            } else if (avatarVal) {
+              try { localStorage.setItem('user_avatar', avatarVal); } catch (e) { /* noop */ }
+            }
+          } catch (e) { /* noop */ }
+        }
+      } catch (e) {
+        // No bloquear el flujo si falla el GET /me, pero se intentó persistir
+        console.warn('No se pudo obtener /me tras actualizar perfil', e);
+      }
+    }
+
     showSuccessToast('Perfil actualizado correctamente', 1500);
     if (modal.classList.contains("show")) {
       cerrarModal();

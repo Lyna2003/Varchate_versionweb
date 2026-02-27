@@ -57,17 +57,13 @@
         <div class="perfil-info">
           <div class="campo">
             <label for="usuario">Usuario</label>
-    
-            <input type="text" id="usuario" name="name" value="Pepe Perez">
+
+            <input type="text" id="usuario" name="name" value="{{ $currentUser->name ?? '' }}">
           </div>
-          <div class="campo">
-            <label for="nombre">Nombre completo</label>
-            <input type="text" id="nombre" name="nombre" value="Johan Felipe Perez Acosta" disabled>
-            <small>Conectado vía OAuth no editable.</small>
-          </div>
+          <!-- Nombre completo removed from modal per request -->
           <div class="campo">
             <label for="correo">Correo electrónico</label>
-            <input type="email" id="correo" name="correo" value="pepitoperez@gmail.com">
+            <input type="email" id="correo" name="correo" value="{{ $currentUser->email ?? '' }}">
           </div>
           <div class="campo input-pass">
             <label for="current_password">Contraseña actual</label>
@@ -104,11 +100,12 @@
             </button>
           </div>
         </div>
-      </form>
-       <div class="botones">
+      
+        <div class="botones">
           <button type="reset" form="perfilForm" class="cancelar">Cancelar</button>
           <button type="submit" form="perfilForm" class="guardar">Guardar cambios</button>
         </div>
+      </form>
     </section>
 
 
@@ -133,16 +130,6 @@
         </div>
         <div class="card">
           <h3>JS</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
-        <div class="card">
-          <h3>SQL</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
-        <div class="card">
-          <h3>PHP</h3>
           <div class="barra"><div></div></div>
           <span></span>
         </div>
@@ -189,5 +176,28 @@
   </div>
 
   @vite('resources/js/perfil.js')
+  <script>
+    // Prefill usuario and correo from localStorage if server-side auth doesn't provide them
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        const stored = JSON.parse(localStorage.getItem('user') || 'null');
+        const usuarioEl = document.getElementById('usuario');
+        const correoEl = document.getElementById('correo');
+        const userNombre = localStorage.getItem('user_nombre');
+        const userEmail = localStorage.getItem('user_email');
+        if (usuarioEl) {
+          if (stored && (stored.name || stored.usuario || stored.username)) {
+            usuarioEl.value = stored.name || stored.usuario || stored.username;
+          } else if (userNombre) {
+            usuarioEl.value = userNombre;
+          }
+        }
+        if (correoEl) {
+          if (stored && stored.email) correoEl.value = stored.email;
+          else if (userEmail) correoEl.value = userEmail;
+        }
+      } catch (e) { /* noop */ }
+    });
+  </script>
 </body>
 </html>

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="pageTitle">Varchate</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Inicializar tema oscuro lo antes posible para evitar parpadeo -->
+  <script>try{var dm=localStorage.getItem('dark_mode'); if(dm==='1'){document.documentElement.classList.add('dark-mode');}}catch(e){};</script>
   @vite('resources/css/modulo.css')
 </head>
 <body>
