@@ -41,17 +41,18 @@ Route::get('/recuperar', function () {
     return view('recuperar');
 });
 
-Route::get('/enlace', function () {
-    return view('enlace');
-});
-
-Route::get('/nueva_contrasena', function () {
+Route::get('/reset-password', function () {
     return view('nueva_contrasena');
-});
+})->name('password.reset');
 
-Route::get('/contrasena_actualizada', function () {
-    return view('contrasena_actualizada');
+Route::get('correo', function () {
+    return view('correo');
 });
+  
+Route::get('/terminos', function () {
+    return view('terminos');
+})->name('terminos');
+
 
 // ===============================
 // RUTAS PROTEGIDAS (requieren token de sesión)

@@ -35,7 +35,7 @@
           <div class="input-pass">
             <input type="password" name='password'class="input-password" id="regPass1" placeholder="Contraseña" required>
             <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="regPass1"></i>
-          
+
            <div class="password-requirements-tooltip">
             <i class="fa-solid fa-circle-info info-icon"></i>
             <div class="tooltip-content">
@@ -50,35 +50,35 @@
           </div>
         </div>
 
-         
-        
+
+
 
           <div class="input-pass">
             <input type="password" name='password_confirmation' class="input-password" id="regPass2" placeholder="Confirmar contraseña" required>
             <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="regPass2"></i>
           </div>
 
-          
+
           <div class="terms">
             <label for="terms">
               <input type="checkbox" name="terms_accepted" id="terms" required>
-              Acepto los <a href="#">términos y condiciones</a>
+              Acepto los <a href="terminos">términos y condiciones</a>
             </label>
           </div>
 
           <button type="submit">Registrarse</button>
-          
+
           <div class="divider">
             <span>O</span>
           </div>
-          
+
           <div class="social-register">
             <button type="button" class="facebook">Facebook</button>
             <button type="button" class="gmail">Gmail</button>
           </div>
         </form>
       </div>
-      
+
       <!-- "¿Ya tienes cuenta?" fuera del register-box -->
       <p class="login-link">¿Ya tienes cuenta? <a href="login">Iniciar sesión</a></p>
     </div>

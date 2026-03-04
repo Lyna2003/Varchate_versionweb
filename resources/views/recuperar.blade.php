@@ -14,16 +14,18 @@
     </div>
 
     <div class="right">
-      <img src="{{ asset('images/logo_azul.png') }}" alt="Logo Varchate" class="logo">
+      <img src="{{ asset('images/logo2.png') }}" alt="Logo Varchate" class="logo">
       <div class="recovery-box">
         <h2>¿Olvidaste tu contraseña?</h2>
         <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
-        <form>
-          <input type="email" placeholder="Correo electrónico" required>
-          <a href="enlace">
-            <button type="button">Entrar</button>
-          </a>
+        
+        <!-- ✅ FORMULARIO CORREGIDO -->
+        <form id="recoveryForm">
+          <input type="email" id="email" placeholder="Correo electrónico" required>
+          <button type="submit" class="button">Enviar</button>
         </form>
+        <!-- ✅ FIN FORMULARIO CORREGIDO -->
+        
       </div>
       <p class="register">¿Recordaste tu contraseña? <a href="login">Iniciar sesión</a></p>
     </div>
@@ -32,5 +34,7 @@
   <div class="wave-section">
     <img src="{{ asset('images/ola2.png') }}" alt="Ola inferior" class="ola2">
   </div>
+  
+  @vite('resources/js/recuperar.js')
 </body>
 </html>

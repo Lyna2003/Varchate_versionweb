@@ -12,20 +12,14 @@
       <img src="{{ asset('images/logo2.png')}}" alt="varchate" class="logo">
     </header>
     <main class="box">
-      <div class="icon-check">✔</div>
-      <h2>Enlace de confirmación</h2>
-      <p>
-        Te enviamos un enlace a tu correo electrónico para restablecer tu contraseña.
-        Revisa tu bandeja de entrada o la carpeta de spam.
-      </p>
+
     </main>
     <footer>
-      <p>¿No lo recibiste? <a href="/reset-password" id="resend-link">Reenviar enlace</a></p>
     </footer>
   </div>
   <div class="wave-section">
     <img src="{{ asset('images/ola2.png') }}" alt="Ola inferior" class="ola2">
   </div>
-  @vite('resources/js/enlace.js')
+  @vite('resources/js/correo.js')
 </body>
 </html>
