@@ -230,6 +230,7 @@ let modulosGlobal = [];
 let moduloActual = null;
 let leccionesModulo = [];
 let progresoModulo = null;
+let evaluacionData = null; // descripción y datos de la evaluación precargados
 let leccionActualIndex = -1; // -1 = Introducción, 0+ = Lecciones
 
 async function cargarDatosModulo(moduleSlug) {
@@ -279,11 +280,14 @@ async function cargarDatosModulo(moduleSlug) {
             // Actualizar la introducción con la descripción larga
             actualizarIntroduccionModulo();
 
-            // 3. Cargar lecciones del módulo
-            await cargarLeccionesModulo(moduloActual.id, moduleSlug);
-
-            // 4. Cargar progreso del módulo (si existe)
+            // 3. Cargar PRIMERO el progreso (para que las lecciones se rendericen con el estado correcto)
             await cargarProgresoModulo(moduloActual.id);
+
+            // 4. Precargar descripción de la evaluación (en paralelo con lecciones)
+            const [_, leccionesResult] = await Promise.all([
+                precargarEvaluacion(moduloActual.id),
+                cargarLeccionesModulo(moduloActual.id, moduleSlug)
+            ]);
         } else {
             console.error('Error cargando módulo:', moduloResponse.status);
             mostrarBienvenidaModulos();
@@ -462,6 +466,26 @@ async function cargarProgresoModulo(moduloId) {
     }
 }
 
+async function precargarEvaluacion(moduloId) {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`${apiUrl}/modulos/${moduloId}/evaluacion`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+        if (response.ok) {
+            const json = await response.json();
+            evaluacionData = json?.data?.evaluacion || null;
+            console.log('📋 Evaluación precargada:', evaluacionData);
+        }
+    } catch (error) {
+        console.warn('No se pudo precargar la evaluación:', error);
+    }
+}
+
 // ===============================
 // RENDERIZADO DE COMPONENTES
 // ===============================
@@ -572,10 +596,14 @@ function renderizarLecciones(lecciones) {
     // Verificar si todas las lecciones están completadas para desbloquear evaluación
     const todasLeccionesCompletadas = leccionesCompletadas >= leccionesOrdenadas.length;
     const evaluacionDesbloqueada = todasLeccionesCompletadas || progresoModulo?.evaluacion_aprobada === true;
+    const evaluacionAprobadaSidebar = progresoModulo?.evaluacion_aprobada === true;
+    const claseEvaluacion = evaluacionDesbloqueada
+        ? (evaluacionAprobadaSidebar ? 'vista' : '')
+        : 'locked';
 
     sidebarHTML += `
-        <button class="${evaluacionDesbloqueada ? '' : 'locked'}" data-tipo="evaluacion" data-evaluacion-id="${moduloActual?.id || 1}">
-            EVALUACIÓN ${evaluacionDesbloqueada ? '' : `<img src="${document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg'}" alt="Bloqueado" class="icon-lock">`}
+        <button class="${claseEvaluacion}" data-tipo="evaluacion" data-evaluacion-id="${moduloActual?.id || 1}">
+            EVALUACIÓN ${!evaluacionDesbloqueada ? `<img src="${document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg'}" alt="Bloqueado" class="icon-lock">` : ''}
         </button>
     `;
 
@@ -615,6 +643,9 @@ function renderizarLecciones(lecciones) {
 
     // Agregar evaluación (SOLO VISUAL)
     const evaluacionAprobada = progresoModulo?.evaluacion_aprobada || false;
+    const descEvaluacion = evaluacionData?.descripcion
+        ? evaluacionData.descripcion.substring(0, 120) + (evaluacionData.descripcion.length > 120 ? '...' : '')
+        : 'Pon a prueba tus conocimientos del módulo';
 
     lessonsHTML += `
             <div class="lesson evaluation ${evaluacionAprobada ? 'completed' : ''}" 
@@ -622,10 +653,8 @@ function renderizarLecciones(lecciones) {
                 data-evaluacion-id="${moduloActual?.id || 1}">
                 <i class="fa-regular fa-file-lines"></i>
                 <div>
-                    <strong>Evaluación del Módulo</strong>
-                    <p>${moduloActual?.descripcion_larga ?
-            moduloActual.descripcion_larga.substring(0, 100) + '...' :
-            'Pon a prueba tus conocimientos del módulo'}</p>
+                    <strong>${evaluacionData?.titulo || 'Evaluación del Módulo'}</strong>
+                    <p>${descEvaluacion}</p>
                 </div>
             </div>
         `;
@@ -709,7 +738,7 @@ function mostrarMensajeBloqueado(mensaje = 'Completa el contenido anterior para 
         text-align: center;
         min-width: 300px;
     `;
-    mensajeEl.innerHTML = `🔒 ${mensaje}`;
+    mensajeEl.innerHTML = `${mensaje}`;
 
     document.body.appendChild(mensajeEl);
 
@@ -742,7 +771,7 @@ function mostrarMensajeExito(mensaje) {
         text-align: center;
         min-width: 300px;
     `;
-    mensajeEl.innerHTML = `✅ ${mensaje}`;
+    mensajeEl.innerHTML = `${mensaje}`;
 
     document.body.appendChild(mensajeEl);
 
@@ -789,9 +818,21 @@ if (!document.getElementById('animation-styles')) {
             background-color: #FFFFFF;
             color: #616461;
         }
+
+        /* Botón de EVALUACIÓN (estilo base - igual que intro) */
+        .sidebar button[data-tipo="evaluacion"] {
+            background-color: #FFFFFF;
+            color: #616461;
+        }
         
         /* Botón de INTRODUCCIÓN ACTIVO */
         .sidebar button[data-tipo="intro"].active {
+            background-color: #0099FF !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Botón de EVALUACIÓN ACTIVO */
+        .sidebar button[data-tipo="evaluacion"].active {
             background-color: #0099FF !important;
             color: #FFFFFF !important;
         }
@@ -956,6 +997,9 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
                 leccionContent.innerHTML = contenidoLimpio;
             }
 
+            // Subir al tope automáticamente al cargar nueva lección
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             // Encontrar el índice de la lección actual
             if (window.leccionesOrdenadas) {
                 const indiceActual = window.leccionesOrdenadas.findIndex(l => l.id === leccion.id);
@@ -976,13 +1020,11 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
     }
 }
 
-async function marcarLeccionVista(moduloId, leccionId, skipRender = false) {
+async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
     const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
-        console.log('📝 Marcando lección como vista:', { moduloId, leccionId });
-
         const response = await fetch(`${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/marcar-vista`, {
             method: 'POST',
             headers: {
@@ -994,18 +1036,19 @@ async function marcarLeccionVista(moduloId, leccionId, skipRender = false) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Respuesta de marcar vista:', data);
 
             // Recargar progreso
             await cargarProgresoModulo(moduloId);
-            console.log('🔄 Progreso actualizado:', progresoModulo);
 
             // Solo re-renderizar el sidebar si no se pide omitir
             if (!skipRender && window.leccionesOrdenadas) {
                 renderizarLecciones(window.leccionesOrdenadas);
             }
 
-            mostrarMensajeExito('¡Lección completada!');
+            // Solo mostrar mensaje si es la primera vez que se completa
+            if (mostrarMensaje) {
+                mostrarMensajeExito('¡Lección completada!');
+            }
         } else {
             console.error('❌ Error marcando lección:', await response.text());
         }
@@ -1050,6 +1093,7 @@ async function cargarEvaluacion(evaluacionId) {
             if (leccionContent) {
                 leccionContent.style.display = 'block';
                 leccionContent.innerHTML = renderizarEvaluacion(json);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 // Enlazar botón de iniciar evaluación
                 const btnIniciar = leccionContent.querySelector('#btn-iniciar-evaluacion');
@@ -1096,25 +1140,57 @@ function renderizarEvaluacion(json) {
     const puntajeMinimo = evaluacion.puntaje_minimo || null;
     const maxIntentos = evaluacion.max_intentos || null;
 
-    // Líneas de información
+    // Descripción arriba del grid
     let infoLines = '';
-    if (tiempoLimite) {
-        infoLines += `<p class="eval-info-line"><strong>Duración:</strong> ${tiempoLimite} minutos</p>`;
-    }
-    if (numeroPreguntas) {
-        infoLines += `<p class="eval-info-line"><strong>Preguntas:</strong> ${numeroPreguntas} preguntas</p>`;
-    }
-    if (puntajeMinimo) {
-        infoLines += `<p class="eval-info-line"><strong>Puntaje mínimo para aprobar:</strong> ${puntajeMinimo}%</p>`;
-    }
-    if (maxIntentos) {
-        const disponibles = intentosDisponibles !== undefined ? intentosDisponibles : maxIntentos;
-        infoLines += `<p class="eval-info-line"><strong>Intentos disponibles:</strong> ${disponibles} de ${maxIntentos}</p>`;
-    }
     if (descripcion) {
         infoLines += `<p class="eval-info-line eval-desc">${descripcion}</p>`;
     }
-    infoLines += `<p class="eval-info-line eval-nota">Al finalizar, obtendrás tu puntaje automáticamente.</p>`;
+
+    // Grid de estadísticas con tarjetas visuales
+    let statsCards = '';
+    if (tiempoLimite) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-regular fa-clock"></i></span>
+                <span class="eval-stat-label">Duración</span>
+                <span class="eval-stat-value">${tiempoLimite} min</span>
+            </div>`;
+    }
+    if (numeroPreguntas) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-regular fa-circle-question"></i></span>
+                <span class="eval-stat-label">Preguntas</span>
+                <span class="eval-stat-value">${numeroPreguntas}</span>
+            </div>`;
+    }
+    if (puntajeMinimo) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-solid fa-star"></i></span>
+                <span class="eval-stat-label">Puntaje mínimo</span>
+                <span class="eval-stat-value">${puntajeMinimo}%</span>
+            </div>`;
+    }
+    if (maxIntentos) {
+        const disponibles = intentosDisponibles !== undefined ? intentosDisponibles : maxIntentos;
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-solid fa-rotate-right"></i></span>
+                <span class="eval-stat-label">Intentos</span>
+                <span class="eval-stat-value">${disponibles} / ${maxIntentos}</span>
+            </div>`;
+    }
+
+    if (statsCards) {
+        infoLines += `<div class="eval-stats-grid">${statsCards}</div>`;
+    }
+
+    infoLines += `
+        <div class="eval-nota-banner">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Al finalizar, obtendrás tu puntaje automáticamente.</span>
+        </div>`;
 
     // Badge estado
     let badgeHTML = '';
@@ -1146,11 +1222,11 @@ function renderizarEvaluacion(json) {
                     ${infoLines}
                     ${badgeHTML}
                 </div>
-                <div class="evaluacion-mascota">
+                <div class="evaluacion-mascota" style="margin-left: 48px;">
                     <img src="${mascotaUrl}" alt="Mascota evaluación" class="eval-mascota-img">
                 </div>
             </div>
-            <div class="evaluacion-footer">
+            <div class="eval-boton-wrap">
                 ${botonHTML}
             </div>
         </div>`;
@@ -1179,7 +1255,7 @@ window.iniciarEvaluacion = async function (evaluacionId) {
         const json = await response.json();
 
         if (response.ok && json.success) {
-            console.log('✅ Evaluación iniciada:', json.data);
+            console.log('Evaluación iniciada:', json.data);
             mostrarMensajeExito('Evaluación iniciada correctamente');
             // TODO: renderizar preguntas con json.data.preguntas
         } else {
@@ -1198,31 +1274,15 @@ window.iniciarEvaluacion = async function (evaluacionId) {
 function mostrarIntroduccion() {
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
+
     // Mostrar el botón "Siguiente" al volver a la introducción
     const btnNext = document.getElementById('btnNext');
     if (btnNext) btnNext.style.display = '';
 
+    // Solo mostrar/ocultar — NO tocar el contenido interno que ya está bien renderizado
     if (introduccionContent) {
         introduccionContent.style.display = 'block';
-
-        // Actualizar la introducción con la descripción larga del módulo si está disponible
-        if (moduloActual && moduloActual.descripcion_larga) {
-            const introHeader = introduccionContent.querySelector('h2');
-            const paragraphs = introduccionContent.querySelectorAll('p');
-
-            if (paragraphs.length > 0) {
-                paragraphs[0].innerHTML = moduloActual.descripcion_larga;
-                for (let i = 1; i < paragraphs.length; i++) {
-                    paragraphs[i].style.display = 'none';
-                }
-            } else {
-                const newParagraph = document.createElement('p');
-                newParagraph.innerHTML = moduloActual.descripcion_larga;
-                introHeader.insertAdjacentElement('afterend', newParagraph);
-            }
-        }
     }
-
     if (leccionContent) {
         leccionContent.style.display = 'none';
     }
@@ -1557,8 +1617,9 @@ function configurarBotonSiguiente() {
                 leccionActualIndex = 0;
                 const primeraLeccion = lecciones[0];
 
-                // Marcar la primera lección como "desbloqueada" actualizando progreso
-                await marcarLeccionVista(moduloActual.id, primeraLeccion.id, true);
+                // Verificar si la primera lección ya estaba completada
+                const primeraYaCompletada = (progresoModulo?.lecciones_vistas || 0) > 0;
+                await marcarLeccionVista(moduloActual.id, primeraLeccion.id, true, !primeraYaCompletada);
 
                 // Cargar la primera lección
                 await cargarLeccion(moduloActual.slug, primeraLeccion.slug);
@@ -1572,8 +1633,9 @@ function configurarBotonSiguiente() {
                 const leccionActual = lecciones[leccionActualIndex];
 
                 if (leccionActual) {
-                    // Marcar lección actual como vista
-                    await marcarLeccionVista(moduloActual.id, leccionActual.id, true);
+                    // Verificar si ya estaba completada ANTES de llamar a la API
+                    const yaCompletada = leccionActualIndex < (progresoModulo?.lecciones_vistas || 0);
+                    await marcarLeccionVista(moduloActual.id, leccionActual.id, true, !yaCompletada);
                 }
 
                 const siguienteIndex = leccionActualIndex + 1;

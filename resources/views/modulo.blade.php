@@ -19,11 +19,6 @@
     </a>
   </div>
 
-  <div class="home">
-      <a href="#" class="home-link">
-      <img src="{{ asset('images/Home.svg') }}" alt="Inicio" class="home-icon">
-      </a>
-  </div>
 
    <div class="ranking">
       <a href="#" class="ranking-link">
@@ -81,7 +76,7 @@
       <img src="" alt="Usuario" id="profile-pic-mobile" tabindex="0" aria-haspopup="true" aria-expanded="false" style="opacity:0;transition:opacity 0.3s ease;">
 
       <div class="user-menu-mobile" id="user-menu-mobile" role="menu">
-        <a href="#" class="menu-item" role="menuitem" tabindex="0">
+        <a href="{{ route('perfil') }}" class="menu-item" role="menuitem" tabindex="0">
           <span>Editar perfil</span>
           <img src="{{ asset('images/editar-cuadrado.svg') }}" alt="Editar" class="menu-svg">
         </a>
