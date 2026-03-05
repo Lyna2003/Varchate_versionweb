@@ -40,7 +40,7 @@
             data-modulos-url="{{ route('modulos') }}"
             data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8000/api') }}">
         <div class="perfil-imagen">
-          <img src="{{ asset('avatars/default.png') }}" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}">
+          <img src="" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}" style="opacity:0;transition:opacity 0.3s ease;">
 
              <div class="acciones-foto">
               <button type="button" class="eliminar-foto" aria-label="Eliminar foto">
@@ -109,27 +109,8 @@
     <section class="progreso">
       <h2>Progreso</h2>
       <div class="contenedor-progreso">
-      <div class="grid-progreso">
-        <div class="card">
-          <h3>INTRODUCCIÓN A LA PROGRAMACIÓN</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
-        <div class="card">
-          <h3>HTML</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
-        <div class="card">
-          <h3>CSS</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
-        <div class="card">
-          <h3>JS</h3>
-          <div class="barra"><div></div></div>
-          <span></span>
-        </div>
+      <div class="grid-progreso" id="grid-progreso">
+        <p class="progreso-cargando">Cargando progreso...</p>
       </div>
     </div>
     </section>

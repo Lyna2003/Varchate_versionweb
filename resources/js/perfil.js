@@ -1,4 +1,12 @@
 
+// Helper: asigna src y revela la imagen de perfil con fade-in
+function showProfilePic(el, src) {
+  if (!el || !src) return;
+  el.onload = () => { el.style.opacity = '1'; };
+  el.onerror = () => { el.style.opacity = '1'; };
+  el.src = src;
+}
+
 const modal = document.getElementById("modalAvatar");
 const abrirModalBtn = document.querySelector(".editar-foto");
 const cancelarBtn = modal.querySelector(".btn-cancel");
@@ -20,7 +28,7 @@ function cerrarModal() {
 cancelarBtn.addEventListener("click", cerrarModal);
 guardarBtn.addEventListener("click", () => {
   const seleccionado = modal.querySelector(".avatar-option.selected img");
-  if (seleccionado) document.querySelector(".perfil-imagen img").src = seleccionado.src;
+  if (seleccionado) showProfilePic(document.querySelector(".perfil-imagen img"), seleccionado.src);
   cerrarModal();
 });
 
@@ -61,7 +69,7 @@ confirmarEliminarBtn.addEventListener("click", () => {
   // Obtener el valor por defecto desde el atributo data-default si existe
   const perfilImgEl = document.getElementById('perfil-imagen');
   const defaultSrc = (perfilImgEl && perfilImgEl.dataset && perfilImgEl.dataset.default) ? perfilImgEl.dataset.default : '/avatars/default.png';
-  perfilImg.src = defaultSrc;
+  showProfilePic(perfilImg, defaultSrc);
   // Actualizar localStorage para que otras vistas usen el avatar por defecto
   try { localStorage.setItem('user_avatar', defaultSrc); } catch (e) { /* noop */ }
   // Limpiar selección en el modal de avatares si está abierto
@@ -91,29 +99,90 @@ function trapFocus(element) {
 }
 
 
-const modulos = [
-  { nombre: "INTRODUCCIÓN A LA PROGRAMACIÓN", progreso: 50 },
-  { nombre: "HTML", progreso: 30 },
-  { nombre: "CSS", progreso: 20 },
-  { nombre: "JS", progreso: 10 }
-];
-
 window.addEventListener("DOMContentLoaded", () => {
-  const cards = document.querySelectorAll(".card");
-  cards.forEach((card, index) => {
-    const barra = card.querySelector(".barra div");
-    const span = card.querySelector("span");
-    if (modulos[index]) {
-      span.textContent = modulos[index].progreso + "%";
-      setTimeout(() => { barra.style.width = modulos[index].progreso + "%"; }, 300);
-    }
-  });
-
-
   cargarDatosUsuario();
   initPasswordToggles();
   initDarkMode();
+  cargarProgresoModulos();
 });
+
+/**
+ * Obtiene los módulos disponibles y el progreso del usuario desde la API
+ * y renderiza dinámicamente las cards en #grid-progreso.
+ */
+async function cargarProgresoModulos() {
+  const grid = document.getElementById('grid-progreso');
+  if (!grid) return;
+
+  const token = getAuthToken();
+  if (!token) {
+    grid.innerHTML = '<p class="progreso-cargando">Inicia sesión para ver tu progreso.</p>';
+    return;
+  }
+
+  try {
+    // Llamadas en paralelo: módulos disponibles + progreso del usuario
+    const [modulosRes, progresoRes] = await Promise.all([
+      fetch(`${API_BASE}/modulos`, {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      }),
+      fetch(`${API_BASE}/modulos-con-progreso`, {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      })
+    ]);
+
+    // Parsear módulos
+    let modulos = [];
+    if (modulosRes.ok) {
+      const data = await modulosRes.json();
+      modulos = Array.isArray(data) ? data
+        : (data.data && Array.isArray(data.data) ? data.data : []);
+      // Ordenar por orden_global si existe
+      modulos.sort((a, b) => (a.orden_global || 0) - (b.orden_global || 0));
+    }
+
+    // Parsear progreso del usuario (mapa id → porcentaje)
+    const progresoMap = {};
+    if (progresoRes.ok) {
+      const pData = await progresoRes.json();
+      const lista = pData.success && Array.isArray(pData.data) ? pData.data
+        : Array.isArray(pData) ? pData
+          : (pData.data && Array.isArray(pData.data) ? pData.data : []);
+      lista.forEach(m => {
+        progresoMap[m.id] = Math.round(m.progreso || 0);
+      });
+    }
+
+    if (modulos.length === 0) {
+      grid.innerHTML = '<p class="progreso-cargando">No hay módulos disponibles.</p>';
+      return;
+    }
+
+    // Renderizar cards
+    grid.innerHTML = modulos.map(m => {
+      const porcentaje = progresoMap[m.id] ?? 0;
+      const nombre = (m.modulo || m.titulo || m.nombre || 'Módulo').toUpperCase();
+      return `
+        <div class="card">
+          <h3>${nombre}</h3>
+          <div class="barra"><div class="barra-fill" style="width:0%" data-target="${porcentaje}"></div></div>
+          <span>${porcentaje}%</span>
+        </div>`;
+    }).join('');
+
+    // Animar barras con un pequeño delay
+    setTimeout(() => {
+      grid.querySelectorAll('.barra-fill').forEach(fill => {
+        fill.style.width = fill.dataset.target + '%';
+      });
+    }, 300);
+
+  } catch (err) {
+    console.error('Error cargando progreso de módulos:', err);
+    grid.innerHTML = '<p class="progreso-cargando">No se pudo cargar el progreso.</p>';
+  }
+}
+
 
 // Dark mode: toggle class on <html> and persist preference
 function initDarkMode() {
@@ -273,8 +342,16 @@ async function cargarDatosUsuario() {
         const avatarOption = modal.querySelector(`.avatar-option[data-id="${user.avatar_id}"]`);
         if (avatarOption) {
           avatarOption.classList.add("selected");
-          perfilImg.src = avatarOption.querySelector("img").src;
+          showProfilePic(perfilImg, avatarOption.querySelector("img").src);
+        } else {
+          // Si no hay avatarOption pero tenemos avatar_id, usar default revelado
+          const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/default.png';
+          showProfilePic(perfilImg, defaultSrc);
         }
+      } else {
+        // Sin avatar_id: mostrar default
+        const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/default.png';
+        showProfilePic(perfilImg, defaultSrc);
       }
       // Asegurar que el nombre completo y el correo se muestren con los datos de registro
       const nombreEl = document.getElementById('nombre');

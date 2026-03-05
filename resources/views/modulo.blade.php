@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title id="pageTitle">Varchate</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Inicializar tema oscuro lo antes posible para evitar parpadeo -->
@@ -18,11 +19,6 @@
     </a>
   </div>
 
-  <div class="home">
-      <a href="#" class="home-link">
-      <img src="{{ asset('images/Home.svg') }}" alt="Inicio" class="home-icon">
-      </a>
-  </div>
 
    <div class="ranking">
       <a href="#" class="ranking-link">
@@ -49,7 +45,7 @@
                <span class="first-name"></span>
                <span class="last-name"></span>
              </div>
-            <img src="{{ asset('images/foto-perfil.png') }}" alt="Usuario" id="profile-pic" tabindex="0" aria-haspopup="true" aria-expanded="false">
+            <img src="" alt="Usuario" id="profile-pic" tabindex="0" aria-haspopup="true" aria-expanded="false" style="opacity:0;transition:opacity 0.3s ease;">
 
             <div class="user-menu" id="user-menu" role="menu">
               <a href="{{ route('perfil') }}" class="menu-item" role="menuitem" tabindex="0">
@@ -77,10 +73,10 @@
        <span class="last-name"></span>
      </span>
      
-      <img src="{{ asset('images/foto-perfil.png') }}" alt="Usuario" id="profile-pic-mobile" tabindex="0" aria-haspopup="true" aria-expanded="false">
+      <img src="" alt="Usuario" id="profile-pic-mobile" tabindex="0" aria-haspopup="true" aria-expanded="false" style="opacity:0;transition:opacity 0.3s ease;">
 
       <div class="user-menu-mobile" id="user-menu-mobile" role="menu">
-        <a href="#" class="menu-item" role="menuitem" tabindex="0">
+        <a href="{{ route('perfil') }}" class="menu-item" role="menuitem" tabindex="0">
           <span>Editar perfil</span>
           <img src="{{ asset('images/editar-cuadrado.svg') }}" alt="Editar" class="menu-svg">
         </a>
@@ -108,7 +104,10 @@
 <main class="container" 
       data-modulo-base-url="{{ url('/modulo') }}"
       data-lock-url="{{ asset('images/Lock.svg') }}"
-      data-avatars-url="{{ asset('avatars') }}">
+      data-avatars-url="{{ asset('avatars') }}"
+      data-images-url="{{ asset('images') }}"
+      data-clear-session-url="{{ url('/api/clear-session-token') }}"
+      data-login-url="{{ url('/login') }}">
 
   <!-- Nueva barra que incluye el hamburguesa + los top-buttons -->
   <div class="topbar">

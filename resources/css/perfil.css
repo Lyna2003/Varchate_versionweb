@@ -830,3 +830,13 @@ html.dark-mode .botones button.cancelar {
     grid-template-columns: 1fr;
   }
 }
+
+/* Mensaje de carga/error en el grid de progreso */
+.progreso-cargando {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+  font-style: italic;
+  font-size: 16px;
+}

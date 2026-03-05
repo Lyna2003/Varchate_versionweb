@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const token = localStorage.getItem('auth_token');
 
     if (!token) {
-        redirigirALogin();
+        await redirigirALogin();
         return;
     }
 
@@ -33,11 +33,29 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 // Función auxiliar para redirigir a login de manera consistente
-function redirigirALogin(params = '') {
+// Siempre limpia localStorage y la sesión Laravel antes de redirigir
+async function redirigirALogin(params = '') {
+    // Limpiar localStorage
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('user_nombre');
+    localStorage.removeItem('user_apellido');
+    localStorage.removeItem('user_email');
+
+    // Limpiar sesión de Laravel para evitar el loop de redirect
+    try {
+        const mainEl = document.querySelector('main[data-clear-session-url]');
+        const clearSessionUrl = mainEl?.dataset.clearSessionUrl || '/api/clear-session-token';
+        await fetch(clearSessionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (_) { /* ignorar errores de red */ }
+
     // Construir URL absoluta sin barras dobles
     const baseUrl = window.location.origin;
-    const loginUrl = params ? `${baseUrl}/login${params}` : `${baseUrl}/login`;
-    window.location.href = loginUrl;
+    const loginPath = params ? `/login${params}` : '/login';
+    window.location.href = baseUrl + loginPath;
 }
 
 function obtenerSlugDeURL() {
@@ -88,25 +106,19 @@ async function verificarTokenEnSegundoPlano(token) {
                     if (userData.id) localStorage.setItem(`user_avatar_for_${userData.id}`, avatarUrl);
 
                     // Actualizar el DOM directamente
-                    const profilePic = document.getElementById('profile-pic');
-                    const profilePicMobile = document.getElementById('profile-pic-mobile');
-                    if (profilePic) profilePic.src = avatarUrl;
-                    if (profilePicMobile) profilePicMobile.src = avatarUrl;
+                    showProfilePic(document.getElementById('profile-pic'), avatarUrl);
+                    showProfilePic(document.getElementById('profile-pic-mobile'), avatarUrl);
                 }
 
                 cargarDatosUsuario();
             }
         } else {
-            // Token inválido, limpiar y redirigir
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('user_nombre');
-            localStorage.removeItem('user_apellido');
-            localStorage.removeItem('user_email');
-            redirigirALogin('?expired=true');
+            // Token inválido — redirigir a login (redirigirALogin limpia sesión automáticamente)
+            await redirigirALogin('?expired=true');
         }
     } catch (error) {
-        console.error('Error verificando token:', error);
+        // Error de red: NO redirigir, solo loguear. La API puede estar temporalmente caída.
+        console.warn('No se pudo verificar el token (posible error de red):', error);
     }
 }
 
@@ -194,11 +206,20 @@ function cargarDatosUsuario() {
             return `/avatars/${val}`;
         };
         const avatarUrl = buildUrl(avatarToShow);
-        const profilePic = document.getElementById('profile-pic');
-        const profilePicMobile = document.getElementById('profile-pic-mobile');
-        if (profilePic && avatarUrl) profilePic.src = avatarUrl;
-        if (profilePicMobile && avatarUrl) profilePicMobile.src = avatarUrl;
+        showProfilePic(document.getElementById('profile-pic'), avatarUrl);
+        showProfilePic(document.getElementById('profile-pic-mobile'), avatarUrl);
     }
+}
+
+/**
+ * Asigna src a una imagen de perfil y la revela con fade-in.
+ * La imagen empieza oculta (opacity:0) en el HTML.
+ */
+function showProfilePic(el, src) {
+    if (!el || !src) return;
+    el.onload = () => { el.style.opacity = '1'; };
+    el.onerror = () => { el.style.opacity = '1'; }; // mostrar aunque falle
+    el.src = src;
 }
 
 // ===============================
@@ -209,6 +230,7 @@ let modulosGlobal = [];
 let moduloActual = null;
 let leccionesModulo = [];
 let progresoModulo = null;
+let evaluacionData = null; // descripción y datos de la evaluación precargados
 let leccionActualIndex = -1; // -1 = Introducción, 0+ = Lecciones
 
 async function cargarDatosModulo(moduleSlug) {
@@ -258,11 +280,14 @@ async function cargarDatosModulo(moduleSlug) {
             // Actualizar la introducción con la descripción larga
             actualizarIntroduccionModulo();
 
-            // 3. Cargar lecciones del módulo
-            await cargarLeccionesModulo(moduloActual.id, moduleSlug);
-
-            // 4. Cargar progreso del módulo (si existe)
+            // 3. Cargar PRIMERO el progreso (para que las lecciones se rendericen con el estado correcto)
             await cargarProgresoModulo(moduloActual.id);
+
+            // 4. Precargar descripción de la evaluación (en paralelo con lecciones)
+            const [_, leccionesResult] = await Promise.all([
+                precargarEvaluacion(moduloActual.id),
+                cargarLeccionesModulo(moduloActual.id, moduleSlug)
+            ]);
         } else {
             console.error('Error cargando módulo:', moduloResponse.status);
             mostrarBienvenidaModulos();
@@ -441,6 +466,26 @@ async function cargarProgresoModulo(moduloId) {
     }
 }
 
+async function precargarEvaluacion(moduloId) {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`${apiUrl}/modulos/${moduloId}/evaluacion`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+        if (response.ok) {
+            const json = await response.json();
+            evaluacionData = json?.data?.evaluacion || null;
+            console.log('📋 Evaluación precargada:', evaluacionData);
+        }
+    } catch (error) {
+        console.warn('No se pudo precargar la evaluación:', error);
+    }
+}
+
 // ===============================
 // RENDERIZADO DE COMPONENTES
 // ===============================
@@ -551,10 +596,14 @@ function renderizarLecciones(lecciones) {
     // Verificar si todas las lecciones están completadas para desbloquear evaluación
     const todasLeccionesCompletadas = leccionesCompletadas >= leccionesOrdenadas.length;
     const evaluacionDesbloqueada = todasLeccionesCompletadas || progresoModulo?.evaluacion_aprobada === true;
+    const evaluacionAprobadaSidebar = progresoModulo?.evaluacion_aprobada === true;
+    const claseEvaluacion = evaluacionDesbloqueada
+        ? (evaluacionAprobadaSidebar ? 'vista' : '')
+        : 'locked';
 
     sidebarHTML += `
-        <button class="${evaluacionDesbloqueada ? '' : 'locked'}" data-tipo="evaluacion" data-evaluacion-id="${moduloActual?.id || 1}">
-            EVALUACIÓN ${evaluacionDesbloqueada ? '' : `<img src="${document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg'}" alt="Bloqueado" class="icon-lock">`}
+        <button class="${claseEvaluacion}" data-tipo="evaluacion" data-evaluacion-id="${moduloActual?.id || 1}">
+            EVALUACIÓN ${!evaluacionDesbloqueada ? `<img src="${document.querySelector('main.container')?.dataset.lockUrl || '/images/Lock.svg'}" alt="Bloqueado" class="icon-lock">` : ''}
         </button>
     `;
 
@@ -594,6 +643,9 @@ function renderizarLecciones(lecciones) {
 
     // Agregar evaluación (SOLO VISUAL)
     const evaluacionAprobada = progresoModulo?.evaluacion_aprobada || false;
+    const descEvaluacion = evaluacionData?.descripcion
+        ? evaluacionData.descripcion.substring(0, 120) + (evaluacionData.descripcion.length > 120 ? '...' : '')
+        : 'Pon a prueba tus conocimientos del módulo';
 
     lessonsHTML += `
             <div class="lesson evaluation ${evaluacionAprobada ? 'completed' : ''}" 
@@ -601,10 +653,8 @@ function renderizarLecciones(lecciones) {
                 data-evaluacion-id="${moduloActual?.id || 1}">
                 <i class="fa-regular fa-file-lines"></i>
                 <div>
-                    <strong>Evaluación del Módulo</strong>
-                    <p>${moduloActual?.descripcion_larga ?
-            moduloActual.descripcion_larga.substring(0, 100) + '...' :
-            'Pon a prueba tus conocimientos del módulo'}</p>
+                    <strong>${evaluacionData?.titulo || 'Evaluación del Módulo'}</strong>
+                    <p>${descEvaluacion}</p>
                 </div>
             </div>
         `;
@@ -688,7 +738,7 @@ function mostrarMensajeBloqueado(mensaje = 'Completa el contenido anterior para 
         text-align: center;
         min-width: 300px;
     `;
-    mensajeEl.innerHTML = `🔒 ${mensaje}`;
+    mensajeEl.innerHTML = `${mensaje}`;
 
     document.body.appendChild(mensajeEl);
 
@@ -721,7 +771,7 @@ function mostrarMensajeExito(mensaje) {
         text-align: center;
         min-width: 300px;
     `;
-    mensajeEl.innerHTML = `✅ ${mensaje}`;
+    mensajeEl.innerHTML = `${mensaje}`;
 
     document.body.appendChild(mensajeEl);
 
@@ -768,9 +818,21 @@ if (!document.getElementById('animation-styles')) {
             background-color: #FFFFFF;
             color: #616461;
         }
+
+        /* Botón de EVALUACIÓN (estilo base - igual que intro) */
+        .sidebar button[data-tipo="evaluacion"] {
+            background-color: #FFFFFF;
+            color: #616461;
+        }
         
         /* Botón de INTRODUCCIÓN ACTIVO */
         .sidebar button[data-tipo="intro"].active {
+            background-color: #0099FF !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Botón de EVALUACIÓN ACTIVO */
+        .sidebar button[data-tipo="evaluacion"].active {
             background-color: #0099FF !important;
             color: #FFFFFF !important;
         }
@@ -925,11 +987,18 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
 
+            // Mostrar el botón "Siguiente" en lecciones normales
+            const btnNextLeccion = document.getElementById('btnNext');
+            if (btnNextLeccion) btnNextLeccion.style.display = '';
+
             if (introduccionContent) introduccionContent.style.display = 'none';
             if (leccionContent) {
                 leccionContent.style.display = 'block';
                 leccionContent.innerHTML = contenidoLimpio;
             }
+
+            // Subir al tope automáticamente al cargar nueva lección
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             // Encontrar el índice de la lección actual
             if (window.leccionesOrdenadas) {
@@ -951,13 +1020,11 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
     }
 }
 
-async function marcarLeccionVista(moduloId, leccionId, skipRender = false) {
+async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
     const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
-        console.log('📝 Marcando lección como vista:', { moduloId, leccionId });
-
         const response = await fetch(`${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/marcar-vista`, {
             method: 'POST',
             headers: {
@@ -969,18 +1036,19 @@ async function marcarLeccionVista(moduloId, leccionId, skipRender = false) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Respuesta de marcar vista:', data);
 
             // Recargar progreso
             await cargarProgresoModulo(moduloId);
-            console.log('🔄 Progreso actualizado:', progresoModulo);
 
             // Solo re-renderizar el sidebar si no se pide omitir
             if (!skipRender && window.leccionesOrdenadas) {
                 renderizarLecciones(window.leccionesOrdenadas);
             }
 
-            mostrarMensajeExito('¡Lección completada!');
+            // Solo mostrar mensaje si es la primera vez que se completa
+            if (mostrarMensaje) {
+                mostrarMensajeExito('¡Lección completada!');
+            }
         } else {
             console.error('❌ Error marcando lección:', await response.text());
         }
@@ -997,7 +1065,12 @@ async function cargarEvaluacion(evaluacionId) {
     mostrarSpinner(true);
 
     try {
-        console.log('📝 Cargando evaluación para módulo:', moduloActual.id);
+        console.log('📝 Cargando evaluación para módulo:', moduloActual?.id);
+
+        if (!moduloActual?.id) {
+            console.error('No hay módulo actual');
+            return;
+        }
 
         const response = await fetch(`${apiUrl}/modulos/${moduloActual.id}/evaluacion`, {
             headers: {
@@ -1007,17 +1080,29 @@ async function cargarEvaluacion(evaluacionId) {
         });
 
         if (response.ok) {
-            const evaluacion = await response.json();
-            console.log('✅ Evaluación cargada:', evaluacion);
+            const json = await response.json();
+            console.log('✅ Evaluación cargada:', json);
 
-            // Mostrar interfaz de evaluación
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
+            // Ocultar el botón "Siguiente" en la sección de evaluación
+            const btnNext = document.getElementById('btnNext');
+            if (btnNext) btnNext.style.display = 'none';
 
             if (introduccionContent) introduccionContent.style.display = 'none';
             if (leccionContent) {
                 leccionContent.style.display = 'block';
-                leccionContent.innerHTML = renderizarEvaluacion(evaluacion);
+                leccionContent.innerHTML = renderizarEvaluacion(json);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Enlazar botón de iniciar evaluación
+                const btnIniciar = leccionContent.querySelector('#btn-iniciar-evaluacion');
+                if (btnIniciar && !btnIniciar.disabled) {
+                    btnIniciar.addEventListener('click', () => {
+                        const evalId = json.data?.evaluacion?.id;
+                        iniciarEvaluacion(evalId);
+                    });
+                }
             }
         } else {
             console.error('Error cargando evaluación:', response.status);
@@ -1032,64 +1117,172 @@ async function cargarEvaluacion(evaluacionId) {
     }
 }
 
-function renderizarEvaluacion(evaluacion) {
-    const evaluacionAprobada = progresoModulo?.evaluacion_aprobada || false;
+function renderizarEvaluacion(json) {
+    const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
+    const mascotaUrl = `${imagesBase}/gato_evaluacion.png`;
+
+    // Extraer datos del JSON de la API: { success, data: { evaluacion, estado_usuario } }
+    const data = json?.data || {};
+    const evaluacion = data.evaluacion || {};
+    const estadoUsuario = data.estado_usuario || {};
+
+    const evaluacionAprobada = estadoUsuario.ya_aprobo || progresoModulo?.evaluacion_aprobada || false;
+    const puedeIntentar = estadoUsuario.puede_intentar !== false;
+    const mensajeBloqueo = estadoUsuario.mensaje || '';
+    const intentosCompletados = estadoUsuario.intentos_completados || 0;
+    const intentosDisponibles = estadoUsuario.intentos_disponibles;
+    const mejorPorcentaje = estadoUsuario.mejor_porcentaje || 0;
+
+    const titulo = evaluacion.titulo || 'Evaluación';
+    const descripcion = evaluacion.descripcion || '';
+    const tiempoLimite = evaluacion.tiempo_limite || null;
+    const numeroPreguntas = evaluacion.numero_preguntas || null;
+    const puntajeMinimo = evaluacion.puntaje_minimo || null;
+    const maxIntentos = evaluacion.max_intentos || null;
+
+    // Descripción arriba del grid
+    let infoLines = '';
+    if (descripcion) {
+        infoLines += `<p class="eval-info-line eval-desc">${descripcion}</p>`;
+    }
+
+    // Grid de estadísticas con tarjetas visuales
+    let statsCards = '';
+    if (tiempoLimite) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-regular fa-clock"></i></span>
+                <span class="eval-stat-label">Duración</span>
+                <span class="eval-stat-value">${tiempoLimite} min</span>
+            </div>`;
+    }
+    if (numeroPreguntas) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-regular fa-circle-question"></i></span>
+                <span class="eval-stat-label">Preguntas</span>
+                <span class="eval-stat-value">${numeroPreguntas}</span>
+            </div>`;
+    }
+    if (puntajeMinimo) {
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-solid fa-star"></i></span>
+                <span class="eval-stat-label">Puntaje mínimo</span>
+                <span class="eval-stat-value">${puntajeMinimo}%</span>
+            </div>`;
+    }
+    if (maxIntentos) {
+        const disponibles = intentosDisponibles !== undefined ? intentosDisponibles : maxIntentos;
+        statsCards += `
+            <div class="eval-stat-card">
+                <span class="eval-stat-icon"><i class="fa-solid fa-rotate-right"></i></span>
+                <span class="eval-stat-label">Intentos</span>
+                <span class="eval-stat-value">${disponibles} / ${maxIntentos}</span>
+            </div>`;
+    }
+
+    if (statsCards) {
+        infoLines += `<div class="eval-stats-grid">${statsCards}</div>`;
+    }
+
+    infoLines += `
+        <div class="eval-nota-banner">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Al finalizar, obtendrás tu puntaje automáticamente.</span>
+        </div>`;
+
+    // Badge estado
+    let badgeHTML = '';
+    if (evaluacionAprobada) {
+        badgeHTML = `<div class="eval-badge eval-badge--aprobado">✓ ¡Ya aprobaste esta evaluación con ${mejorPorcentaje}%!</div>`;
+    } else if (intentosCompletados > 0) {
+        badgeHTML = `<div class="eval-badge eval-badge--intento">Mejor puntaje hasta ahora: <strong>${mejorPorcentaje}%</strong></div>`;
+    }
+
+    // Botón
+    let botonHTML = '';
+    if (evaluacionAprobada) {
+        botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--aprobado" id="btn-iniciar-evaluacion" disabled>✓ Evaluación aprobada</button>`;
+    } else if (!puedeIntentar) {
+        botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--bloqueado" id="btn-iniciar-evaluacion" disabled>🔒 ${mensajeBloqueo || 'No puedes intentar ahora'}</button>`;
+    } else if (estadoUsuario.tiene_intento_en_progreso) {
+        botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Continuar evaluación</button>`;
+    } else {
+        botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Realizar evaluación</button>`;
+    }
 
     return `
-        <div class="evaluacion-container">
-            <h2>${evaluacion.titulo || 'Evaluación Final'}</h2>
-            <p>${evaluacion.descripcion || 'Responde las siguientes preguntas'}</p>
-            <p><strong>Tiempo límite:</strong> ${evaluacion.tiempo_limite || 30} minutos</p>
-            <p><strong>Puntaje mínimo:</strong> ${evaluacion.puntaje_minimo || 70}%</p>
-            <p><strong>Número de preguntas:</strong> ${evaluacion.numero_preguntas || 10}</p>
-            
-            ${evaluacionAprobada ? `
-                <div style="margin-top: 20px; padding: 15px; background-color: #d4edda; border-radius: 8px; color: #155724;">
-                    <strong>✓ Evaluación ya aprobada</strong>
-                    <p>Ya has aprobado esta evaluación. Puedes ver tu certificado en la sección de logros.</p>
-                </div>
-            ` : ''}
-            
-            <div style="margin-top: 30px;">
-                <button class="btn-start-evaluation" onclick="iniciarEvaluacion(${evaluacion.id})" ${evaluacionAprobada ? 'disabled' : ''}>
-                    ${evaluacionAprobada ? 'Ya aprobada' : 'Comenzar Evaluación'}
-                </button>
+        <div class="evaluacion-vista">
+            <div class="evaluacion-header">
+                <h2 class="evaluacion-titulo">${titulo}</h2>
             </div>
-        </div>
-    `;
+            <div class="evaluacion-body">
+                <div class="evaluacion-info">
+                    ${infoLines}
+                    ${badgeHTML}
+                </div>
+                <div class="evaluacion-mascota" style="margin-left: 48px;">
+                    <img src="${mascotaUrl}" alt="Mascota evaluación" class="eval-mascota-img">
+                </div>
+            </div>
+            <div class="eval-boton-wrap">
+                ${botonHTML}
+            </div>
+        </div>`;
 }
 
 window.iniciarEvaluacion = async function (evaluacionId) {
-    console.log('Iniciar evaluación:', evaluacionId);
-    // Aquí iría la lógica para iniciar la evaluación
-    mostrarMensajeExito('Función de evaluación en desarrollo');
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
+    if (!moduloActual?.id) {
+        mostrarMensajeBloqueado('No se pudo identificar el módulo');
+        return;
+    }
+
+    mostrarSpinner(true);
+    try {
+        const response = await fetch(`${apiUrl}/modulos/${moduloActual.id}/evaluacion/iniciar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const json = await response.json();
+
+        if (response.ok && json.success) {
+            console.log('Evaluación iniciada:', json.data);
+            mostrarMensajeExito('Evaluación iniciada correctamente');
+            // TODO: renderizar preguntas con json.data.preguntas
+        } else {
+            const msg = json.message || 'No se pudo iniciar la evaluación';
+            mostrarMensajeBloqueado(msg);
+        }
+    } catch (error) {
+        console.error('Error iniciando evaluación:', error);
+        mostrarMensajeBloqueado('Error de conexión al intentar iniciar la evaluación');
+    } finally {
+        mostrarSpinner(false);
+    }
 };
+
 
 function mostrarIntroduccion() {
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
 
+    // Mostrar el botón "Siguiente" al volver a la introducción
+    const btnNext = document.getElementById('btnNext');
+    if (btnNext) btnNext.style.display = '';
+
+    // Solo mostrar/ocultar — NO tocar el contenido interno que ya está bien renderizado
     if (introduccionContent) {
         introduccionContent.style.display = 'block';
-
-        // Actualizar la introducción con la descripción larga del módulo si está disponible
-        if (moduloActual && moduloActual.descripcion_larga) {
-            const introHeader = introduccionContent.querySelector('h2');
-            const paragraphs = introduccionContent.querySelectorAll('p');
-
-            if (paragraphs.length > 0) {
-                paragraphs[0].innerHTML = moduloActual.descripcion_larga;
-                for (let i = 1; i < paragraphs.length; i++) {
-                    paragraphs[i].style.display = 'none';
-                }
-            } else {
-                const newParagraph = document.createElement('p');
-                newParagraph.innerHTML = moduloActual.descripcion_larga;
-                introHeader.insertAdjacentElement('afterend', newParagraph);
-            }
-        }
     }
-
     if (leccionContent) {
         leccionContent.style.display = 'none';
     }
@@ -1353,6 +1546,11 @@ async function cerrarSesion(e) {
     const token = localStorage.getItem('auth_token');
     const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
 
+    // Obtener URLs desde data-attributes (soporta subdirectorios)
+    const mainEl = document.querySelector('main[data-clear-session-url]');
+    const clearSessionUrl = mainEl?.dataset.clearSessionUrl || '/api/clear-session-token';
+    const loginUrl = mainEl?.dataset.loginUrl || '/login';
+
     try {
         await fetch(`${apiUrl}/logout`, {
             method: 'POST',
@@ -1374,20 +1572,22 @@ async function cerrarSesion(e) {
 
         // Limpiar sesión en el servidor
         try {
-            await fetch('/api/clear-session-token', {
+            await fetch(clearSessionUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 }
             });
         } catch (error) {
             console.error('Error limpiando sesión:', error);
         }
 
-        // Usar la función de redirección consistente
-        redirigirALogin();
+        // Redirigir al login
+        window.location.href = loginUrl;
     }
 }
+
 
 function configurarBotonSiguiente() {
     const btnNext = document.getElementById('btnNext');
@@ -1417,8 +1617,9 @@ function configurarBotonSiguiente() {
                 leccionActualIndex = 0;
                 const primeraLeccion = lecciones[0];
 
-                // Marcar la primera lección como "desbloqueada" actualizando progreso
-                await marcarLeccionVista(moduloActual.id, primeraLeccion.id, true);
+                // Verificar si la primera lección ya estaba completada
+                const primeraYaCompletada = (progresoModulo?.lecciones_vistas || 0) > 0;
+                await marcarLeccionVista(moduloActual.id, primeraLeccion.id, true, !primeraYaCompletada);
 
                 // Cargar la primera lección
                 await cargarLeccion(moduloActual.slug, primeraLeccion.slug);
@@ -1432,8 +1633,9 @@ function configurarBotonSiguiente() {
                 const leccionActual = lecciones[leccionActualIndex];
 
                 if (leccionActual) {
-                    // Marcar lección actual como vista
-                    await marcarLeccionVista(moduloActual.id, leccionActual.id, true);
+                    // Verificar si ya estaba completada ANTES de llamar a la API
+                    const yaCompletada = leccionActualIndex < (progresoModulo?.lecciones_vistas || 0);
+                    await marcarLeccionVista(moduloActual.id, leccionActual.id, true, !yaCompletada);
                 }
 
                 const siguienteIndex = leccionActualIndex + 1;
@@ -1559,8 +1761,14 @@ function manejarNavegacion() {
     const originalFetch = window.fetch;
     let redirigiendo = false;
 
+    // Rutas locales de Laravel que NO deben recibir el Bearer token
+    const rutasLocales = ['/api/set-session-token', '/api/clear-session-token'];
+
     window.fetch = async function (url, options = {}) {
-        if (url.includes('localhost:8001') || url.includes('/api/')) {
+        const urlString = url.toString();
+        const esRutaLocal = rutasLocales.some(r => urlString.includes(r));
+
+        if (!esRutaLocal && (urlString.includes('localhost:8001') || urlString.includes('/api/'))) {
             const token = localStorage.getItem('auth_token');
 
             if (token) {
@@ -1574,20 +1782,14 @@ function manejarNavegacion() {
                 const response = await originalFetch(url, options);
 
                 if (response.status === 401 && !redirigiendo) {
-                    const urlString = url.toString();
                     const peticionesCriticas = ['/me', '/logout'];
                     const esCritica = peticionesCriticas.some(p => urlString.includes(p));
 
                     if (esCritica) {
                         redirigiendo = true;
-                        // Limpiar localStorage parcialmente (mantener user_avatar para persistencia)
-                        localStorage.removeItem('auth_token');
-                        localStorage.removeItem('user');
-                        localStorage.removeItem('user_nombre');
-                        localStorage.removeItem('user_apellido');
-                        localStorage.removeItem('user_email');
-
                         mostrarMensajeSesionExpirada();
+                        // redirigirALogin() es async y limpia sesión Laravel automáticamente
+                        redirigirALogin('?expired=true');
                     }
                 }
 
@@ -1601,6 +1803,7 @@ function manejarNavegacion() {
         return originalFetch(url, options);
     };
 })();
+
 
 function iniciarVerificacionPeriodica() {
     setInterval(() => {
