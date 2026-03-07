@@ -232,7 +232,7 @@
     <div class="eval-modal-header">
       <div class="eval-modal-info">
         <div class="eval-progress-bar"><div class="eval-progress-fill" id="eval-modal-progress" style="width:0%"></div></div>
-        <h2 class="eval-modal-title" id="eval-modal-titulo">Evaluación</h2>
+        <h2 class="eval-modal-title" id="eval-modal-titulo" style="text-transform: uppercase;">Evaluación</h2>
         <span id="eval-modal-counter">Pregunta 1 de ?</span>
       </div>
       <div class="eval-time-box">
