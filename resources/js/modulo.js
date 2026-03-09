@@ -1239,18 +1239,24 @@ async function cargarCertificado(moduloId) {
             // Enlazar botón de descargar
             const btnDescargar = leccionContent.querySelector('#btn-descargar-certificado');
             if (btnDescargar && cert) {
-                btnDescargar.addEventListener('click', () => {
-                    window.open(cert.urls.descargar, '_blank');
+                // IMPORTANTE: Remover cualquier onclick anterior
+                btnDescargar.removeAttribute('onclick');
+                
+                // Agregar nuevo event listener que usa nuestra función
+                btnDescargar.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    descargarCertificado(cert.codigo_certificado);
                 });
             }
 
-            // Enlazar botón de ver
-            const btnVer = leccionContent.querySelector('#btn-ver-certificado');
-            if (btnVer && cert) {
-                btnVer.addEventListener('click', () => {
-                    window.open(cert.urls.ver, '_blank');
-                });
-            }
+        // Enlazar botón de ver
+        const btnVer = leccionContent.querySelector('#btn-ver-certificado');
+        if (btnVer && cert) {
+            btnVer.addEventListener('click', (e) => {
+                e.preventDefault();
+                verCertificado(cert.codigo_certificado);
+            });
+        }
         }
 
     } catch (error) {
@@ -1358,6 +1364,102 @@ async function generarCertificado(moduloId) {
         mostrarMensajeBloqueado('Error de conexión al generar el certificado.');
         const btnGenerar = document.getElementById('btn-generar-certificado');
         if (btnGenerar) { btnGenerar.disabled = false; btnGenerar.innerHTML = '<i class="fa-solid fa-certificate"></i> Generar mi certificado'; }
+    }
+}
+
+
+async function descargarCertificado(codigo) {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+        redirigirALogin();
+        return;
+    }
+    
+    try {
+        mostrarSpinner(true);
+        
+        const response = await fetch(`${apiUrl}/certificaciones/${codigo}/descargar`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'image/png',
+            }
+        });
+        
+        if (response.status === 401) {
+            mostrarMensajeSesionExpirada();
+            return;
+        }
+        
+        if (response.status === 403) {
+            mostrarMensajeBloqueado('No tienes permiso para descargar este certificado');
+            return;
+        }
+        
+        if (!response.ok) {
+            throw new Error('Error al descargar');
+        }
+        
+        // Convertir la respuesta a blob
+        const blob = await response.blob();
+        
+        // Crear URL temporal y descargar
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `certificado-${codigo}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        mostrarMensajeExito('✅ Descarga completada');
+        
+    } catch (error) {
+        console.error('Error en descarga:', error);
+        mostrarMensajeBloqueado('Error al descargar el certificado');
+    } finally {
+        mostrarSpinner(false);
+    }
+}
+
+
+async function verCertificado(codigo) {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+    
+    // Abrir en nueva pestaña con fetch no es práctico, 
+    // así que usamos una ventana nueva con el token en la URL
+    const ventana = window.open('', '_blank');
+    
+    try {
+        const response = await fetch(`${apiUrl}/certificaciones/${codigo}/ver`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Error');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        // Escribir la imagen en la nueva ventana
+        ventana.document.write(`
+            <html>
+                <head><title>Certificado</title></head>
+                <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
+                    <img src="${url}" style="max-width:100%; max-height:100vh; object-fit:contain;">
+                </body>
+            </html>
+        `);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        ventana.close();
+        mostrarMensajeBloqueado('Error al ver el certificado');
     }
 }
 
@@ -2502,7 +2604,7 @@ function _mostrarResultadoModal(data) {
                         ${aprobado ? `
                             <p class="eval-result-score-line eval-result-score-title">¡Felicidades!</p>
                             <p class="eval-result-score-line">Has respondido correctamente <strong>${correctas} de ${totales}</strong> preguntas.</p>
-                            <p class="eval-result-score-line">¡Has superado la evaluación con éxito!</p>
+                            <p class="eval-result-score-line">Has superado la evaluación con éxito</p>
                         ` : `
                             <p class="eval-result-score-line eval-result-score-title">¡Buen intento!</p>
                             <p class="eval-result-score-line">Has respondido correctamente <strong>${correctas} de ${totales}</strong> preguntas.</p>
