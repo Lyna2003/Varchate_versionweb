@@ -420,7 +420,7 @@ body {
      transform: scale(1);
      display: flex;
  }
-.dark-mode {
+html.dark-mode {
   background: #2C2C3E;
   color: #CCCCCC;
 }
