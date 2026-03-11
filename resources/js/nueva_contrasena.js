@@ -9,6 +9,25 @@ function getUrlParams() {
     };
 }
 
+// nueva_contrasena.js
+
+document.querySelectorAll('.toggle-pass').forEach(icon => {
+    icon.addEventListener('click', () => {
+        const targetId = icon.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    });
+});
+
 // Función para mostrar modal (REUTILIZABLE)
 function showModal(message, type = 'info', redirectUrl = null) {
     const existingModal = document.querySelector('.custom-modal');
@@ -171,11 +190,11 @@ style.textContent = `
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    
+
     .custom-modal.show {
         opacity: 1;
     }
-    
+
     .modal-content {
         background: white;
         padding: 30px;
@@ -187,23 +206,23 @@ style.textContent = `
         transform: scale(0.7);
         transition: transform 0.3s ease;
     }
-    
+
     .custom-modal.show .modal-content {
         transform: scale(1);
     }
-    
+
     .modal-icon {
         font-size: 48px;
         margin-bottom: 20px;
     }
-    
+
     .modal-message {
         font-size: 18px;
         margin-bottom: 25px;
         color: #333;
         line-height: 1.5;
     }
-    
+
     .modal-button {
         background: #007bff;
         color: white;
@@ -214,32 +233,32 @@ style.textContent = `
         cursor: pointer;
         transition: background 0.3s;
     }
-    
+
     .modal-button:hover {
         background: #0056b3;
     }
-    
+
     .modal-success .modal-button {
         background: #28a745;
     }
-    
+
     .modal-success .modal-button:hover {
         background: #218838;
     }
-    
+
     .modal-error .modal-button {
         background: #dc3545;
     }
-    
+
     .modal-error .modal-button:hover {
         background: #c82333;
     }
-    
+
     .modal-warning .modal-button {
         background: #ffc107;
         color: #333;
     }
-    
+
     .modal-warning .modal-button:hover {
         background: #e0a800;
     }

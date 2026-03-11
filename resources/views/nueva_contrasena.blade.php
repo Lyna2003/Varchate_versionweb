@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nueva Contraseña - Varchate</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   @vite('resources/css/nueva_contrasena.css')
 </head>
 <body>
@@ -23,14 +24,23 @@
         
         <!-- Formulario corregido con IDs correctos -->
         <form id="resetForm">
+
+        <div style="position: relative;">
           <input type="password" name="password" class="input-password" id="password" placeholder="Contraseña" required>
-              <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="password">
-              </i>
-              <input type="password" name="password" class="input-password" id="password_confirmation" placeholder="Contraseña" required>
-              <i class="fa-solid fa-eye-slash toggle-pass" style="font-size:14px;" data-target="password">
-              </i>
-          <button type="submit">Guardar</button>
-        </form>
+          <i class="fa-solid fa-eye-slash toggle-pass" 
+             style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:14px;" 
+             data-target="password"></i>
+        </div>    
+
+        <div style="position: relative;">
+          <input type="password" name="password" class="input-password" id="password_confirmation" placeholder="Confirmar Contraseña" required>
+          <i class="fa-solid fa-eye-slash toggle-pass" 
+             style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:14px;" 
+               data-target="password_confirmation"></i>
+        </div>
+
+        <button type="submit">Guardar</button>
+      </form>
       </div>
     </div>
   </div>

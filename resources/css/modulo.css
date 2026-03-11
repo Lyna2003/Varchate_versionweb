@@ -75,7 +75,7 @@
 
   }
 
-    .ranking {
+  .ranking {
     margin-right: 10px;
     position: relative;
     top: 11px;
@@ -592,7 +592,7 @@
 
   /* Efectos hover solo si el dispositivo soporta hover */
 
- @media (hover: hover) {
+  @media (hover: hover) {
 
     .top-buttons button:hover {
       background-color: #007BFF;
@@ -693,36 +693,39 @@
     }
 
     body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* Prevenir scroll horizontal */
-    width: 100%;
-    max-width: 100vw;
-}
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      /* Prevenir scroll horizontal */
+      width: 100%;
+      max-width: 100vw;
+    }
 
-.container {
-    margin-top: 169px;
-    width: 100%;
-    max-width: 100vw;
-    box-sizing: border-box;
-    padding: 15px 12px; /* Agregar padding lateral */
-}
+    .container {
+      margin-top: 169px;
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
+      padding: 15px 12px;
+      /* Agregar padding lateral */
+    }
 
     /* Header */
     .mobile-header {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: #0099FF;
-    padding: 8px 12px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    height: 99px;
-    width: 100%; /* Altura exacta del header */
-    box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #0099FF;
+      padding: 8px 12px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 99px;
+      width: 100%;
+      /* Altura exacta del header */
+      box-sizing: border-box;
     }
 
     .mobile-top {
@@ -929,19 +932,20 @@
       scrollbar-width: none;
     }
 
-  .top-button {
+    .top-button {
       white-space: nowrap;
       flex-shrink: 0;
-      position: relative; /* Esto es importante para que funcione el scroll */
-  }
+      position: relative;
+      /* Esto es importante para que funcione el scroll */
+    }
 
-  
 
-  .top-button.active {
+
+    .top-button.active {
       background-color: #2a73ff;
       color: white;
       box-shadow: 0 2px 5px rgba(42, 115, 255, 0.3);
-  }
+    }
 
 
     .top-buttons::-webkit-scrollbar {
@@ -949,7 +953,7 @@
       /* ocultar scrollbar en Chrome/Safari */
     }
 
-    .container{
+    .container {
       margin-top: 169px;
     }
 
@@ -1030,71 +1034,71 @@
     }
 
     /* Footer */
- .footer-container {
-        width: 413px;
-        background-image: url("../images/ola-footer.png");
-        background-size: contain;
-        background-position: center 166px;
-        margin: -84px 0 0px -2px;
+    .footer-container {
+      width: 413px;
+      background-image: url("../images/ola-footer.png");
+      background-size: contain;
+      background-position: center 166px;
+      margin: -84px 0 0px -2px;
     }
 
 
-  .custom-footer {
-    padding: 20px;
-    text-align: center;
-  }
+    .custom-footer {
+      padding: 20px;
+      text-align: center;
+    }
 
-  .footer-top {
-    flex-direction: column;
-    margin: 0;
-    gap: 30px;
-    align-items: center;
-  }
+    .footer-top {
+      flex-direction: column;
+      margin: 0;
+      gap: 30px;
+      align-items: center;
+    }
 
-  .footer-left {
-    margin: 0;
-    justify-content: center;
-    text-align: center;
-    flex-direction: column;
-  }
+    .footer-left {
+      margin: 0;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+    }
 
-  .footer-logo {
-    width: 180px;
+    .footer-logo {
+      width: 180px;
 
-  }
+    }
 
-  .footer-welcome h2 {
-    font-size: 24px;
-  }
+    .footer-welcome h2 {
+      font-size: 24px;
+    }
 
-  .footer-welcome p {
-    max-width: 100%;
-    font-size: 14px;
-  }
+    .footer-welcome p {
+      max-width: 100%;
+      font-size: 14px;
+    }
 
-  .footer-right {
-    margin: 37px 0 72px 4px;
-    gap: 20px;
-    justify-content: center;
-    text-align: center;
-    flex-direction: column;
-  }
+    .footer-right {
+      margin: 37px 0 72px 4px;
+      gap: 20px;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+    }
 
-  .footer-section h3 {
-    font-size: 18px;
-  }
+    .footer-section h3 {
+      font-size: 18px;
+    }
 
-  .footer-section a {
-    font-size: 13px;
-  }
+    .footer-section a {
+      font-size: 13px;
+    }
 
-  .footer-bottom p {
-    font-size: 14px;
-  }
+    .footer-bottom p {
+      font-size: 14px;
+    }
 
-  .footer-social a img {
-    width: 24px;
-    margin: 0 6px;
-  }
+    .footer-social a img {
+      width: 24px;
+      margin: 0 6px;
+    }
 
   }
