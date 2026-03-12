@@ -1901,6 +1901,8 @@
 /* Reset para contrarrestar los <style> que vienen en el HTML de la lección */
 .ejercicios-leccion-seccion * {
   box-sizing: border-box !important;
+}
+.ejercicios-leccion-seccion *:not(i) {
   font-family: 'Barlow Semi Condensed', sans-serif !important;
 }
 
