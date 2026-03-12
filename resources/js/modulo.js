@@ -292,6 +292,7 @@ async function cargarDatosModulo(moduleSlug) {
             // --- Resetear vista general antes de cargar nuevo contenido ---
             leccionActualIndex = -1;
             document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('bienvenidaContent')?.remove();
             
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
@@ -2118,38 +2119,51 @@ function mostrarSpinner(mostrar) {
 
 function mostrarBienvenidaModulos() {
     const contentSection = document.getElementById('contentSection');
+    const introduccionContent = document.getElementById('introduccionContent');
+    const leccionContent = document.getElementById('leccionContent');
+    const btnNext = document.getElementById('btnNext');
+
+    if (introduccionContent) introduccionContent.style.display = 'none';
+    if (leccionContent) leccionContent.style.display = 'none';
+    if (btnNext) btnNext.style.display = 'none';
+
+    document.getElementById('bienvenidaContent')?.remove();
+
     const nombre = localStorage.getItem('user_nombre') || 'Usuario';
     if (contentSection) {
-        contentSection.innerHTML = `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 60px 40px;
-                text-align: center;
-                height: 100%;
-            ">
-                <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
-                <h2 style="
-                    font-size: 28px;
-                    font-weight: 700;
-                    color: #1a1a2e;
-                    margin-bottom: 12px;
-                ">¡Hola, ${nombre}!</h2>
-                <p style="
-                    font-size: 18px;
-                    color: #555;
-                    margin-bottom: 8px;
-                ">Bienvenido a Varchate.</p>
-                <p style="
-                    font-size: 16px;
-                    color: #888;
-                    max-width: 400px;
-                    line-height: 1.6;
-                ">Elige un módulo del menú para empezar a aprender.</p>
-            </div>
+        const bienvenidaDiv = document.createElement('div');
+        bienvenidaDiv.id = 'bienvenidaContent';
+        bienvenidaDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+            text-align: center;
+            height: 100%;
         `;
+        bienvenidaDiv.innerHTML = `
+            <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
+            <h2 style="
+                font-size: 28px;
+                font-weight: 700;
+                color: #1a1a2e;
+                margin-bottom: 12px;
+            ">¡Hola, ${nombre}!</h2>
+            <p style="
+                font-size: 18px;
+                color: #555;
+                margin-bottom: 8px;
+            ">Bienvenido a Varchate.</p>
+            <p style="
+                font-size: 16px;
+                color: #888;
+                max-width: 400px;
+                line-height: 1.6;
+            ">Elige un módulo del menú para empezar a aprender.</p>
+        `;
+        // Insertamos al principio para que quede por encima de los contenedores ocultos
+        contentSection.insertBefore(bienvenidaDiv, contentSection.firstChild);
     }
 }
 
