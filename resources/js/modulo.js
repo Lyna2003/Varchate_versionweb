@@ -240,18 +240,33 @@ async function cargarDatosModulo(moduleSlug) {
     mostrarSpinner(true);
 
     try {
-        // 1. Cargar todos los módulos para los botones superiores
-        const modulosResponse = await fetch(`${apiUrl}/modulos`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        // 1. Cargar todos los módulos para los botones superiores SOLO si no se han cargado
+        if (modulosGlobal.length === 0) {
+            const modulosResponse = await fetch(`${apiUrl}/modulos`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
 
-        if (modulosResponse.ok) {
-            modulosGlobal = await modulosResponse.json();
-            console.log('Módulos cargados:', modulosGlobal);
-            renderizarBotonesModulos(modulosGlobal);
+            if (modulosResponse.ok) {
+                modulosGlobal = await modulosResponse.json();
+                console.log('Módulos cargados:', modulosGlobal);
+                renderizarBotonesModulos(modulosGlobal);
+            }
+        } else {
+            // Si ya están cargados, solo actualizamos el botón activo visualmente
+            const currentSlug = moduleSlug || obtenerSlugDeURL();
+            const container = document.getElementById('topButtonsContainer');
+            if (container) {
+                container.querySelectorAll('button').forEach(btn => {
+                    if (btn.dataset.moduloSlug === currentSlug) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
         }
 
         // 2. Cargar el módulo específico por slug (solo si hay slug)
@@ -273,6 +288,24 @@ async function cargarDatosModulo(moduleSlug) {
         if (moduloResponse.ok) {
             moduloActual = await moduloResponse.json();
             console.log('Módulo actual:', moduloActual);
+
+            // --- Resetear vista general antes de cargar nuevo contenido ---
+            leccionActualIndex = -1;
+            document.getElementById('ejerciciosSeccion')?.remove();
+            
+            const introduccionContent = document.getElementById('introduccionContent');
+            const leccionContent = document.getElementById('leccionContent');
+            const btnNext = document.getElementById('btnNext');
+            
+            if (leccionContent) {
+                leccionContent.style.display = 'none';
+                leccionContent.innerHTML = ''; // Limpiar lección anterior
+            }
+            if (introduccionContent) {
+                introduccionContent.style.display = 'block';
+            }
+            if (btnNext) btnNext.style.display = 'none'; // Se muestra en MostrarIntroduccion() o lecciones si es necesario
+            // ----------------------------------------------------------------
 
             // Actualizar título del módulo en la barra de progreso con el nombre corto
             actualizarTituloModulo(moduloActual);
@@ -519,13 +552,31 @@ function renderizarBotonesModulos(modulos) {
         }
 
         button.addEventListener('click', () => {
+            // Actualizar estado visual inmediatamente
+            container.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
             const baseUrl = document.querySelector('main.container')?.dataset.moduloBaseUrl || '/modulo';
-            window.location.href = `${baseUrl}/${modulo.slug}`;
+            const newUrl = `${baseUrl}/${modulo.slug}`;
+            
+            // Usar pushState para cambiar la URL sin recargar la página
+            window.history.pushState({ moduleSlug: modulo.slug }, '', newUrl);
+            
+            // Cargar los datos del nuevo módulo
+            cargarDatosModulo(modulo.slug);
         });
 
         container.appendChild(button);
     });
 }
+
+// Escuchar el evento popstate para manejar los botones Atrás/Adelante del navegador
+window.addEventListener('popstate', (event) => {
+    // Si hay un estado guardado, o podemos extraer el slug de la URL, lo cargamos
+    const slug = event.state?.moduleSlug || obtenerSlugDeURL();
+    console.log('Navegación popstate a:', slug);
+    cargarDatosModulo(slug);
+});
 
 function renderizarLecciones(lecciones) {
     const sidebar = document.getElementById('sidebar');
@@ -2132,6 +2183,9 @@ function configurarProgreso() {
 }
 
 function configurarHamburguesa() {
+    if (window._hamburguesa_btn_ok) return;
+    window._hamburguesa_btn_ok = true;
+
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -2150,6 +2204,9 @@ function configurarHamburguesa() {
 }
 
 function configurarMenusUsuario() {
+    if (window._user_menus_ok) return;
+    window._user_menus_ok = true;
+
     // Menú desktop
     const profilePic = document.getElementById('profile-pic');
     const userMenu = document.getElementById('user-menu');
@@ -2233,6 +2290,9 @@ function configurarMenusUsuario() {
 }
 
 function configurarLogout() {
+    if (window._logout_btn_ok) return;
+    window._logout_btn_ok = true;
+
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 
