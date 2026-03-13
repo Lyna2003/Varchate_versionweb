@@ -11,6 +11,7 @@ const modal = document.getElementById("modalAvatar");
 const abrirModalBtn = document.querySelector(".editar-foto");
 const cancelarBtn = modal.querySelector(".btn-cancel");
 const guardarBtn = modal.querySelector(".btn-save");
+let _avatarPendiente = null; // null = sin cambios, 'default' = eliminar, string numérico = nuevo avatar
 
 abrirModalBtn.addEventListener("click", () => {
   modal.classList.add("show");
@@ -28,7 +29,10 @@ function cerrarModal() {
 cancelarBtn.addEventListener("click", cerrarModal);
 guardarBtn.addEventListener("click", () => {
   const seleccionado = modal.querySelector(".avatar-option.selected img");
-  if (seleccionado) showProfilePic(document.querySelector(".perfil-imagen img"), seleccionado.src);
+  if (seleccionado) {
+    showProfilePic(document.querySelector(".perfil-imagen img"), seleccionado.src);
+    _avatarPendiente = seleccionado.closest('.avatar-option').dataset.id;
+  }
   cerrarModal();
 });
 
@@ -66,13 +70,10 @@ function cerrarModalEliminar() {
 }
 cancelarEliminarBtn.addEventListener("click", cerrarModalEliminar);
 confirmarEliminarBtn.addEventListener("click", () => {
-  // Obtener el valor por defecto desde el atributo data-default si existe
   const perfilImgEl = document.getElementById('perfil-imagen');
-  const defaultSrc = (perfilImgEl && perfilImgEl.dataset && perfilImgEl.dataset.default) ? perfilImgEl.dataset.default : '/avatars/default.png';
+  const defaultSrc = (perfilImgEl?.dataset?.default) || '/avatars/default.png';
   showProfilePic(perfilImg, defaultSrc);
-  // Actualizar localStorage para que otras vistas usen el avatar por defecto
-  try { localStorage.setItem('user_avatar', defaultSrc); } catch (e) { /* noop */ }
-  // Limpiar selección en el modal de avatares si está abierto
+  _avatarPendiente = 'default';
   opciones.forEach(o => o.classList.remove('selected'));
   cerrarModalEliminar();
 });
@@ -424,19 +425,20 @@ perfilForm.addEventListener("submit", async (e) => {
   try {
 
     const usuario = document.getElementById("usuario").value;
-    const avatarSeleccionado = modal.querySelector(".avatar-option.selected");
-    const avatar_id = avatarSeleccionado ? avatarSeleccionado.dataset.id : null;
 
+    const profileData = {};
+    if (usuario) {
+      profileData.nombre = usuario;
+      profileData.name   = usuario;
+    }
 
-    if (usuario || avatar_id) {
-      const profileData = {};
-      if (usuario) {
-        // Enviar ambos por compatibilidad: 'nombre' (esperado por validación) y 'name'
-        profileData.nombre = usuario;
-        profileData.name = usuario;
-      }
-      if (avatar_id) profileData.avatar_id = parseInt(avatar_id);
+    if (_avatarPendiente === 'default') {
+      profileData.avatar_id = null;
+    } else if (_avatarPendiente !== null) {
+      profileData.avatar_id = parseInt(_avatarPendiente);
+    }
 
+    if (Object.keys(profileData).length > 0) {
       const res = await fetch(API_UPDATE_PROFILE, {
         method: "PUT",
         headers: {
@@ -449,9 +451,8 @@ perfilForm.addEventListener("submit", async (e) => {
 
       if (!res.ok) {
         const errObj = await parseJsonSafe(res);
-        let serverError = errObj && errObj.message ? errObj.message : (await res.text().catch(() => null)) || `HTTP ${res.status}`;
-        // Si Laravel devuelve errores de validación, convertirlos a texto legible
-        if (errObj && errObj.errors) {
+        let serverError = errObj?.message || `HTTP ${res.status}`;
+        if (errObj?.errors) {
           const messages = [];
           Object.values(errObj.errors).forEach(arr => { if (Array.isArray(arr)) messages.push(...arr); });
           if (messages.length) serverError = messages.join('\n');
@@ -459,49 +460,30 @@ perfilForm.addEventListener("submit", async (e) => {
         if (res.status === 401) {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('token');
-          // El mensaje se mostrará en el catch global para evitar duplicados
-          // window.location.href = '/login';
         }
-        throw new Error(serverError || `Error al actualizar perfil (status ${res.status})`);
+        throw new Error(serverError);
       }
 
-      if (avatarSeleccionado) {
-        const selectedSrc = avatarSeleccionado.querySelector("img").src;
-        perfilImg.src = selectedSrc;
-        // Guardar en localStorage para que modulo.js lo muestre de inmediato
-        try {
-          localStorage.setItem('user_avatar', selectedSrc);
-          // También actualizar la clave por-usuario que modulo.js prioriza
-          const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-          const uid = storedUser && (storedUser.id || storedUser.user_id);
-          if (uid) localStorage.setItem(`user_avatar_for_${uid}`, selectedSrc);
-        } catch (e) { /* noop */ }
-      }
-      // Intentar parsear respuesta con usuario actualizado y guardar datos en localStorage
       const updatedUser = await parseJsonSafe(res);
-      try {
-        if (updatedUser && typeof updatedUser === 'object') {
-          // Guardar el objeto de usuario actualizado
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-
-          // Guardar nombre(s) para mostrar en el módulo
-          const nombreCompleto = updatedUser.nombre || updatedUser.name || '';
-          const partes = nombreCompleto.split(' ');
-          localStorage.setItem('user_nombre', partes[0] || 'Usuario');
-          localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
-
-          // Preferir la ruta de avatar que venga del servidor, si no, usar la seleccionada en UI
-          const avatarFromServer = updatedUser.avatar;
-          if (avatarFromServer && avatarFromServer !== '') {
-            localStorage.setItem('user_avatar', avatarFromServer);
-          } else if (avatarSeleccionado) {
-            // Normalizar a ruta relativa si es necesario
-            try { localStorage.setItem('user_avatar', avatarSeleccionado.querySelector('img').src); } catch (e) { /* noop */ }
-          }
+      if (updatedUser) {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        const nombreCompleto = updatedUser.nombre || updatedUser.name || '';
+        const partes = nombreCompleto.split(' ');
+        localStorage.setItem('user_nombre', partes[0] || 'Usuario');
+        localStorage.setItem('user_apellido', partes.slice(1).join(' ') || '');
+        const avatarVal = updatedUser.avatar || null;
+        if (avatarVal) {
+          localStorage.setItem('user_avatar', avatarVal);
+          if (updatedUser.id) localStorage.setItem(`user_avatar_for_${updatedUser.id}`, avatarVal);
+        } else {
+          // Avatar eliminado: limpiar localStorage
+          localStorage.removeItem('user_avatar');
+          if (updatedUser.id) localStorage.removeItem(`user_avatar_for_${updatedUser.id}`);
         }
-      } catch (e) { /* noop: no bloquear flujo por errores de localStorage */ }
-      // Marcar que al menos hubo una actualización del perfil (para redirigir más tarde)
+      }
       _perfilGuardado = true;
+      // Resetear estado de avatar pendiente tras guardar
+      _avatarPendiente = null;
     }
 
 

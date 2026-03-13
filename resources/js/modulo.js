@@ -93,22 +93,29 @@ async function verificarTokenEnSegundoPlano(token) {
 
                 // Sincronizar avatar desde avatar_id de la API (fuente de verdad: DB)
                 const avatarId = userData.avatar_id;
+                const avatarsBase = document.querySelector('main.container')?.dataset.avatarsUrl || '/avatars';
+
+                let avatarUrl;
                 if (avatarId) {
-                    const avatarsBase = document.querySelector('main.container')?.dataset.avatarsUrl || '/avatars';
                     const num = parseInt(avatarId);
                     const filename = isNaN(num)
                         ? 'default.png'
                         : `avatar_${String(num).padStart(2, '0')}.png`;
-                    const avatarUrl = `${avatarsBase}/${filename}`;
-
-                    // Actualizar ambas claves para que cargarDatosUsuario() siempre lea el valor correcto
-                    localStorage.setItem('user_avatar', avatarUrl);
-                    if (userData.id) localStorage.setItem(`user_avatar_for_${userData.id}`, avatarUrl);
-
-                    // Actualizar el DOM directamente
-                    showProfilePic(document.getElementById('profile-pic'), avatarUrl);
-                    showProfilePic(document.getElementById('profile-pic-mobile'), avatarUrl);
+                    avatarUrl = `${avatarsBase}/${filename}`;
+                } else {
+                    // Sin avatar (null) → usar default
+                    avatarUrl = `${avatarsBase}/default.png`;
                 }
+
+                // Siempre actualizar localStorage con el valor correcto (incluso si es default)
+                localStorage.setItem('user_avatar', avatarUrl);
+                if (userData.id) {
+                    localStorage.setItem(`user_avatar_for_${userData.id}`, avatarUrl);
+                }
+
+                // Actualizar el DOM directamente
+                showProfilePic(document.getElementById('profile-pic'), avatarUrl);
+                showProfilePic(document.getElementById('profile-pic-mobile'), avatarUrl);
 
                 cargarDatosUsuario();
             }
