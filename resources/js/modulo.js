@@ -69,7 +69,8 @@ function obtenerSlugDeURL() {
 }
 
 async function verificarTokenEnSegundoPlano(token) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
 
     try {
         const response = await fetch(`${apiUrl}/me`, {
@@ -234,7 +235,8 @@ let evaluacionData = null; // descripción y datos de la evaluación precargados
 let leccionActualIndex = -1; // -1 = Introducción, 0+ = Lecciones
 
 async function cargarDatosModulo(moduleSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -379,10 +381,13 @@ function actualizarIntroduccionModulo() {
     if (lessonsContainer) {
         introduccionContent.appendChild(lessonsContainer);
     }
+    // Asegurar que el contenedor de introducción sea el visible
+    mostrarIntroduccion();
 }
 
 async function cargarLeccionesModulo(moduloId, moduleSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -443,7 +448,8 @@ async function cargarLeccionesModulo(moduloId, moduleSlug) {
 }
 
 async function cargarProgresoModulo(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -496,7 +502,8 @@ async function cargarProgresoModulo(moduloId) {
 }
 
 async function precargarEvaluacion(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
     try {
         const response = await fetch(`${apiUrl}/modulos/${moduloId}/evaluacion`, {
@@ -1055,7 +1062,8 @@ function mostrarContenidoNoDisponible() {
 }
 
 async function cargarLeccion(moduloSlug, leccionSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -1159,7 +1167,8 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 // ===============================
 
 async function cargarEjerciciosLeccion(moduloId, leccionId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -1399,7 +1408,8 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
         const btnComprobar = seccion.querySelector('#btnComprobar');
         if (btnComprobar) {
             btnComprobar.addEventListener('click', async () => {
-                const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+                const mainEl = document.querySelector('main.container');
+                const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
                 const token = localStorage.getItem('auth_token');
                 const est = estados[indexActual];
                 let body = {};
@@ -1479,7 +1489,8 @@ function getTipoBadge(tipo) {
 }
 
 async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -1517,7 +1528,8 @@ async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostr
 }
 
 async function cargarEvaluacion(evaluacionId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -1580,7 +1592,8 @@ async function cargarEvaluacion(evaluacionId) {
 // ===============================
 
 async function cargarCertificado(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -1735,7 +1748,8 @@ function renderizarPantallaCertificado(cert, moduloId, apiUrl) {
 }
 
 async function generarCertificado(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -1775,7 +1789,8 @@ async function generarCertificado(moduloId) {
 
 
 async function descargarCertificado(codigo) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     if (!token) {
@@ -1833,7 +1848,8 @@ async function descargarCertificado(codigo) {
 
 
 async function verCertificado(codigo) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     // Abrir en nueva pestaña con fetch no es práctico, 
@@ -2370,7 +2386,8 @@ function configurarBotonSiguiente() {
     btnNext.dataset.listenerAdded = 'true';
 
     btnNext.addEventListener('click', async () => {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+        const mainEl = document.querySelector('main.container');
+        const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
         const token = localStorage.getItem('auth_token');
 
         // Deshabilitar botón mientras procesa
@@ -2880,7 +2897,8 @@ function _renderDragAndDrop(container, pregunta, bloqueada) {
 }
 
 async function _comprobarRespuesta() {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
     const pregunta = _evalState.preguntas[_evalState.indice];
     const resp = _evalState.respuestas[pregunta.id];
@@ -2946,7 +2964,8 @@ function _navigateModal(delta) {
 }
 
 async function _finalizarEvaluacionModal() {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     clearInterval(_evalState.timerInterval);

@@ -188,7 +188,8 @@ async function cargarProgresoModulos() {
 // (Esta función fue eliminada — ya no se usa initDarkMode() aquí)
 
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+const perfilForm = document.getElementById('perfilForm');
+const API_BASE = perfilForm?.dataset.apiUrl || 'http://localhost:8001/api';
 let _perfilGuardado = false;
 
 function showSuccessToast(message = 'Perfil actualizado correctamente', timeout = 1200) {
@@ -399,7 +400,6 @@ function initPasswordToggles() {
 
 
 
-const perfilForm = document.getElementById("perfilForm");
 const API_UPDATE_PROFILE = `${API_BASE}/me`;
 const API_UPDATE_PASSWORD = `${API_BASE}/me/password`;
 

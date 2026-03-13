@@ -110,7 +110,8 @@
 
   <main class="container" data-modulo-base-url="{{ url('/modulo') }}" data-lock-url="{{ asset('images/Lock.svg') }}"
     data-avatars-url="{{ asset('avatars') }}" data-images-url="{{ asset('images') }}"
-    data-clear-session-url="{{ url('/api/clear-session-token') }}" data-login-url="{{ url('/login') }}">
+    data-clear-session-url="{{ url('/api/clear-session-token') }}" data-login-url="{{ url('/login') }}"
+    data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8001/api') }}">
 
     <!-- Nueva barra que incluye el hamburguesa + los top-buttons -->
     <div class="topbar">
