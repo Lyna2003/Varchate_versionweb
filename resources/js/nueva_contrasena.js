@@ -139,7 +139,7 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
         if (response.ok) {
             sessionStorage.removeItem('recoveryEmail');
             sessionStorage.removeItem('lastResendTime');
-            showModal('✅ ¡Contraseña actualizada con éxito!', 'success', '/login');
+            showModal('✅ ¡Contraseña actualizada con éxito!', 'success', 'login');
         } else {
             const errorMessage = data.message || data.error || 'Error al restablecer la contraseña';
             showModal('❌ ' + errorMessage, 'error');

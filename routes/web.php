@@ -21,21 +21,20 @@ Route::get('/dashboard', function () {
 // Login, Registro y Recuperación de Contraseña
 // ===============================
 
-Route::get('/login', function () {
-    // Si ya hay token, redirigir a módulos
+Route::get('/login{slash?}', function ($slash = null) {
     if (session()->has('auth_token') || request()->cookie('auth_token')) {
         return redirect('/modulos');
     }
     return view('login');
-})->name('login');
+})->where('slash', '\/?')->name('login');
 
-Route::get('/register', function () {
-    // Si ya hay token, redirigir a módulos
+Route::get('/register{slash?}', function ($slash = null) {
     if (session()->has('auth_token') || request()->cookie('auth_token')) {
         return redirect('/modulos');
     }
     return view('register');
-})->name('register');
+})->where('slash', '\/?')->name('register');
+
 
 Route::get('/recuperar', function () {
     return view('recuperar');
@@ -58,22 +57,27 @@ Route::get('/terminos', function () {
 // ===============================
 
 Route::middleware('auth')->group(function () {
-    Route::get('/modulos', function () {
+    Route::get(
+        '/modulos',
+        function () {
             return view('modulo');
         }
         )->name('modulos');
 
-        Route::get('/modulo/{slug}', function ($slug) {
+        Route::get(
+            '/modulo/{slug}',
+            function ($slug) {
             return view('modulo', ['slug' => $slug]);
         }
         )->name('modulo.detalle');
 
         // Perfil: protegido por sesión Laravel
-        Route::get('/perfil', function () {
+        Route::get(
+            '/perfil',
+            function () {
             return view('perfil');
         }
-        )->name('perfil');
-    });
+        )->name('perfil');    });
 
 // ===============================
 // API LOCAL PARA MANEJAR SESIÓN

@@ -69,7 +69,8 @@ function obtenerSlugDeURL() {
 }
 
 async function verificarTokenEnSegundoPlano(token) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
 
     try {
         const response = await fetch(`${apiUrl}/me`, {
@@ -241,24 +242,40 @@ let evaluacionData = null; // descripción y datos de la evaluación precargados
 let leccionActualIndex = -1; // -1 = Introducción, 0+ = Lecciones
 
 async function cargarDatosModulo(moduleSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
 
     try {
-        // 1. Cargar todos los módulos para los botones superiores
-        const modulosResponse = await fetch(`${apiUrl}/modulos`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        // 1. Cargar todos los módulos para los botones superiores SOLO si no se han cargado
+        if (modulosGlobal.length === 0) {
+            const modulosResponse = await fetch(`${apiUrl}/modulos`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
 
-        if (modulosResponse.ok) {
-            modulosGlobal = await modulosResponse.json();
-            console.log('Módulos cargados:', modulosGlobal);
-            renderizarBotonesModulos(modulosGlobal);
+            if (modulosResponse.ok) {
+                modulosGlobal = await modulosResponse.json();
+                console.log('Módulos cargados:', modulosGlobal);
+                renderizarBotonesModulos(modulosGlobal);
+            }
+        } else {
+            // Si ya están cargados, solo actualizamos el botón activo visualmente
+            const currentSlug = moduleSlug || obtenerSlugDeURL();
+            const container = document.getElementById('topButtonsContainer');
+            if (container) {
+                container.querySelectorAll('button').forEach(btn => {
+                    if (btn.dataset.moduloSlug === currentSlug) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
         }
 
         // 2. Cargar el módulo específico por slug (solo si hay slug)
@@ -280,6 +297,20 @@ async function cargarDatosModulo(moduleSlug) {
         if (moduloResponse.ok) {
             moduloActual = await moduloResponse.json();
             console.log('Módulo actual:', moduloActual);
+
+            // --- Resetear vista general antes de cargar nuevo contenido ---
+            leccionActualIndex = -1;
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('bienvenidaContent')?.remove();
+
+            const introduccionContent = document.getElementById('introduccionContent');
+            const leccionContent = document.getElementById('leccionContent');
+            const btnNext = document.getElementById('btnNext');
+
+            if (leccionContent) {
+                leccionContent.innerHTML = ''; // Limpiar lección anterior
+            }
+            // ----------------------------------------------------------------
 
             // Actualizar título del módulo en la barra de progreso con el nombre corto
             actualizarTituloModulo(moduloActual);
@@ -357,10 +388,13 @@ function actualizarIntroduccionModulo() {
     if (lessonsContainer) {
         introduccionContent.appendChild(lessonsContainer);
     }
+    // Asegurar que el contenedor de introducción sea el visible
+    mostrarIntroduccion();
 }
 
 async function cargarLeccionesModulo(moduloId, moduleSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -421,7 +455,8 @@ async function cargarLeccionesModulo(moduloId, moduleSlug) {
 }
 
 async function cargarProgresoModulo(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -474,7 +509,8 @@ async function cargarProgresoModulo(moduloId) {
 }
 
 async function precargarEvaluacion(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
     try {
         const response = await fetch(`${apiUrl}/modulos/${moduloId}/evaluacion`, {
@@ -526,13 +562,31 @@ function renderizarBotonesModulos(modulos) {
         }
 
         button.addEventListener('click', () => {
+            // Actualizar estado visual inmediatamente
+            container.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
             const baseUrl = document.querySelector('main.container')?.dataset.moduloBaseUrl || '/modulo';
-            window.location.href = `${baseUrl}/${modulo.slug}`;
+            const newUrl = `${baseUrl}/${modulo.slug}`;
+
+            // Usar pushState para cambiar la URL sin recargar la página
+            window.history.pushState({ moduleSlug: modulo.slug }, '', newUrl);
+
+            // Cargar los datos del nuevo módulo
+            cargarDatosModulo(modulo.slug);
         });
 
         container.appendChild(button);
     });
 }
+
+// Escuchar el evento popstate para manejar los botones Atrás/Adelante del navegador
+window.addEventListener('popstate', (event) => {
+    // Si hay un estado guardado, o podemos extraer el slug de la URL, lo cargamos
+    const slug = event.state?.moduleSlug || obtenerSlugDeURL();
+    console.log('Navegación popstate a:', slug);
+    cargarDatosModulo(slug);
+});
 
 function renderizarLecciones(lecciones) {
     const sidebar = document.getElementById('sidebar');
@@ -733,13 +787,16 @@ function renderizarLecciones(lecciones) {
             if (tipo === 'intro') {
                 console.log('Mostrando introducción');
                 leccionActualIndex = -1; // Sincronizar estado
+                document.getElementById('ejerciciosSeccion')?.remove();
                 mostrarIntroduccion();
             } else if (tipo === 'evaluacion') {
                 console.log('Cargando evaluación');
                 leccionActualIndex = window.leccionesOrdenadas?.length ?? 0; // Sincronizar estado
+                document.getElementById('ejerciciosSeccion')?.remove();
                 cargarEvaluacion(btn.dataset.evaluacionId);
             } else if (tipo === 'certificado') {
                 console.log('Mostrando certificado');
+                document.getElementById('ejerciciosSeccion')?.remove();
                 cargarCertificado(btn.dataset.moduloId);
             } else if (leccionSlug && moduloActual) {
                 console.log('Cargando lección:', leccionSlug);
@@ -748,6 +805,19 @@ function renderizarLecciones(lecciones) {
             }
         });
     });
+
+    // Auto-navegar a la evaluación o lección específica si viene en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('seccion') === 'evaluacion') {
+        const evalBtn = document.querySelector('.sidebar button[data-tipo="evaluacion"]');
+        if (evalBtn && !evalBtn.classList.contains('locked')) {
+            // Eliminar parámetro de URL inmediatamente para no afectar recargas futuras
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Simular click después de un pequeño retraso para asegurar que el DOM esté listo
+            setTimeout(() => evalBtn.click(), 100);
+        }
+    }
 }
 
 // Función para mostrar mensaje de contenido bloqueado
@@ -999,10 +1069,14 @@ function mostrarContenidoNoDisponible() {
 }
 
 async function cargarLeccion(moduloSlug, leccionSlug) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
+    // Limpiar sección de ejercicios previa (puede ser de otra lección)
+    document.getElementById('ejerciciosSeccion')?.remove();
+
 
     try {
         console.log('📖 Cargando lección:', { moduloSlug, leccionSlug });
@@ -1076,6 +1150,11 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
                 console.log('📍 Índice de lección actual:', indiceActual);
             }
 
+            // ===== EJERCICIOS: cargar y mostrar si la lección tiene =====
+            if (moduloActual && moduloActual.id) {
+                await cargarEjerciciosLeccion(moduloActual.id, leccion.id);
+            }
+
         } else {
             console.error('Error cargando lección:', response.status);
             const errorText = await response.text();
@@ -1090,8 +1169,335 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
     }
 }
 
+// ===============================
+// EJERCICIOS INTERACTIVOS EN LECCIÓN
+// ===============================
+
+async function cargarEjerciciosLeccion(moduloId, leccionId) {
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
+    try {
+        const url = `${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios`;
+        console.log('🔍 Cargando ejercicios desde:', url);
+
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.warn('⚠️ Ejercicios HTTP error:', response.status);
+            return;
+        }
+
+        const json = await response.json();
+        console.log('📦 Respuesta ejercicios completa:', JSON.stringify(json));
+        const data = json?.data;
+
+        if (!data?.tiene_ejercicios || !data?.ejercicios?.length) {
+            console.log('ℹ️ Esta lección no tiene ejercicios');
+            return;
+        }
+
+        console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s):`, data.ejercicios);
+        renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
+
+    } catch (err) {
+        console.warn('No se pudieron cargar ejercicios:', err);
+    }
+}
+
+// Escapa texto para inserción segura en innerHTML
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
+    // Inyectamos en contentSection (FUERA de leccionContent) para evitar
+    // que los <style> del HTML de la lección sobreescriban nuestros estilos
+    const contentSection = document.getElementById('contentSection');
+    if (!contentSection) return;
+
+    // Eliminar sección previa si existe (al navegar entre lecciones)
+    document.getElementById('ejerciciosSeccion')?.remove();
+
+    // Estado por ejercicio: { respondido, correcto, seleccion, parejas }
+    const estados = ejercicios.map(() => ({
+        respondido: false,
+        correcto: null,
+        feedback: '',
+        opcionCorrecta: null,
+        seleccionId: null,
+        parejas: []
+    }));
+
+    let indexActual = 0;
+
+    // Sección principal
+    const seccion = document.createElement('div');
+    seccion.className = 'ejercicios-leccion-seccion';
+    seccion.id = 'ejerciciosSeccion';
+
+    // Insertar antes del btn-container (botón "Siguiente" de la lección)
+    const btnContainer = contentSection.querySelector('.btn-container');
+    if (btnContainer) {
+        contentSection.insertBefore(seccion, btnContainer);
+    } else {
+        contentSection.appendChild(seccion);
+    }
+
+
+    function buildOpcionesHTML(ej) {
+        const opciones = Array.isArray(ej.opciones) ? ej.opciones : [];
+        console.log(`🧩 buildOpcionesHTML tipo=${ej.tipo} opciones=${opciones.length}`, opciones);
+
+        if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
+            if (!opciones.length) return '<p style="color:#e57373;font-size:13px;">⚠️ Sin opciones cargadas</p>';
+            return `<div class="ejercicio-opciones">
+                ${opciones.map(op => `
+                    <button class="ejercicio-opcion" data-opcion-id="${op.id}">${escapeHTML(op.texto)}</button>
+                `).join('')}
+            </div>`;
+        } else if (ej.tipo === 'arrastrar_soltar') {
+            if (!opciones.length) return '<p style="color:#e57373;font-size:13px;">⚠️ Sin opciones cargadas</p>';
+            const destinos = [...new Set(opciones.map(op => op.pareja_arrastre))];
+            return `
+                <div class="drag-drop-container">
+                    <div class="drag-items-col">
+                        <p class="drag-col-label">Elementos</p>
+                        ${opciones.map(op => `
+                            <div class="drag-item" draggable="true" data-opcion-id="${op.id}">${escapeHTML(op.texto)}</div>
+                        `).join('')}
+                    </div>
+                    <div class="drag-destinos-col">
+                        <p class="drag-col-label">Definiciones</p>
+                        ${destinos.map(dest => `
+                            <div class="drag-destino">
+                                <span class="drag-destino-label">${escapeHTML(dest)}</span>
+                                <div class="drag-zona" data-pareja="${escapeHTML(dest)}">Arrastra aquí</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+        return '';
+    }
+
+    function render() {
+        const ej = ejercicios[indexActual];
+        const est = estados[indexActual];
+
+        const respondido = est.respondido;
+        const correcto = est.correcto;
+
+        seccion.innerHTML = `
+            <div class="ejercicios-leccion-header">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <div>
+                    <h3 class="ejercicios-leccion-titulo">Ejercicios de práctica</h3>
+                    <p class="ejercicios-leccion-subtitulo">Pon a prueba lo que aprendiste en esta lección</p>
+                </div>
+                <span class="ejercicios-leccion-badge">${indexActual + 1} / ${ejercicios.length}</span>
+            </div>
+
+            <div class="ejercicio-card ${respondido ? (correcto ? 'ejercicio-correcto' : 'ejercicio-incorrecto') : ''}">
+                <div class="ejercicio-card-header">
+                    <span class="ejercicio-num">Ejercicio ${indexActual + 1}</span>
+                    <span class="ejercicio-tipo-badge">${getTipoBadge(ej.tipo)}</span>
+                </div>
+                <p class="ejercicio-instrucciones">${escapeHTML(ej.instrucciones)}</p>
+                <p class="ejercicio-pregunta">${escapeHTML(ej.pregunta)}</p>
+                ${buildOpcionesHTML(ej)}
+                <div class="ejercicio-feedback" id="ejFeedback" style="${respondido ? 'display:block' : 'display:none'}">
+                    ${respondido ? (correcto
+                ? `✅ ${escapeHTML(est.feedback)}`
+                : `❌ ${escapeHTML(est.feedback)}${est.opcionCorrecta?.texto ? ` La respuesta correcta era: <strong>${escapeHTML(est.opcionCorrecta.texto)}</strong>` : ''}`)
+                : ''}
+                </div>
+                ${respondido ? '' : `
+                <div class="ejercicio-acciones-check">
+                    <button class="ejercicio-btn-comprobar" id="btnComprobar">Comprobar</button>
+                </div>`}
+                ${(respondido && !correcto) ? `
+                <div class="ejercicio-acciones-check">
+                    <button class="ejercicio-btn-reintentar" id="btnReintentar">Reintentar</button>
+                </div>` : ''}
+            </div>
+
+            <div class="ejercicio-nav">
+                <button class="ejercicio-btn-nav" id="btnAnterior" ${indexActual === 0 ? 'disabled' : ''}>← Anterior</button>
+                <div class="ejercicio-dots">
+                    ${ejercicios.map((_, i) => `
+                        <span class="ej-dot ${estados[i].respondido ? (estados[i].correcto ? 'dot-correcto' : 'dot-incorrecto') : ''} ${i === indexActual ? 'dot-actual' : ''}"></span>
+                    `).join('')}
+                </div>
+                <button class="ejercicio-btn-nav" id="btnSiguiente" ${indexActual === ejercicios.length - 1 ? 'disabled' : ''}>Siguiente →</button>
+            </div>
+        `;
+
+        // Restaurar selección previa si ya respondió o había seleccionado
+        if (est.seleccionId && (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso')) {
+            const prevBtn = seccion.querySelector(`[data-opcion-id="${est.seleccionId}"]`);
+            if (prevBtn) {
+                prevBtn.classList.add('selected');
+                if (respondido) prevBtn.disabled = true;
+            }
+            if (respondido) {
+                seccion.querySelectorAll('.ejercicio-opcion').forEach(b => b.disabled = true);
+            }
+        }
+
+        // Restaurar drag & drop si ya respondió
+        if (respondido && ej.tipo === 'arrastrar_soltar') {
+            seccion.querySelectorAll('.drag-item').forEach(i => i.setAttribute('draggable', 'false'));
+        }
+
+        // Feedback class
+        const feedbackEl = seccion.querySelector('#ejFeedback');
+        if (feedbackEl && respondido) {
+            feedbackEl.className = `ejercicio-feedback ${correcto ? 'feedback-correcto' : 'feedback-incorrecto'}`;
+        }
+
+        // Eventos
+        seccion.querySelector('#btnAnterior')?.addEventListener('click', () => {
+            if (indexActual > 0) { indexActual--; render(); }
+        });
+
+        seccion.querySelector('#btnSiguiente')?.addEventListener('click', () => {
+            if (indexActual < ejercicios.length - 1) { indexActual++; render(); }
+        });
+
+        // Selección de opciones
+        if (!respondido && (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso')) {
+            seccion.querySelectorAll('.ejercicio-opcion').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    seccion.querySelectorAll('.ejercicio-opcion').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    estados[indexActual].seleccionId = parseInt(btn.dataset.opcionId);
+                });
+            });
+        }
+
+        // Drag & Drop
+        if (!respondido && ej.tipo === 'arrastrar_soltar') {
+            let draggedItem = null;
+            seccion.querySelectorAll('.drag-item').forEach(item => {
+                item.addEventListener('dragstart', () => { draggedItem = item; item.classList.add('dragging'); });
+                item.addEventListener('dragend', () => { item.classList.remove('dragging'); });
+            });
+            seccion.querySelectorAll('.drag-zona').forEach(zona => {
+                zona.addEventListener('dragover', e => { e.preventDefault(); zona.classList.add('drag-over'); });
+                zona.addEventListener('dragleave', () => zona.classList.remove('drag-over'));
+                zona.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zona.classList.remove('drag-over');
+                    if (draggedItem) {
+                        const existing = zona.querySelector('.drag-item');
+                        if (existing) seccion.querySelector('.drag-items-col').appendChild(existing);
+                        zona.appendChild(draggedItem);
+                        draggedItem = null;
+                    }
+                });
+            });
+        }
+
+        // Comprobar
+        const btnComprobar = seccion.querySelector('#btnComprobar');
+        if (btnComprobar) {
+            btnComprobar.addEventListener('click', async () => {
+                const mainEl = document.querySelector('main.container');
+                const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
+                const token = localStorage.getItem('auth_token');
+                const est = estados[indexActual];
+                let body = {};
+
+                if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
+                    const selected = seccion.querySelector('.ejercicio-opcion.selected');
+                    if (!selected) {
+                        const fb = seccion.querySelector('#ejFeedback');
+                        fb.style.display = 'block';
+                        fb.className = 'ejercicio-feedback feedback-warning';
+                        fb.textContent = '⚠️ Selecciona una opción antes de comprobar';
+                        return;
+                    }
+                    body = { opcion_id: parseInt(selected.dataset.opcionId) };
+                } else if (ej.tipo === 'arrastrar_soltar') {
+                    const parejas = [];
+                    seccion.querySelectorAll('.drag-zona').forEach(zona => {
+                        const item = zona.querySelector('.drag-item');
+                        if (item) parejas.push({ id_opcion: parseInt(item.dataset.opcionId), pareja: zona.dataset.pareja });
+                    });
+                    if (!parejas.length) {
+                        const fb = seccion.querySelector('#ejFeedback');
+                        fb.style.display = 'block';
+                        fb.className = 'ejercicio-feedback feedback-warning';
+                        fb.textContent = '⚠️ Arrastra los elementos antes de comprobar';
+                        return;
+                    }
+                    body = { parejas };
+                }
+
+                btnComprobar.disabled = true;
+                btnComprobar.textContent = 'Comprobando...';
+
+                try {
+                    const resp = await fetch(`${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios/${ej.id}/intento`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const result = await resp.json();
+                    est.respondido = true;
+                    est.correcto = result?.data?.es_correcta;
+                    est.feedback = result?.data?.feedback || '';
+                    est.opcionCorrecta = result?.data?.opcion_correcta || null;
+                    render();
+                } catch {
+                    btnComprobar.disabled = false;
+                    btnComprobar.textContent = 'Comprobar';
+                    const fb = seccion.querySelector('#ejFeedback');
+                    fb.style.display = 'block';
+                    fb.className = 'ejercicio-feedback feedback-warning';
+                    fb.textContent = '⚠️ Error de conexión. Inténtalo de nuevo.';
+                }
+            });
+        }
+
+        // Reintentar
+        const btnReintentar = seccion.querySelector('#btnReintentar');
+        if (btnReintentar) {
+            btnReintentar.addEventListener('click', () => {
+                estados[indexActual] = { respondido: false, correcto: null, feedback: '', opcionCorrecta: null, seleccionId: null, parejas: [] };
+                render();
+            });
+        }
+    }
+
+    render();
+}
+
+function getTipoBadge(tipo) {
+    const badges = {
+        'seleccion_multiple': '☑ Selección múltiple',
+        'verdadero_falso': '✓/✗ Verdadero o Falso',
+        'arrastrar_soltar': '⇄ Relacionar'
+    };
+    return badges[tipo] || tipo;
+}
+
 async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -1129,7 +1535,8 @@ async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostr
 }
 
 async function cargarEvaluacion(evaluacionId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -1192,7 +1599,8 @@ async function cargarEvaluacion(evaluacionId) {
 // ===============================
 
 async function cargarCertificado(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
@@ -1246,16 +1654,22 @@ async function cargarCertificado(moduloId) {
             // Enlazar botón de descargar
             const btnDescargar = leccionContent.querySelector('#btn-descargar-certificado');
             if (btnDescargar && cert) {
-                btnDescargar.addEventListener('click', () => {
-                    window.open(cert.urls.descargar, '_blank');
+                // IMPORTANTE: Remover cualquier onclick anterior
+                btnDescargar.removeAttribute('onclick');
+
+                // Agregar nuevo event listener que usa nuestra función
+                btnDescargar.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    descargarCertificado(cert.codigo_certificado);
                 });
             }
 
             // Enlazar botón de ver
             const btnVer = leccionContent.querySelector('#btn-ver-certificado');
             if (btnVer && cert) {
-                btnVer.addEventListener('click', () => {
-                    window.open(cert.urls.ver, '_blank');
+                btnVer.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    verCertificado(cert.codigo_certificado);
                 });
             }
         }
@@ -1270,7 +1684,7 @@ async function cargarCertificado(moduloId) {
 
 function renderizarPantallaCertificado(cert, moduloId, apiUrl) {
     const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
-    const moduloTitulo = moduloActual?.titulo || 'este módulo';
+    const moduloTitulo = moduloActual?.modulo.toUpperCase() || 'este módulo';
 
     if (cert) {
         // Ya tiene certificado
@@ -1280,10 +1694,16 @@ function renderizarPantallaCertificado(cert, moduloId, apiUrl) {
         return `
             <div class="eval-card" style="max-width:680px; margin:0 auto;">
                 <div class="eval-card-header" style="text-align:center; padding: 32px 24px 16px;">
-                    <span style="font-size: 80px; display: block; margin-bottom: 16px;">🎓</span>
-                    <h2 style="font-size: 1.6rem; color: var(--color-text, #1a1a2e); margin-bottom: 8px;">¡Certificado disponible!</h2>
-                    <p style="color: #666; font-size: 1rem;">Has completado <strong>${moduloTitulo}</strong> con un <strong>${porcentaje}%</strong>.</p>
-                    ${fecha ? `<p style="color:#888; font-size:0.9rem;">Emitido el ${fecha}</p>` : ''}
+                    <h2 style="font-size: 1.8rem; color: var(--color-text, #1a1a2e); margin-bottom: 8px;">¡Felicitaciones, lo lograste!</h2>
+                    <p style="color: #666; font-size: 1.2rem;">Has finalizado el módulo <strong>${moduloTitulo}</strong> con un <strong>${porcentaje}%</strong>.</p>
+                    <p style="color: #666; font-size: 1.2rem;">Este certificado valida que completaste el módulo y adquiriste los conocimiento básicos necesarios para continuar tu aprendizaje en programación</p>
+                    <p style="color: #666; font-size: 1.2rem;">¡Sigue avanzando y desbloquea nuevos retos!</p>
+                    ${fecha ? `<p style="color:#888; font-size:1rem;">Emitido el ${fecha}</p>` : ''}
+                    
+                    <!-- Imagen del gato centrada -->
+                    <div style="display: flex; justify-content: center; margin: 24px 0 8px;">
+                        <img src="${imagesBase}/gato-certificados.png" alt="Gato con certificado" style="width: 180px; height: auto; border-radius: 12px;">
+                    </div>
                 </div>
 
                 <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; padding: 8px 24px 32px;">
@@ -1311,6 +1731,11 @@ function renderizarPantallaCertificado(cert, moduloId, apiUrl) {
                     <span style="font-size: 80px; display: block; margin-bottom: 16px;">📜</span>
                     <h2 style="font-size: 1.6rem; color: var(--color-text, #1a1a2e); margin-bottom: 8px;">Tu certificado te espera</h2>
                     <p style="color: #666; font-size: 1rem;">Has aprobado la evaluación de <strong>${moduloTitulo}</strong>. ¡Genera tu certificado ahora!</p>
+                    
+                    <!-- Imagen del gato centrada -->
+                    <div style="display: flex; justify-content: center; margin: 24px 0 8px;">
+                        <img src="${imagesBase}/gato-certificados.png" alt="Gato con certificado" style="width: 180px; height: auto; border-radius: 12px;">
+                    </div>
                 </div>
 
                 <div style="display:flex; justify-content:center; padding: 8px 24px 32px;">
@@ -1330,7 +1755,8 @@ function renderizarPantallaCertificado(cert, moduloId, apiUrl) {
 }
 
 async function generarCertificado(moduloId) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
@@ -1368,6 +1794,104 @@ async function generarCertificado(moduloId) {
     }
 }
 
+
+async function descargarCertificado(codigo) {
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
+    if (!token) {
+        redirigirALogin();
+        return;
+    }
+
+    try {
+        mostrarSpinner(true);
+
+        const response = await fetch(`${apiUrl}/certificaciones/${codigo}/descargar`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'image/png',
+            }
+        });
+
+        if (response.status === 401) {
+            mostrarMensajeSesionExpirada();
+            return;
+        }
+
+        if (response.status === 403) {
+            mostrarMensajeBloqueado('No tienes permiso para descargar este certificado');
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Error al descargar');
+        }
+
+        // Convertir la respuesta a blob
+        const blob = await response.blob();
+
+        // Crear URL temporal y descargar
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `certificado-${codigo}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        mostrarMensajeExito('✅ Descarga completada');
+
+    } catch (error) {
+        console.error('Error en descarga:', error);
+        mostrarMensajeBloqueado('Error al descargar el certificado');
+    } finally {
+        mostrarSpinner(false);
+    }
+}
+
+
+async function verCertificado(codigo) {
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
+    // Abrir en nueva pestaña con fetch no es práctico, 
+    // así que usamos una ventana nueva con el token en la URL
+    const ventana = window.open('', '_blank');
+
+    try {
+        const response = await fetch(`${apiUrl}/certificaciones/${codigo}/ver`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Error');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        // Escribir la imagen en la nueva ventana
+        ventana.document.write(`
+            <html>
+                <head><title>Certificado</title></head>
+                <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
+                    <img src="${url}" style="max-width:100%; max-height:100vh; object-fit:contain;">
+                </body>
+            </html>
+        `);
+
+    } catch (error) {
+        console.error('Error:', error);
+        ventana.close();
+        mostrarMensajeBloqueado('Error al ver el certificado');
+    }
+}
+
 function renderizarEvaluacion(json) {
     const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
     const mascotaUrl = `${imagesBase}/gato_evaluacion.png`;
@@ -1377,7 +1901,7 @@ function renderizarEvaluacion(json) {
     const evaluacion = data.evaluacion || {};
     const estadoUsuario = data.estado_usuario || {};
 
-    const evaluacionAprobada = estadoUsuario.ya_aprobo || progresoModulo?.evaluacion_aprobada || false;
+    const evaluacionAprobada = estadoUsuario.ya_aprobo; // Priorizamos lo que diga la API de evaluación directamente
     const puedeIntentar = estadoUsuario.puede_intentar !== false;
     const mensajeBloqueo = estadoUsuario.mensaje || '';
     const intentosCompletados = estadoUsuario.intentos_completados || 0;
@@ -1613,38 +2137,51 @@ function mostrarSpinner(mostrar) {
 
 function mostrarBienvenidaModulos() {
     const contentSection = document.getElementById('contentSection');
+    const introduccionContent = document.getElementById('introduccionContent');
+    const leccionContent = document.getElementById('leccionContent');
+    const btnNext = document.getElementById('btnNext');
+
+    if (introduccionContent) introduccionContent.style.display = 'none';
+    if (leccionContent) leccionContent.style.display = 'none';
+    if (btnNext) btnNext.style.display = 'none';
+
+    document.getElementById('bienvenidaContent')?.remove();
+
     const nombre = localStorage.getItem('user_nombre') || 'Usuario';
     if (contentSection) {
-        contentSection.innerHTML = `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 60px 40px;
-                text-align: center;
-                height: 100%;
-            ">
-                <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
-                <h2 style="
-                    font-size: 28px;
-                    font-weight: 700;
-                    color: #1a1a2e;
-                    margin-bottom: 12px;
-                ">¡Hola, ${nombre}!</h2>
-                <p style="
-                    font-size: 18px;
-                    color: #555;
-                    margin-bottom: 8px;
-                ">Bienvenido a Varchate.</p>
-                <p style="
-                    font-size: 16px;
-                    color: #888;
-                    max-width: 400px;
-                    line-height: 1.6;
-                ">Elige un módulo del menú para empezar a aprender.</p>
-            </div>
+        const bienvenidaDiv = document.createElement('div');
+        bienvenidaDiv.id = 'bienvenidaContent';
+        bienvenidaDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+            text-align: center;
+            height: 100%;
         `;
+        bienvenidaDiv.innerHTML = `
+            <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
+            <h2 style="
+                font-size: 28px;
+                font-weight: 700;
+                color: #1a1a2e;
+                margin-bottom: 12px;
+            ">¡Hola, ${nombre}!</h2>
+            <p style="
+                font-size: 18px;
+                color: #555;
+                margin-bottom: 8px;
+            ">Bienvenido a Varchate.</p>
+            <p style="
+                font-size: 16px;
+                color: #888;
+                max-width: 400px;
+                line-height: 1.6;
+            ">Elige un módulo del menú para empezar a aprender.</p>
+        `;
+        // Insertamos al principio para que quede por encima de los contenedores ocultos
+        contentSection.insertBefore(bienvenidaDiv, contentSection.firstChild);
     }
 }
 
@@ -1678,6 +2215,9 @@ function configurarProgreso() {
 }
 
 function configurarHamburguesa() {
+    if (window._hamburguesa_btn_ok) return;
+    window._hamburguesa_btn_ok = true;
+
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -1696,6 +2236,9 @@ function configurarHamburguesa() {
 }
 
 function configurarMenusUsuario() {
+    if (window._user_menus_ok) return;
+    window._user_menus_ok = true;
+
     // Menú desktop
     const profilePic = document.getElementById('profile-pic');
     const userMenu = document.getElementById('user-menu');
@@ -1779,6 +2322,9 @@ function configurarMenusUsuario() {
 }
 
 function configurarLogout() {
+    if (window._logout_btn_ok) return;
+    window._logout_btn_ok = true;
+
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 
@@ -1842,10 +2388,13 @@ async function cerrarSesion(e) {
 
 function configurarBotonSiguiente() {
     const btnNext = document.getElementById('btnNext');
-    if (!btnNext) return;
+    if (!btnNext || btnNext.dataset.listenerAdded) return;
+
+    btnNext.dataset.listenerAdded = 'true';
 
     btnNext.addEventListener('click', async () => {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+        const mainEl = document.querySelector('main.container');
+        const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
         const token = localStorage.getItem('auth_token');
 
         // Deshabilitar botón mientras procesa
@@ -2355,7 +2904,8 @@ function _renderDragAndDrop(container, pregunta, bloqueada) {
 }
 
 async function _comprobarRespuesta() {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
     const pregunta = _evalState.preguntas[_evalState.indice];
     const resp = _evalState.respuestas[pregunta.id];
@@ -2421,7 +2971,8 @@ function _navigateModal(delta) {
 }
 
 async function _finalizarEvaluacionModal() {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     clearInterval(_evalState.timerInterval);
@@ -2462,13 +3013,13 @@ function _mostrarResultadoModal(data) {
     const modal = overlay?.querySelector('.eval-modal');
     if (!modal) return;
 
+    // Guardamos el intentoId en el estado para poder consultarlo en la revisión
+    _evalState.intentoIdActual = data.intento_id || _evalState.intentoId;
+
     const aprobado = data.aprobado;
     const porcentaje = Math.round(data.porcentaje_obtenido || 0);
     const correctas = data.preguntas_correctas || 0;
     const totales = data.preguntas_totales || _evalState.preguntas.length;
-    const mensaje = data.mensaje || (aprobado
-        ? '¡Felicidades! Has superado la evaluación.'
-        : '¡Buen intento! Estudia un poco más y vuelve a intentarlo');
 
     // Calcular tiempo usado
     const segundosUsados = (_evalState.segundosTotales || 0) - (_evalState.segundosRestantes || 0);
@@ -2476,21 +3027,16 @@ function _mostrarResultadoModal(data) {
     const ss = String(segundosUsados % 60).padStart(2, '0');
     const tiempoUsado = `${mm}:${ss}`;
 
-    // URLs de imágenes
     const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
-    const logoUrl = document.querySelector('.logo')?.src || `${imagesBase.replace('/images', '')}/images/logo_blanco.png`;
     const mascotaUrl = aprobado ? `${imagesBase}/bien1.png` : `${imagesBase}/error1.png`;
     const moduloNombre = (moduloActual?.modulo || _evalState.titulo || 'Módulo').toUpperCase();
 
     modal.innerHTML = `
         <div class="eval-result-screen">
-
-            <!-- Cabecera con logo -->
             <div class="eval-result-header">
                 <img src="${imagesBase}/logo_azul.png" alt="Varchate" class="eval-result-logo" onerror="this.style.display='none'">
             </div>
 
-            <!-- Cuerpo: mascota | info -->
             <div class="eval-result-body">
                 <div class="eval-result-mascota">
                     <img src="${mascotaUrl}" alt="${aprobado ? 'Aprobado' : 'No aprobado'}" class="eval-result-mascota-img">
@@ -2509,7 +3055,7 @@ function _mostrarResultadoModal(data) {
                         ${aprobado ? `
                             <p class="eval-result-score-line eval-result-score-title">¡Felicidades!</p>
                             <p class="eval-result-score-line">Has respondido correctamente <strong>${correctas} de ${totales}</strong> preguntas.</p>
-                            <p class="eval-result-score-line">¡Has superado la evaluación con éxito!</p>
+                            <p class="eval-result-score-line">Has superado la evaluación con éxito</p>
                         ` : `
                             <p class="eval-result-score-line eval-result-score-title">¡Buen intento!</p>
                             <p class="eval-result-score-line">Has respondido correctamente <strong>${correctas} de ${totales}</strong> preguntas.</p>
@@ -2519,7 +3065,6 @@ function _mostrarResultadoModal(data) {
                 </div>
             </div>
 
-            <!-- Botones inferiores -->
             <div class="eval-result-footer">
                 <button class="eval-result-btn-secondary" id="eval-ver-respuestas-btn">Ver mis respuestas</button>
                 <button class="eval-result-btn-primary" id="eval-close-result-btn">Cerrar</button>
@@ -2527,151 +3072,111 @@ function _mostrarResultadoModal(data) {
         </div>
     `;
 
-    // Estilos de la pantalla de resultado (inline para no depender de CSS externo)
+    // Estilos optimizados
     if (!document.getElementById('eval-result-styles')) {
         const st = document.createElement('style');
         st.id = 'eval-result-styles';
         st.textContent = `
-            .eval-result-screen {
-                display: flex;
-                flex-direction: column;
-                background: #D9EEFF;
-                border-radius: 18px;
-                min-height: 420px;
-                overflow: hidden;
-                width: 100%;
+            .eval-result-screen { display: flex; flex-direction: column; background: #D9EEFF; border-radius: 20px; min-height: 480px; width: 100%; border: 1px solid #cce4f7; box-shadow: 0 10px 40px rgba(0,0,0,0.06); }
+            .eval-result-header { padding: 30px 40px 0; }
+            .eval-result-logo { height: 45px; }
+            .eval-result-body { display: flex; align-items: flex-start; gap: 40px; flex: 1; padding: 20px 50px 20px; }
+            .eval-result-mascota-img { width: 280px; height: auto; object-fit: contain; margin-top: 10px; }
+            .eval-result-info { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 5px; padding-top: 20px; }
+            .eval-result-label { font-size: 15px; color: #555; font-weight: 600; text-transform: capitalize; margin: 0; }
+            .eval-result-modulo { font-size: 3.2rem; font-weight: 900; color: #1a1a2e; margin: 0 0 40px 0; line-height: 1; }
+            .eval-result-tiempo { margin-bottom: 60px; display: flex; gap: 10px; font-weight: 700; color: #444; font-size: 1.1rem; }
+            .eval-result-score { margin-top: auto; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+            .eval-result-score-line { font-size: 1.1rem; font-weight: 700; color: #222; margin: 0; line-height: 1.3; }
+            .eval-result-score-title { font-size: 1.4rem; font-weight: 900; color: #1a1a2e; margin-bottom: 5px; }
+            .eval-result-footer { display: flex; justify-content: space-between; padding: 25px 40px; border-top: 1px solid rgba(0,0,0,0.07); }
+            .eval-result-btn-primary, .eval-result-btn-secondary {
+                background: #0099FF; color: #fff; border: none; border-radius: 30px; 
+                padding: 12px 32px; font-size: 1rem; font-weight: 700; cursor: pointer; 
+                transition: all 0.2s;
             }
-            .eval-result-header {
-                padding: 20px 24px 8px;
-                display: flex;
-                align-items: center;
-            }
-            .eval-result-logo {
-                height: 36px;
-                /* intento mostrar logo, puede fallar si la ruta es distinta */
-            }
-            .eval-result-body {
-                display: flex;
-                align-items: center;
-                gap: 28px;
-                flex: 1;
-                padding: 0 32px 16px;
-            }
-            .eval-result-mascota {
-                flex-shrink: 0;
-            }
-            .eval-result-mascota-img {
-                width: 180px;
-                height: auto;
-                object-fit: contain;
-            }
-            .eval-result-info {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                padding-left: 16px;
-            }
-            .eval-result-label {
-                font-size: 13px;
-                color: #555;
-                margin: 0;
-                font-weight: 500;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
-            .eval-result-modulo {
-                font-size: 2.4rem;
-                font-weight: 800;
-                color: #1a1a2e;
-                margin: 0;
-                line-height: 1.1;
-            }
-            .eval-result-tiempo {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-top: 2px;
-            }
-            .eval-result-tiempo-label {
-                font-size: 12px;
-                font-weight: 700;
-                color: #777;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-            }
-            .eval-result-tiempo-valor {
-                font-size: 14px;
-                font-weight: 700;
-                color: #1a1a2e;
-            }
-            .eval-result-score {
-                margin-top: 10px;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            .eval-result-score-line {
-                font-size: 1rem;
-                font-weight: 700;
-                color: #1a1a2e;
-                margin: 0;
-                line-height: 1.5;
-            }
-            .eval-result-score-title {
-                font-size: 1.15rem;
-                font-weight: 800;
-            }
-            .eval-result-score-line strong {
-                color: #1a1a2e;
-            }
-            .eval-result-footer {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 16px 24px;
-                gap: 12px;
-                border-top: 1px solid rgba(0,0,0,0.07);
-            }
-            .eval-result-btn-secondary {
-                background: #0099FF;
-                color: #fff;
-                border: none;
-                border-radius: 30px;
-                padding: 12px 28px;
-                font-size: 0.95rem;
-                font-weight: 700;
-                cursor: pointer;
-                transition: background 0.2s;
-            }
-            .eval-result-btn-secondary:hover { background: #007acc; }
-            .eval-result-btn-primary {
-                background: #0099FF;
-                color: #fff;
-                border: none;
-                border-radius: 30px;
-                padding: 12px 28px;
-                font-size: 0.95rem;
-                font-weight: 700;
-                cursor: pointer;
-                transition: background 0.2s;
-            }
-            .eval-result-btn-primary:hover { background: #007acc; }
+            .eval-result-btn-primary:hover, .eval-result-btn-secondary:hover { background: #007acc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,153,255,0.3); }
+            .eval-result-btn-primary:active, .eval-result-btn-secondary:active { transform: translateY(0); }
+            
+            /* Revision Styles */
+            .eval-revision-container { display: flex; flex-direction: column; height: 500px; width: 100%; background: #fff; border-radius: 18px; overflow: hidden; }
+            .eval-revision-header { padding: 20px; background: #D9EEFF; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cce4f7; }
+            .eval-revision-title { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin: 0; }
+            .eval-revision-list { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+            .eval-revision-item { border-radius: 12px; padding: 15px; border: 1px solid #eee; background: #fdfdfd; }
+            .eval-revision-item.correct { border-left: 6px solid #4caf50; background: #f1f9f2; }
+            .eval-revision-item.incorrect { border-left: 6px solid #f44336; background: #fff5f5; }
+            .eval-revision-question { font-weight: 700; margin-bottom: 8px; color: #333; }
+            .eval-revision-user-ans { font-size: 0.95rem; margin-bottom: 4px; }
+            .eval-revision-correct-ans { font-size: 0.95rem; font-weight: 600; color: #2e7d32; }
+            .eval-revision-back-btn { background: #1a1a2e; color: #fff; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 700; cursor: pointer; }
         `;
         document.head.appendChild(st);
     }
 
-    // Botón cerrar
-    document.getElementById('eval-close-result-btn')?.addEventListener('click', async () => {
+    document.getElementById('eval-close-result-btn')?.addEventListener('click', () => {
         _cerrarModalEvaluacion();
-        if (moduloActual?.id) {
-            await cargarProgresoModulo(moduloActual.id);
-            cargarEvaluacion(moduloActual.id);
-        }
+        window.location.href = window.location.pathname + '?seccion=evaluacion';
     });
 
-    // Botón ver respuestas — muestra las respuestas del intento (futuro)
     document.getElementById('eval-ver-respuestas-btn')?.addEventListener('click', () => {
-        mostrarMensajeExito('Función de revisión próximamente disponible');
+        _mostrarRevisionRespuestas(_evalState.intentoIdActual, data);
     });
+}
+
+async function _mostrarRevisionRespuestas(intentoId, originalData) {
+    const overlay = document.getElementById('eval-modal-overlay');
+    const modal = overlay?.querySelector('.eval-modal');
+    if (!modal) return;
+
+    mostrarSpinner(true);
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
+    try {
+        const response = await fetch(`${apiUrl}/modulos/${_evalState.moduloId}/evaluacion/${intentoId}/resultado`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+        const json = await response.json();
+
+        if (json.success && json.data.respuestas_detalladas) {
+            const respuestas = json.data.respuestas_detalladas;
+
+            modal.innerHTML = `
+                <div class="eval-revision-container">
+                    <div class="eval-revision-header">
+                        <h2 class="eval-revision-title">Revisión de respuestas</h2>
+                        <button class="eval-revision-back-btn" id="eval-revision-back-btn">Volver</button>
+                    </div>
+                    <div class="eval-revision-list">
+                        ${respuestas.map((r, i) => `
+                            <div class="eval-revision-item ${r.respuesta_usuario.es_correcta ? 'correct' : 'incorrect'}">
+                                <div class="eval-revision-question">${i + 1}. ${escapeHTML(r.pregunta_texto)}</div>
+                                <div class="eval-revision-user-ans">
+                                    <strong>Tu respuesta:</strong> ${escapeHTML(r.respuesta_usuario.opcion_texto || r.respuesta_usuario.respuesta_texto || '(Sin respuesta)')}
+                                    ${r.respuesta_usuario.es_correcta ? ' ✅' : ' ❌'}
+                                </div>
+                                ${!r.respuesta_usuario.es_correcta && r.respuesta_correcta ? `
+                                    <div class="eval-revision-correct-ans">
+                                        <strong>Respuesta correcta:</strong> ${escapeHTML(r.respuesta_correcta.texto)}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('eval-revision-back-btn')?.addEventListener('click', () => {
+                _mostrarResultadoModal(originalData);
+            });
+        } else {
+            mostrarMensajeBloqueado('No se pudieron obtener los detalles de la revisión');
+        }
+    } catch (e) {
+        console.error('Error cargando revisión:', e);
+        mostrarMensajeBloqueado('Error al cargar la revisión');
+    } finally {
+        mostrarSpinner(false);
+    }
 }

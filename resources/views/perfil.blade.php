@@ -42,7 +42,7 @@
     <section class="perfil">
       <h2>Perfil de usuario</h2>
       <form id="perfilForm" class="perfil-card" data-modulos-url="{{ route('modulos') }}"
-        data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8000/api') }}">
+        data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8001/api') }}">
         <div class="perfil-imagen">
           <img src="" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}"
             style="opacity:0;transition:opacity 0.3s ease;">
