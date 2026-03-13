@@ -78,17 +78,125 @@ const { token, email } = getUrlParams();
 console.log('Token:', token);
 console.log('Email:', email);
 
-// Validar token y email
+// Estilos del modal
+const style = document.createElement('style');
+style.textContent = `
+    .custom-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .custom-modal.show {
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+        transform: scale(0.7);
+        transition: transform 0.3s ease;
+    }
+
+    .custom-modal.show .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .modal-message {
+        font-size: 18px;
+        margin-bottom: 25px;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    .modal-button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .modal-button:hover {
+        background: #0056b3;
+    }
+
+    .modal-success .modal-button {
+        background: #28a745;
+    }
+
+    .modal-success .modal-button:hover {
+        background: #218838;
+    }
+
+    .modal-error .modal-button {
+        background: #dc3545;
+    }
+
+    .modal-error .modal-button:hover {
+        background: #c82333;
+    }
+
+    .modal-warning .modal-button {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .modal-warning .modal-button:hover {
+        background: #e0a800;
+    }
+`;
+document.head.appendChild(style);
+
+// Validar token y email + toggle contraseña al cargar el DOM
 document.addEventListener('DOMContentLoaded', () => {
+    // Mostrar email en pantalla
     const emailDisplay = document.getElementById('emailDisplay');
     if (emailDisplay && email) {
         emailDisplay.textContent = `Restableciendo contraseña para: ${email}`;
         emailDisplay.style.display = 'block';
     }
 
+    // Validar que existan token y email en la URL
     if (!token || !email) {
         showModal('🔗 Enlace inválido o expirado. Serás redirigido.', 'error', '/recuperar');
     }
+
+    // Toggle mostrar/ocultar contraseña
+    document.querySelectorAll('.toggle-pass').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const inputId = icon.getAttribute('data-target');
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+    });
 });
 
 // Manejar el envío del formulario
@@ -153,96 +261,3 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
         submitButton.textContent = originalText;
     }
 });
-
-// Estilos del modal (los mismos que en recuperar.js)
-const style = document.createElement('style');
-style.textContent = `
-    .custom-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .custom-modal.show {
-        opacity: 1;
-    }
-    
-    .modal-content {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
-        transform: scale(0.7);
-        transition: transform 0.3s ease;
-    }
-    
-    .custom-modal.show .modal-content {
-        transform: scale(1);
-    }
-    
-    .modal-icon {
-        font-size: 48px;
-        margin-bottom: 20px;
-    }
-    
-    .modal-message {
-        font-size: 18px;
-        margin-bottom: 25px;
-        color: #333;
-        line-height: 1.5;
-    }
-    
-    .modal-button {
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    
-    .modal-button:hover {
-        background: #0056b3;
-    }
-    
-    .modal-success .modal-button {
-        background: #28a745;
-    }
-    
-    .modal-success .modal-button:hover {
-        background: #218838;
-    }
-    
-    .modal-error .modal-button {
-        background: #dc3545;
-    }
-    
-    .modal-error .modal-button:hover {
-        background: #c82333;
-    }
-    
-    .modal-warning .modal-button {
-        background: #ffc107;
-        color: #333;
-    }
-    
-    .modal-warning .modal-button:hover {
-        background: #e0a800;
-    }
-`;
-
-document.head.appendChild(style);
