@@ -294,18 +294,10 @@ async function cargarDatosModulo(moduleSlug) {
             document.getElementById('ejerciciosSeccion')?.remove();
             document.getElementById('bienvenidaContent')?.remove();
             
-            const introduccionContent = document.getElementById('introduccionContent');
-            const leccionContent = document.getElementById('leccionContent');
-            const btnNext = document.getElementById('btnNext');
-            
+            mostrarIntroduccion(); // Maneja mostrar intro, ocultar lecciones y mostrar btnNext
             if (leccionContent) {
-                leccionContent.style.display = 'none';
                 leccionContent.innerHTML = ''; // Limpiar lección anterior
             }
-            if (introduccionContent) {
-                introduccionContent.style.display = 'block';
-            }
-            if (btnNext) btnNext.style.display = 'none'; // Se muestra en MostrarIntroduccion() o lecciones si es necesario
             // ----------------------------------------------------------------
 
             // Actualizar título del módulo en la barra de progreso con el nombre corto
@@ -2370,7 +2362,9 @@ async function cerrarSesion(e) {
 
 function configurarBotonSiguiente() {
     const btnNext = document.getElementById('btnNext');
-    if (!btnNext) return;
+    if (!btnNext || btnNext.dataset.listenerAdded) return;
+
+    btnNext.dataset.listenerAdded = 'true';
 
     btnNext.addEventListener('click', async () => {
         const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
