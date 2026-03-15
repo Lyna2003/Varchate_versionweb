@@ -71,10 +71,17 @@ function cerrarModalEliminar() {
 cancelarEliminarBtn.addEventListener("click", cerrarModalEliminar);
 confirmarEliminarBtn.addEventListener("click", () => {
   const perfilImgEl = document.getElementById('perfil-imagen');
-  const defaultSrc = (perfilImgEl?.dataset?.default) || '/avatars/default.png';
+  const defaultSrc = (perfilImgEl?.dataset?.default) || '/avatars/avatar_01.png';
   showProfilePic(perfilImg, defaultSrc);
-  _avatarPendiente = 'default';
+  _avatarPendiente = '1';
   opciones.forEach(o => o.classList.remove('selected'));
+  
+  // Also select the avatar_01 option in the modal
+  const defaultOption = document.querySelector(`.avatar-option[data-id="1"]`);
+  if (defaultOption) {
+    defaultOption.classList.add('selected');
+  }
+
   cerrarModalEliminar();
 });
 window.addEventListener("click", (e) => { if (e.target === modalEliminar) cerrarModalEliminar(); });
@@ -316,12 +323,12 @@ async function cargarDatosUsuario() {
           showProfilePic(perfilImg, avatarOption.querySelector("img").src);
         } else {
           // Si no hay avatarOption pero tenemos avatar_id, usar default revelado
-          const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/default.png';
+          const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/avatar_01.png';
           showProfilePic(perfilImg, defaultSrc);
         }
       } else {
         // Sin avatar_id: mostrar default
-        const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/default.png';
+        const defaultSrc = document.getElementById('perfil-imagen')?.dataset.default || '/avatars/avatar_01.png';
         showProfilePic(perfilImg, defaultSrc);
       }
       // Asegurar que el nombre completo y el correo se muestren con los datos de registro
@@ -337,6 +344,35 @@ async function cargarDatosUsuario() {
       }
       if (correoEl) {
         correoEl.value = user.email || (storedUser && storedUser.email) || correoEl.value || '';
+      }
+
+      // Deshabilitar campo de 'contraseña actual' si el usuario viene de Google y no tiene contraseña
+      const pwContainer = document.getElementById('current_password_container');
+      const currentPwInput = document.getElementById('current_password');
+      if (pwContainer && currentPwInput) {
+        // has_password nos llega del backend ahora
+        const has_password = user.has_password !== undefined ? user.has_password : true;
+
+        if (has_password === false) {
+          // Mantener visible pero deshabilitarlo
+          currentPwInput.disabled = true;
+          pwContainer.style.opacity = '0.6';
+          currentPwInput.dataset.required = 'false';
+          currentPwInput.placeholder = "No requerida (Cuenta de Google)";
+
+          // Ocultar el botón del ojito de forma segura
+          const toggleBtn = pwContainer.querySelector('.toggle-pass');
+          if (toggleBtn) toggleBtn.style.display = 'none';
+        } else {
+          // Habilitarlo para usuarios normales
+          currentPwInput.disabled = false;
+          pwContainer.style.opacity = '1';
+          currentPwInput.dataset.required = 'true';
+          currentPwInput.placeholder = "";
+
+          const toggleBtn = pwContainer.querySelector('.toggle-pass');
+          if (toggleBtn) toggleBtn.style.display = '';
+        }
       }
     } else {
       // Intentar parsear JSON de error, si no, leer texto
@@ -429,11 +465,11 @@ perfilForm.addEventListener("submit", async (e) => {
     const profileData = {};
     if (usuario) {
       profileData.nombre = usuario;
-      profileData.name   = usuario;
+      profileData.name = usuario;
     }
 
     if (_avatarPendiente === 'default') {
-      profileData.avatar_id = null;
+      profileData.avatar_id = 1; // Always fallback to 1 explicitly
     } else if (_avatarPendiente !== null) {
       profileData.avatar_id = parseInt(_avatarPendiente);
     }
@@ -494,7 +530,8 @@ perfilForm.addEventListener("submit", async (e) => {
 
     if (new_password && new_password !== "********" && new_password.trim() !== "") {
 
-      if (!current_password || current_password.trim() === "") {
+      const currentPwInput = document.getElementById("current_password");
+      if (currentPwInput.dataset.required !== "false" && (!current_password || current_password.trim() === "")) {
         showErrorToast("Debes ingresar tu contraseña actual en el campo de contraseña");
         return;
       }

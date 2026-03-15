@@ -9,13 +9,13 @@ use Illuminate\Http\Request;
 
 // La raíz siempre redirige al dashboard (página principal pública)
 Route::get('/', function () {
-    return redirect('/dashboard');
+    return redirect('/home');
 });
 
 // Dashboard público - no requiere autenticación
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+Route::get('/home', function () {
+    return view('home');
+})->name('home');
 
 // ===============================
 // Login, Registro y Recuperación de Contraseña
@@ -62,22 +62,23 @@ Route::middleware('auth')->group(function () {
         function () {
             return view('modulo');
         }
-        )->name('modulos');
+    )->name('modulos');
 
-        Route::get(
-            '/modulo/{slug}',
-            function ($slug) {
+    Route::get(
+        '/modulo/{slug}',
+        function ($slug) {
             return view('modulo', ['slug' => $slug]);
         }
-        )->name('modulo.detalle');
+    )->name('modulo.detalle');
 
-        // Perfil: protegido por sesión Laravel
-        Route::get(
-            '/perfil',
-            function () {
+    // Perfil: protegido por sesión Laravel
+    Route::get(
+        '/perfil',
+        function () {
             return view('perfil');
         }
-        )->name('perfil');    });
+    )->name('perfil');
+});
 
 // ===============================
 // API LOCAL PARA MANEJAR SESIÓN

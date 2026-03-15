@@ -73,6 +73,13 @@
         <img src="{{ asset('images/logo_blanco.png') }}" alt="Logo Varchate" class="logo-mobile">
       </a>
 
+      <!-- Ranking en móvil -->
+      <div class="ranking-mobile">
+        <a href="#" class="ranking-link" id="btn-ranking-mobile" title="Ver ranking del módulo">
+          <img src="{{ asset('images/medallas.svg') }}" alt="Ranking" class="ranking-icon-mobile">
+        </a>
+      </div>
+
       <div class="mobile-user">
         <span class="user-name-mobile" id="userNameMobile">
           <span class="first-name"></span>

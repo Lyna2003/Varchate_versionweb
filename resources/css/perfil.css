@@ -837,7 +837,7 @@ html.dark-mode .toggle-pass svg circle {
     height: 90px;
     transform: scale(1.2);
     z-index: 1;
-    content: url(img/ola-header-movil.svg);
+    content: url("../images/ola-header-movil.svg");
     left: -22px;
 
   }
@@ -848,6 +848,7 @@ html.dark-mode .toggle-pass svg circle {
     height: 90px;
     transform: scale(1.2);
     z-index: 1;
+    content: url("../images/ola-footer-movil.svg");
     left: -22px;
     /* se adapta */
   }
