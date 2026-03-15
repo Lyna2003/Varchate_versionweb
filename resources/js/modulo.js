@@ -400,11 +400,6 @@ function actualizarIntroduccionModulo() {
                 }
             });
         }
-                    ultimoElemento.insertAdjacentElement('afterend', p);
-                    ultimoElemento = p;
-                }
-            });
-        }
     }
 
     // Asegurar que el título "Contenido" y las lecciones estén después
