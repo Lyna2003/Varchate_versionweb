@@ -1092,8 +1092,9 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
-    // Limpiar sección de ejercicios previa (puede ser de otra lección)
+    // Limpiar secciones de ejercicios y editor previas
     document.getElementById('ejerciciosSeccion')?.remove();
+    document.getElementById('editorIndependienteSeccion')?.remove();
 
 
     try {
@@ -1203,13 +1204,18 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
 
     try {
         // Verificar flags de la lección si se proporcionó el objeto
-        const tieneEjerciciosFlag = leccionObj ? (leccionObj.tiene_ejercicios == 1 || leccionObj.tiene_ejercicios === true) : true;
+        // Flag de ejercicios: solo si está activo en la base de datos
+        const tieneEjerciciosFlag = leccionObj ? (leccionObj.tiene_ejercicios == 1 || leccionObj.tiene_ejercicios === true) : false;
+        // Flag de editor: solo si está activo en la base de datos (según última aclaración: cada uno por su lado)
         const tieneEditorCodigoFlag = leccionObj ? (leccionObj.tiene_editor_codigo == 1 || leccionObj.tiene_editor_codigo === true) : false;
 
-        console.log('🚩 Flags de lección:', { tieneEjerciciosFlag, tieneEditorCodigoFlag });
+        console.log('🚩 Flags de lección (estrictos):', { tieneEjerciciosFlag, tieneEditorCodigoFlag });
 
         if (!tieneEjerciciosFlag && !tieneEditorCodigoFlag) {
             console.log('ℹ️ La lección no tiene activados ejercicios ni editor de código');
+            // Asegurar limpieza por si acaso
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('editorIndependienteSeccion')?.remove();
             return;
         }
 
