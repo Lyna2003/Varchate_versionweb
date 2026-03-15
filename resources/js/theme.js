@@ -46,31 +46,33 @@
   // ==========================================
 
   function initializeThemeToggle() {
-    const themeToggle = document.getElementById('btn-darkmode');
-    
-    if (!themeToggle) {
-      // Si no existe el botón de toggle, terminar (algunas vistas no lo tienen)
-      return;
-    }
+    const toggleBtns = [
+      document.getElementById('btn-darkmode'),
+      document.getElementById('darkmode-btn-mobile')
+    ];
 
-    // Handler para cambiar el tema
-    themeToggle.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      const root = document.documentElement;
-      const isDark = root.classList.toggle(DARK_CLASS);
-      
-      // Guardar preferencia
-      try {
-        localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
-      } catch (e) {
-        console.warn('Error al guardar tema en localStorage:', e);
-      }
+    toggleBtns.forEach(themeToggle => {
+      if (!themeToggle) return;
 
-      // Disparar evento personalizado para que otras scripts puedan reaccionar
-      window.dispatchEvent(new CustomEvent('themechange', { 
-        detail: { theme: isDark ? 'dark' : 'light' } 
-      }));
+      // Handler para cambiar el tema
+      themeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const root = document.documentElement;
+        const isDark = root.classList.toggle(DARK_CLASS);
+        
+        // Guardar preferencia
+        try {
+          localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+        } catch (e) {
+          console.warn('Error al guardar tema en localStorage:', e);
+        }
+
+        // Disparar evento personalizado para que otras scripts puedan reaccionar
+        window.dispatchEvent(new CustomEvent('themechange', { 
+          detail: { theme: isDark ? 'dark' : 'light' } 
+        }));
+      });
     });
   }
 
