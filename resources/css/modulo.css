@@ -2264,3 +2264,166 @@
 .ej-dot.dot-incorrecto {
   background: #f87171;
 }
+
+/* ===============================
+   ESTILOS PARA EDITOR DE CÓDIGO
+=============================== */
+.editor-codigo-container {
+  margin-top: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-codigo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  background: #1e293b;
+  color: #fff;
+  height: 40px;
+}
+
+.editor-tabs {
+  display: flex;
+  height: 100%;
+}
+
+.editor-tab {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 100%;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.editor-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.editor-tab.active {
+  color: #38bdf8;
+  border-bottom: 2px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.editor-codigo-lang {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.editor-codigo-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-ejecutar-codigo {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-ejecutar-codigo:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.editor-codigo-main {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  min-height: 250px;
+}
+
+@media (max-width: 768px) {
+  .editor-codigo-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.CodeMirror {
+  height: 100% !important;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 14px;
+}
+
+.editor-codigo-preview {
+  background: #fff;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-label {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+}
+
+#preview-iframe,
+#preview-iframe-standalone {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+}
+
+/* ==========================================================================
+   INTERACTIVE CODE EDITOR (STANDALONE)
+   ========================================================================== */
+.editor-independiente-seccion {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.editor-standalone-header {
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.editor-standalone-header i {
+    color: #38bdf8;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.4));
+}
+
+.editor-codigo-output {
+  flex: 1;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-y: auto;
+  background: #0f172a;
+  color: #38bdf8;
+  white-space: pre-wrap;
+}

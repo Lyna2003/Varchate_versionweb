@@ -1175,7 +1175,7 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 
             // ===== EJERCICIOS: cargar y mostrar si la lección tiene =====
             if (moduloActual && moduloActual.id) {
-                await cargarEjerciciosLeccion(moduloActual.id, leccion.id);
+                await cargarEjerciciosLeccion(moduloActual.id, leccion.id, leccion);
             }
 
         } else {
@@ -1196,12 +1196,23 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 // EJERCICIOS INTERACTIVOS EN LECCIÓN
 // ===============================
 
-async function cargarEjerciciosLeccion(moduloId, leccionId) {
+async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
     const mainEl = document.querySelector('main.container');
     const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
+        // Verificar flags de la lección si se proporcionó el objeto
+        const tieneEjerciciosFlag = leccionObj ? (leccionObj.tiene_ejercicios == 1 || leccionObj.tiene_ejercicios === true) : true;
+        const tieneEditorCodigoFlag = leccionObj ? (leccionObj.tiene_editor_codigo == 1 || leccionObj.tiene_editor_codigo === true) : false;
+
+        console.log('🚩 Flags de lección:', { tieneEjerciciosFlag, tieneEditorCodigoFlag });
+
+        if (!tieneEjerciciosFlag && !tieneEditorCodigoFlag) {
+            console.log('ℹ️ La lección no tiene activados ejercicios ni editor de código');
+            return;
+        }
+
         const url = `${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios`;
         console.log('🔍 Cargando ejercicios desde:', url);
 
@@ -1214,25 +1225,47 @@ async function cargarEjerciciosLeccion(moduloId, leccionId) {
 
         if (!response.ok) {
             console.warn('⚠️ Ejercicios HTTP error:', response.status);
+            // Si hay error pero tieneEditorCodigoFlag es true, podríamos mostrar un demo
+            if (tieneEditorCodigoFlag) {
+                mostrarDemoEditor(moduloId, leccionId);
+            }
             return;
         }
 
         const json = await response.json();
-        console.log('📦 Respuesta ejercicios completa:', JSON.stringify(json));
         const data = json?.data;
 
-        if (!data?.tiene_ejercicios || !data?.ejercicios?.length) {
-            console.log('ℹ️ Esta lección no tiene ejercicios');
-            return;
+        // 1. Renderizar ejercicios normales (si existen y flag activo)
+        if (tieneEjerciciosFlag && data?.ejercicios && data.ejercicios.length > 0) {
+            console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s)`);
+            renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
+        } else {
+            // Limpiar si no hay ejercicios
+            document.getElementById('ejerciciosSeccion')?.remove();
         }
 
-        console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s):`, data.ejercicios);
-        renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
+        // 2. Renderizar editor independiente (si flag activo)
+        if (tieneEditorCodigoFlag) {
+            const configEditor = {
+                id: 'editor-practica-' + leccionId,
+                instrucciones: 'Practica libremente con el editor.',
+                titulo: 'Editor de Código Interactivo',
+                codigo_inicial: leccionObj?.codigo_base || '<!-- Escribe tu HTML aquí -->\n<h1>Hola Varchate</h1>',
+                css_inicial: leccionObj?.css_base || '/* Escribe tu CSS aquí */\nh1 { color: #38bdf8; text-align: center; }',
+                js_inicial: leccionObj?.js_base || '// Escribe tu JS aquí\nconsole.log("¡Listo para programar!");'
+            };
+            renderizarEditorIndependiente(configEditor);
+        } else {
+            // Limpiar si no hay editor
+            document.getElementById('editorIndependienteSeccion')?.remove();
+        }
 
     } catch (err) {
         console.warn('No se pudieron cargar ejercicios:', err);
     }
 }
+
+// Eliminar función mostrarDemoEditor ya que ahora está integrada en cargarEjerciciosLeccion
 
 // Escapa texto para inserción segura en innerHTML
 function escapeHTML(str) {
@@ -1463,68 +1496,6 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
             });
         }
 
-        // Comprobar
-        const btnComprobar = seccion.querySelector('#btnComprobar');
-        if (btnComprobar) {
-            btnComprobar.addEventListener('click', async () => {
-                const mainEl = document.querySelector('main.container');
-                const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
-                const token = localStorage.getItem('auth_token');
-                const est = estados[indexActual];
-                let body = {};
-
-                if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
-                    const selected = seccion.querySelector('.ejercicio-opcion.selected');
-                    if (!selected) {
-                        const fb = seccion.querySelector('#ejFeedback');
-                        fb.style.display = 'block';
-                        fb.className = 'ejercicio-feedback feedback-warning';
-                        fb.textContent = '⚠️ Selecciona una opción antes de comprobar';
-                        return;
-                    }
-                    body = { opcion_id: parseInt(selected.dataset.opcionId) };
-                } else if (ej.tipo === 'arrastrar_soltar') {
-                    const parejas = [];
-                    seccion.querySelectorAll('.drag-zona').forEach(zona => {
-                        const item = zona.querySelector('.drag-item');
-                        if (item) parejas.push({ id_opcion: parseInt(item.dataset.opcionId), pareja: zona.dataset.pareja });
-                    });
-                    if (!parejas.length) {
-                        const fb = seccion.querySelector('#ejFeedback');
-                        fb.style.display = 'block';
-                        fb.className = 'ejercicio-feedback feedback-warning';
-                        fb.textContent = '⚠️ Arrastra los elementos antes de comprobar';
-                        return;
-                    }
-                    body = { parejas };
-                }
-
-                btnComprobar.disabled = true;
-                btnComprobar.textContent = 'Comprobando...';
-
-                try {
-                    const resp = await fetch(`${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios/${ej.id}/intento`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    const result = await resp.json();
-                    est.respondido = true;
-                    est.correcto = result?.data?.es_correcta;
-                    est.feedback = result?.data?.feedback || '';
-                    est.opcionCorrecta = result?.data?.opcion_correcta || null;
-                    render();
-                } catch {
-                    btnComprobar.disabled = false;
-                    btnComprobar.textContent = 'Comprobar';
-                    const fb = seccion.querySelector('#ejFeedback');
-                    fb.style.display = 'block';
-                    fb.className = 'ejercicio-feedback feedback-warning';
-                    fb.textContent = '⚠️ Error de conexión. Inténtalo de nuevo.';
-                }
-            });
-        }
-
         // Reintentar
         const btnReintentar = seccion.querySelector('#btnReintentar');
         if (btnReintentar) {
@@ -1545,6 +1516,138 @@ function getTipoBadge(tipo) {
         'arrastrar_soltar': '⇄ Relacionar'
     };
     return badges[tipo] || tipo;
+}
+
+/**
+ * Renderiza el Editor de Código de forma independiente (fuera del slider)
+ */
+function renderizarEditorIndependiente(config) {
+    const contentSection = document.getElementById('contentSection');
+    if (!contentSection) return;
+
+    // Eliminar previo si existe
+    document.getElementById('editorIndependienteSeccion')?.remove();
+
+    const seccion = document.createElement('div');
+    seccion.className = 'editor-independiente-seccion';
+    seccion.id = 'editorIndependienteSeccion';
+    
+    // Inyectar HTML del editor
+    seccion.innerHTML = `
+        <div class="ejercicios-leccion-header editor-standalone-header">
+            <i class="fa-solid fa-code"></i>
+            <div>
+                <h3 class="ejercicios-leccion-titulo">${config.titulo}</h3>
+                <p class="ejercicios-leccion-subtitulo">${config.instrucciones}</p>
+            </div>
+        </div>
+        <div class="editor-codigo-container">
+            <div class="editor-codigo-header">
+                <div class="editor-tabs">
+                    <button class="editor-tab active" data-lang="html">index.html</button>
+                    <button class="editor-tab" data-lang="css">style.css</button>
+                    <button class="editor-tab" data-lang="js">script.js</button>
+                </div>
+                <div class="editor-codigo-actions">
+                    <button class="btn-ejecutar-codigo" id="btnEjecutarStandalone">
+                        <i class="fas fa-play"></i> Ejecutar
+                    </button>
+                </div>
+            </div>
+            <div class="editor-codigo-main">
+                <div class="editor-panes-container">
+                    <textarea id="standalone-html">${escapeHTML(config.codigo_inicial)}</textarea>
+                    <textarea id="standalone-css" style="display:none;">${escapeHTML(config.css_inicial)}</textarea>
+                    <textarea id="standalone-js" style="display:none;">${escapeHTML(config.js_inicial)}</textarea>
+                </div>
+                <div class="editor-codigo-preview">
+                    <span class="preview-label">Resultado en vivo</span>
+                    <iframe id="preview-iframe-standalone"></iframe>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Insertar después de ejerciciosSeccion o antes del botón siguiente
+    const ejerciciosS = document.getElementById('ejerciciosSeccion');
+    const btnContainer = contentSection.querySelector('.btn-container');
+
+    if (ejerciciosS && ejerciciosS.nextSibling) {
+        contentSection.insertBefore(seccion, ejerciciosS.nextSibling);
+    } else if (btnContainer) {
+        contentSection.insertBefore(seccion, btnContainer);
+    } else {
+        contentSection.appendChild(seccion);
+    }
+
+    // Inicializar Editores
+    const editors = {};
+    ['html', 'css', 'js'].forEach(lang => {
+        const textarea = seccion.querySelector(`#standalone-${lang}`);
+        if (textarea) {
+            const mode = lang === 'js' ? 'javascript' : (lang === 'css' ? 'css' : 'htmlmixed');
+            editors[lang] = CodeMirror.fromTextArea(textarea, {
+                lineNumbers: true,
+                mode: mode,
+                theme: 'material-darker',
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                tabSize: 4,
+                lineWrapping: true
+            });
+        }
+    });
+
+    // Pestañas
+    seccion.querySelectorAll('.editor-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const lang = tab.dataset.lang;
+            seccion.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            ['html', 'css', 'js'].forEach(l => {
+                const pane = seccion.querySelector(`#standalone-${l}`).nextSibling;
+                if (l === lang) {
+                    pane.style.display = 'block';
+                    editors[l].refresh();
+                } else {
+                    pane.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Ejecutar
+    // Ejecutar
+    seccion.querySelector('#btnEjecutarStandalone').addEventListener('click', () => {
+        const iframe = seccion.querySelector('#preview-iframe-standalone');
+        const html = editors['html'].getValue();
+        const css = editors['css'].getValue();
+        const js = editors['js'].getValue();
+        
+        const content = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>${css}</style>
+            </head>
+            <body>
+                ${html}
+                <script>
+                    try {
+                        ${js}
+                    } catch (err) {
+                        console.error(err);
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+        
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(content);
+        doc.close();
+    });
 }
 
 async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
