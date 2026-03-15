@@ -26,8 +26,8 @@
 
 
     <div class="ranking">
-      <a href="#" class="ranking-link">
-        <img src="{{ asset('images/medallas.svg') }}" alt="Inicio" class="ranking-icon">
+      <a href="#" class="ranking-link" id="btn-ranking" title="Ver ranking del módulo">
+        <img src="{{ asset('images/medallas.svg') }}" alt="Ranking" class="ranking-icon">
       </a>
     </div>
 
@@ -269,6 +269,83 @@
     </div>
   </div>
   <!-- ===== FIN MODAL DE EVALUACIÓN ===== -->
+
+  <!-- ===== MODAL DE RANKING ===== -->
+  <div id="ranking-modal-overlay"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:4000; align-items:center; justify-content:center;">
+
+    <div id="ranking-modal" style="
+      background: var(--color-surface, #fff);
+      border-radius: 20px;
+      width: 92%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0,0,0,.35);
+      animation: rankingSlideIn .28s cubic-bezier(.16,1,.3,1) both;
+      position: relative;
+    ">
+      <!-- Header -->
+      <div style="
+        background: linear-gradient(135deg, #0099FF 0%, #0060cc 100%);
+        border-radius: 20px 20px 0 0;
+        padding: 24px 24px 20px;
+        display: flex; align-items: center; justify-content: space-between;
+      ">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:2rem;">🏆</span>
+          <div>
+            <h2 style="color:#fff; font-size:1.2rem; font-weight:700; margin:0;">Top 5 del Módulo</h2>
+            <p id="ranking-modal-subtitulo" style="color:rgba(255,255,255,.8); font-size:0.8rem; margin:0;"></p>
+          </div>
+        </div>
+        <button id="ranking-modal-close" style="
+          background: rgba(255,255,255,.2); border:none; color:#fff;
+          width:34px; height:34px; border-radius:50%; font-size:1.1rem;
+          cursor:pointer; display:flex; align-items:center; justify-content:center;
+          transition: background .2s;
+        " title="Cerrar">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div id="ranking-modal-body" style="padding: 20px 20px 8px;">
+        <!-- Se rellena dinámicamente -->
+        <div id="ranking-skeleton" style="display:flex; flex-direction:column; gap:12px;">
+          <div style="height:60px; border-radius:12px; background:#f0f0f0; animation: rankingPulse 1.2s ease-in-out infinite;"></div>
+          <div style="height:60px; border-radius:12px; background:#f0f0f0; animation: rankingPulse 1.2s ease-in-out infinite .1s;"></div>
+          <div style="height:60px; border-radius:12px; background:#f0f0f0; animation: rankingPulse 1.2s ease-in-out infinite .2s;"></div>
+        </div>
+        <div id="ranking-lista" style="display:none; flex-direction:column; gap:10px;"></div>
+      </div>
+
+      <!-- Footer stats -->
+      <div id="ranking-modal-footer" style="
+        padding: 14px 20px 20px;
+        border-top: 1px solid var(--color-border, #e5e7eb);
+        display: flex; justify-content: space-between; align-items:center;
+        font-size:0.8rem; color: var(--color-text-muted, #6b7280);
+        display:none;
+      ">
+        <span id="ranking-total-participantes"></span>
+        <span id="ranking-actualizado" style="font-style:italic;"></span>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes rankingSlideIn {
+      from { opacity: 0; transform: translateY(30px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes rankingPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .45; }
+    }
+    #ranking-modal-close:hover { background: rgba(255,255,255,.35) !important; }
+    .ranking-row { transition: transform .15s, box-shadow .15s; }
+    .ranking-row:hover { transform: translateX(4px); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+  </style>
+  <!-- ===== FIN MODAL DE RANKING ===== -->
 
 </body>
 
