@@ -54,45 +54,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Enviar mensaje
-    const sendMessage = async () => {
-        const text = chatbotInput.value.trim();
-        if (!text) return;
+    async function sendMessage() {
+        const message = chatbotInput.value.trim();
+        if (!message) return;
 
-        addMessage(text, 'user');
+        addMessage(message, 'user');
         chatbotInput.value = '';
 
-        const typingEl = document.createElement('div');
-        typingEl.className = 'typing';
-        typingEl.textContent = 'Varchate Cat está pensando... 🐾';
-        chatbotMessages.appendChild(typingEl);
+        const thinkingPhrases = [
+            'Varchate Cat está pensando...',
+            'Buscando en mis archivos gatunos...',
+            'Espera un miau-mento...',
+            'Preparando una respuesta ronroneante...',
+            'Afilando las garras del conocimiento...'
+        ];
+        const randomPhrase = thinkingPhrases[Math.floor(Math.random() * thinkingPhrases.length)];
+
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing';
+        typingDiv.textContent = randomPhrase;
+        chatbotMessages.appendChild(typingDiv);
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
         try {
-            const response = await fetch('/api/chatbot/chat', {
+            const context = window.varchateChat.context; // Changed from currentContext to context to match existing structure
+            const response = await fetch('/api/chatbot/chat', { // Kept original endpoint /api/chatbot/chat
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
                 },
-                body: JSON.stringify({ 
-                    message: text,
-                    context: window.varchateChat.context
-                })
+                body: JSON.stringify({ message, context })
             });
 
             const data = await response.json();
-            chatbotMessages.removeChild(typingEl);
+            chatbotMessages.removeChild(typingDiv);
 
             if (data.reply) {
                 addMessage(data.reply, 'bot');
             } else {
-                addMessage('¡Miau! Algo salió mal. Inténtalo de nuevo más tarde.', 'bot');
+                addMessage('Lo siento, tuve un problema con mi conexión gatuna. Inténtalo más tarde.', 'bot');
             }
         } catch (error) {
-            if (typingEl.parentNode) chatbotMessages.removeChild(typingEl);
-            addMessage('Lo siento, el servidor no responde. ¡Purr-don!', 'bot');
+            if (typingDiv.parentNode) chatbotMessages.removeChild(typingDiv); // Ensure typingDiv exists before removing
+            addMessage('¡Miau! Algo salió mal. Inténtalo de nuevo más tarde.', 'bot');
         }
-    };
+    }
 
     chatbotSend.addEventListener('click', sendMessage);
     chatbotInput.addEventListener('keypress', (e) => {
@@ -112,15 +119,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addMessage(text, sender, save = true) {
+        const container = document.createElement('div');
+        container.className = `msg-container ${sender}`;
+        
+        if (sender === 'bot') {
+            const avatar = document.createElement('div');
+            avatar.className = 'msg-avatar';
+            const iconUrl = window.varchateIcon || '/images/chatbot-icon.svg';
+            avatar.innerHTML = `<img src="${iconUrl}" alt="Cat">`;
+            container.appendChild(avatar);
+        }
+
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${sender}`;
         
-        // Formateo simple: **texto** -> <strong>texto</strong>
-        const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        msgDiv.innerHTML = formattedText;
+        // Formateo: **texto** -> <strong> e ![alt](url) -> <div class="img-wrapper"><img ...></div>
+        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         
-        chatbotMessages.appendChild(msgDiv);
+        // Expresión regular para capturar imágenes de Markdown
+        const imgRegex = /!\[(.*?)\]\((.*?)\)/g;
+        let match;
+        const imagesToLoad = [];
+
+        // Reemplazamos las imágenes por un marcador de posición con skeleton
+        formattedText = formattedText.replace(imgRegex, (match, alt, url) => {
+            const id = 'img-' + Math.random().toString(36).substr(2, 9);
+            imagesToLoad.push({ id, url, alt });
+            return `<div class="image-wrapper skeleton" id="${id}">
+                        <div class="image-loading-text">Generando imagen...</div>
+                    </div>`;
+        });
+        
+        msgDiv.innerHTML = formattedText;
+        container.appendChild(msgDiv);
+        chatbotMessages.appendChild(container);
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+        // Cargar las imágenes de forma asíncrona
+        imagesToLoad.forEach(imgData => {
+            const wrapper = document.getElementById(imgData.id);
+            const img = new Image();
+            img.src = imgData.url;
+            img.alt = imgData.alt;
+            
+            img.onload = () => {
+                wrapper.classList.remove('skeleton');
+                wrapper.innerHTML = ''; // Limpiar mensaje de carga
+                wrapper.appendChild(img);
+                img.style.opacity = '0';
+                setTimeout(() => {
+                    img.style.transition = 'opacity 0.5s ease';
+                    img.style.opacity = '1';
+                }, 10);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            };
+
+            img.onerror = () => {
+                wrapper.classList.remove('skeleton');
+                wrapper.innerHTML = `<div class="image-error"><span>⚠️ Error al cargar imagen</span></div>`;
+            };
+
+            // Hacer clic para ver en grande
+            wrapper.addEventListener('click', () => {
+                if (!wrapper.classList.contains('skeleton') && img.src) {
+                    window.open(img.src, '_blank');
+                }
+            });
+        });
 
         if (save) {
             window.varchateChat.history.push({ text, sender });

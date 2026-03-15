@@ -40,4 +40,11 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'chatbot' => [
+        'provider' => env('CHAT_PROVIDER', 'gemini'),
+        'gemini_keys' => env('GEMINI_API_KEY'),
+        'deepseek_keys' => env('DEEPSEEK_API_KEY'),
+        'groq_keys' => env('GROQ_API_KEY'),
+    ],
+
 ];

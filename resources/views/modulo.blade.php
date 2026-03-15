@@ -229,6 +229,7 @@
 
   @vite('resources/js/modulo.js')
   @vite('resources/js/chatbot.js')
+  <script>window.varchateIcon = "{{ asset('images/chatbot-icon.svg') }}";</script>
 
   <!-- Chatbot UI -->
   <div id="chatbot-toggle" class="chatbot-toggle" title="¿Necesitas ayuda?">
