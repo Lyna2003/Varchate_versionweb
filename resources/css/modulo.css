@@ -1517,6 +1517,18 @@
       height: 40px;
     }
 
+    .ranking-mobile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ranking-icon-mobile {
+      height: 30px;
+      width: 30px;
+      border-radius: 6px;
+    }
+
     .mobile-user {
       display: flex;
       align-items: center;

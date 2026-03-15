@@ -100,12 +100,12 @@ async function verificarTokenEnSegundoPlano(token) {
                 if (avatarId) {
                     const num = parseInt(avatarId);
                     const filename = isNaN(num)
-                        ? 'default.png'
+                        ? 'avatar_01.png'
                         : `avatar_${String(num).padStart(2, '0')}.png`;
                     avatarUrl = `${avatarsBase}/${filename}`;
                 } else {
                     // Sin avatar (null) → usar default
-                    avatarUrl = `${avatarsBase}/default.png`;
+                    avatarUrl = `${avatarsBase}/avatar_01.png`;
                 }
 
                 // Siempre actualizar localStorage con el valor correcto (incluso si es default)
@@ -357,6 +357,10 @@ function actualizarIntroduccionModulo() {
     const parrafosExistentes = introduccionContent.querySelectorAll('p');
     parrafosExistentes.forEach(p => p.remove());
 
+    // Eliminar cualquier bloque de contenido HTML previo
+    const prevHtmlBlock = introduccionContent.querySelector('.intro-html-content');
+    if (prevHtmlBlock) prevHtmlBlock.remove();
+
     if (moduloActual.descripcion_larga) {
         // Verificar si la descripción ya contiene etiquetas HTML
         const tieneHTML = /<[a-z][\s\S]*>/i.test(moduloActual.descripcion_larga);
@@ -391,6 +395,11 @@ function actualizarIntroduccionModulo() {
                     p.style.fontSize = '16px';
                     p.style.textAlign = 'justify';
 
+                    ultimoElemento.insertAdjacentElement('afterend', p);
+                    ultimoElemento = p;
+                }
+            });
+        }
                     ultimoElemento.insertAdjacentElement('afterend', p);
                     ultimoElemento = p;
                 }
@@ -3357,16 +3366,21 @@ async function _mostrarRevisionRespuestas(intentoId, originalData) {
 // ===============================
 
 (function iniciarRankingModal() {
-    const overlay   = document.getElementById('ranking-modal-overlay');
+    const overlay = document.getElementById('ranking-modal-overlay');
     const btnRanking = document.getElementById('btn-ranking');
-    const btnClose  = document.getElementById('ranking-modal-close');
+    const btnRankingMobile = document.getElementById('btn-ranking-mobile');
+    const btnClose = document.getElementById('ranking-modal-close');
 
-    if (!overlay || !btnRanking) return;
+    if (!overlay) return;
 
     // Abrir modal
-    btnRanking.addEventListener('click', (e) => {
-        e.preventDefault();
-        abrirRankingModal();
+    [btnRanking, btnRankingMobile].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                abrirRankingModal();
+            });
+        }
     });
 
     // Cerrar con X
@@ -3389,7 +3403,7 @@ function abrirRankingModal() {
 
     // Mostrar skeleton, ocultar lista
     document.getElementById('ranking-skeleton').style.display = 'flex';
-    document.getElementById('ranking-lista').style.display    = 'none';
+    document.getElementById('ranking-lista').style.display = 'none';
     document.getElementById('ranking-modal-footer').style.display = 'none';
     document.getElementById('ranking-modal-subtitulo').textContent = '';
 
@@ -3408,7 +3422,7 @@ function cerrarRankingModal() {
 
 async function cargarRankingTop5() {
     const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
-    const token  = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
 
     if (!moduloActual?.id) {
         renderRankingError('No se pudo identificar el módulo.');
@@ -3437,9 +3451,9 @@ async function cargarRankingTop5() {
 }
 
 function renderRankingTop5(data) {
-    const lista    = document.getElementById('ranking-lista');
+    const lista = document.getElementById('ranking-lista');
     const skeleton = document.getElementById('ranking-skeleton');
-    const footer   = document.getElementById('ranking-modal-footer');
+    const footer = document.getElementById('ranking-modal-footer');
     const subtitulo = document.getElementById('ranking-modal-subtitulo');
 
     const top5 = data.top_5 || [];
@@ -3465,12 +3479,12 @@ function renderRankingTop5(data) {
             </div>`;
     } else {
         lista.innerHTML = top5.map((item, idx) => {
-            const pos     = item.posicion || (idx + 1);
-            const estilo  = estilos[pos] || defaultEstilo;
-            const nombre  = item.usuario?.nombre || 'Usuario';
+            const pos = item.posicion || (idx + 1);
+            const estilo = estilos[pos] || defaultEstilo;
+            const nombre = item.usuario?.nombre || 'Usuario';
             const iniciales = item.usuario?.iniciales || nombre.substring(0, 2).toUpperCase();
             const medalla = item.medalla?.icono || '⭐';
-            const pct     = item.progreso?.porcentaje ?? item.porcentaje ?? 0;
+            const pct = item.progreso?.porcentaje ?? item.porcentaje ?? 0;
             const completado = item.progreso?.completado ?? item.completado ?? false;
 
             const barColor = completado ? '#22c55e' : (pos === 1 ? '#C9A227' : '#0099FF');
@@ -3539,12 +3553,12 @@ function renderRankingTop5(data) {
     }
 
     skeleton.style.display = 'none';
-    lista.style.display    = 'flex';
+    lista.style.display = 'flex';
 }
 
 function renderRankingError(mensaje) {
     const skeleton = document.getElementById('ranking-skeleton');
-    const lista    = document.getElementById('ranking-lista');
+    const lista = document.getElementById('ranking-lista');
 
     lista.innerHTML = `
         <div style="text-align:center; padding:28px 16px; color:#ef4444;">
@@ -3553,5 +3567,5 @@ function renderRankingError(mensaje) {
         </div>`;
 
     skeleton.style.display = 'none';
-    lista.style.display    = 'flex';
+    lista.style.display = 'flex';
 }

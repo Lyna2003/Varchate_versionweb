@@ -318,9 +318,9 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           showFormError("Por favor, corrige los errores en el formulario");
         }
-        // Error 401 - Credenciales incorrectas
+        // Error 401 - Credenciales incorrectas u otros mensajes personalizados
         else if (response.status === 401) {
-          showFormError("Credenciales incorrectas. Verifica tu correo y contraseña");
+          showFormError(data.message || "Credenciales incorrectas. Verifica tu correo y contraseña");
         }
         // Error 403 - Usuario inactivo o no verificado
         else if (response.status === 403) {

@@ -44,7 +44,7 @@
       <form id="perfilForm" class="perfil-card" data-modulos-url="{{ route('modulos') }}"
         data-api-url="{{ env('VITE_API_BASE_URL', 'http://localhost:8001/api') }}">
         <div class="perfil-imagen">
-          <img src="" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/default.png') }}"
+          <img src="" alt="Foto de perfil" id="perfil-imagen" data-default="{{ asset('avatars/avatar_01.png') }}"
             style="opacity:0;transition:opacity 0.3s ease;">
 
           <div class="acciones-foto">
@@ -67,7 +67,7 @@
             <label for="correo">Correo electrónico</label>
             <input type="email" id="correo" name="correo" value="{{ $currentUser->email ?? '' }}" disabled>
           </div>
-          <div class="campo input-pass">
+          <div class="campo input-pass" id="current_password_container">
             <label for="current_password">Contraseña actual</label>
             <input type="password" id="current_password" name="current_password" value="">
             <button type="button" class="toggle-pass" data-target="current_password" aria-label="Mostrar contraseña">
@@ -141,8 +141,8 @@
       <h2>Selecciona un avatar</h2>
       <div class="avatar-grid">
 
-        <div class="avatar-option" data-id="1" tabindex="0"><img src="{{ asset('avatars/avatar_01.png') }}"
-            alt="avatar_1"></div>
+        <div class="avatar-option" data-id="9" tabindex="0"><img src="{{ asset('avatars/avatar_09.png') }}"
+            alt="avatar_9"></div>
         <div class="avatar-option" data-id="2" tabindex="0"><img src="{{ asset('avatars/avatar_02.png') }}"
             alt="avatar_2"></div>
         <div class="avatar-option" data-id="3" tabindex="0"><img src="{{ asset('avatars/avatar_03.png') }}"
@@ -157,8 +157,8 @@
             alt="avatar_7"></div>
         <div class="avatar-option" data-id="8" tabindex="0"><img src="{{ asset('avatars/avatar_08.png') }}"
             alt="avatar_8"></div>
-        <div class="avatar-option avatar-default" data-id="default" tabindex="0">
-          <img src="{{ asset('avatars/default.png') }}" alt="Avatar por defecto">
+        <div class="avatar-option avatar-default" data-id="1" tabindex="0">
+          <img src="{{ asset('avatars/avatar_01.png') }}" alt="Avatar por defecto">
         </div>
       </div>
       <div class="modal-buttons">
