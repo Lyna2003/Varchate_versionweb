@@ -19,22 +19,22 @@ class ChatbotController extends Controller
         $cacheKey = 'chatbot_' . md5(strtolower(trim($message)) . '_' . $context);
 
         try {
-            $reply = Cache::remember($cacheKey, now()->addDays(7), function () use ($message, $context, $primaryProvider, $secondaryProvider) {
-                // Paso 1: Intentar con el proveedor principal (con rotación interna)
-                try {
-                    $rawReply = $this->executeRotatingCall($primaryProvider, $message, $context);
-                } catch (\Exception $e) {
-                    Log::warning("Primary provider ({$primaryProvider}) exhausted all options. Trying secondary.");
-                    
-                    // Paso 2: Intentar con el proveedor secundario (con rotación interna)
+            $reply = Cache::remember($cacheKey, now()->addDays(7), function () use ($message, $context, $primaryProvider) {
+                $providers = [$primaryProvider, 'gemini', 'openai', 'groq', 'deepseek'];
+                $providers = array_unique(array_filter($providers));
+
+                foreach ($providers as $provider) {
                     try {
-                        $rawReply = $this->executeRotatingCall($secondaryProvider, $message, $context);
-                    } catch (\Exception $failoverError) {
-                        Log::error("Both AI systems completely exhausted. Using local fallback.");
-                        throw new \Exception('ALL_SYSTEMS_EXHAUSTED');
+                        $rawReply = $this->executeRotatingCall($provider, $message, $context);
+                        return $this->sanitizeImageUrls($rawReply);
+                    } catch (\Exception $e) {
+                        Log::warning("Provider ({$provider}) failed or exhausted. Trying next. Error: " . $e->getMessage());
+                        continue;
                     }
                 }
-                return $this->sanitizeImageUrls($rawReply);
+
+                Log::error("ALL AI systems completely exhausted/unconfigured. Using local fallback.");
+                throw new \Exception('ALL_SYSTEMS_EXHAUSTED');
             });
 
             return response()->json(['reply' => $reply]);
@@ -53,6 +53,7 @@ class ChatbotController extends Controller
         $configKey = match($provider) {
             'deepseek' => 'services.chatbot.deepseek_keys',
             'groq' => 'services.chatbot.groq_keys',
+            'openai' => 'services.chatbot.openai_keys',
             default => 'services.chatbot.gemini_keys',
         };
         $keys = explode(',', config($configKey, ''));
@@ -67,6 +68,8 @@ class ChatbotController extends Controller
                     return $this->callDeepSeek($key, $message, $context);
                 } elseif ($provider === 'groq') {
                     return $this->callGroq($key, $message, $context);
+                } elseif ($provider === 'openai') {
+                    return $this->callOpenAI($key, $message, $context);
                 } else {
                     // Gemini tiene rotación extra de modelos
                     return $this->callGeminiWithModelRotation($key, $message, $context);
@@ -166,6 +169,29 @@ class ChatbotController extends Controller
                 throw new \Exception('QUOTA_EXHAUSTED');
             }
             throw new \Exception('GROQ_API_ERROR: ' . ($response->json()['error']['message'] ?? $response->body()));
+        }
+
+        return $response->json()['choices'][0]['message']['content'] ?? throw new \Exception('EMPTY_RESPONSE');
+    }
+
+    private function callOpenAI($apiKey, $message, $context)
+    {
+        $response = Http::withoutVerifying()->timeout(20)->withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => "Bearer {$apiKey}",
+            ])->post("https://api.openai.com/v1/chat/completions", [
+                'model' => 'gpt-4o-mini',
+                'messages' => [
+                    ['role' => 'system', 'content' => $this->getSystemPrompt($context)],
+                    ['role' => 'user', 'content' => $message],
+                ],
+            ]);
+
+        if ($response->failed()) {
+            if ($response->status() === 429) {
+                throw new \Exception('QUOTA_EXHAUSTED');
+            }
+            throw new \Exception('OPENAI_API_ERROR: ' . ($response->json()['error']['message'] ?? $response->body()));
         }
 
         return $response->json()['choices'][0]['message']['content'] ?? throw new \Exception('EMPTY_RESPONSE');
