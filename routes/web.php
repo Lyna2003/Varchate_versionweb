@@ -87,7 +87,8 @@ Route::post('/api/clear-session-token', function () {
     session()->flush();
     session()->invalidate();
     session()->regenerateToken();
-    return response()->json(['success' => true]);
+    return response()->json(['success' => true])
+        ->cookie('auth_token', '', -1, '/', null, false, false);
 });
 
 // ===============================
