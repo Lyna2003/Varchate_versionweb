@@ -75,7 +75,7 @@ confirmarEliminarBtn.addEventListener("click", () => {
   showProfilePic(perfilImg, defaultSrc);
   _avatarPendiente = '1';
   opciones.forEach(o => o.classList.remove('selected'));
-  
+
   // Also select the avatar_01 option in the modal
   const defaultOption = document.querySelector(`.avatar-option[data-id="1"]`);
   if (defaultOption) {
@@ -460,7 +460,48 @@ perfilForm.addEventListener("submit", async (e) => {
 
   try {
 
-    const usuario = document.getElementById("usuario").value;
+    const usuario = document.getElementById("usuario").value.trim();
+
+    // =========================
+    // Validaciones de Cliente
+    // =========================
+
+    // Validar Nombre (Usuario)
+    if (!usuario) {
+      showErrorToast("El nombre de usuario es obligatorio");
+      return;
+    }
+    if (usuario.length < 3) {
+      showErrorToast("El nombre debe tener al menos 3 caracteres");
+      return;
+    }
+    if (/[0-9]/.test(usuario)) {
+      showErrorToast("El nombre no puede contener números");
+      return;
+    }
+
+    const passwordField = document.getElementById("password");
+    const new_password = passwordField.value;
+
+    // Validar Nueva Contraseña (solo si se intenta cambiar)
+    if (new_password && new_password !== "********" && new_password.trim() !== "") {
+      if (new_password.length < 8) {
+        showErrorToast("La contraseña debe tener al menos 8 caracteres");
+        return;
+      }
+      if (!/[A-Z]/.test(new_password)) {
+        showErrorToast("La contraseña debe tener al menos una mayúscula");
+        return;
+      }
+      if (!/[a-z]/.test(new_password)) {
+        showErrorToast("La contraseña debe tener al menos una minúscula");
+        return;
+      }
+      if (!/[0-9]/.test(new_password)) {
+        showErrorToast("La contraseña debe tener al menos un número");
+        return;
+      }
+    }
 
     const profileData = {};
     if (usuario) {
@@ -523,10 +564,7 @@ perfilForm.addEventListener("submit", async (e) => {
     }
 
 
-    const passwordField = document.getElementById("password");
-    const new_password = passwordField.value;
     const current_password = document.getElementById("current_password").value;
-
 
     if (new_password && new_password !== "********" && new_password.trim() !== "") {
 
@@ -642,7 +680,7 @@ perfilForm.addEventListener("submit", async (e) => {
   } catch (err) {
     console.error("Error:", err);
     if (err instanceof TypeError) {
-      showErrorToast(`Error de red al conectar con ${API_BASE}. Verifica que el servidor API esté corriendo y que no haya problemas de CORS.`);
+      showErrorToast(`Error de red al conectar con ${API_BASE}.`);
     } else {
       showErrorToast(err.message || "Error al conectar con el servidor");
     }
