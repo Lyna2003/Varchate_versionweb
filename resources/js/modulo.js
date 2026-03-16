@@ -1725,6 +1725,10 @@ async function cargarEvaluacion(evaluacionId) {
             const json = await response.json();
             console.log('✅ Evaluación cargada:', json);
 
+            // Limpiar secciones de ejercicios y editor previas
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('editorIndependienteSeccion')?.remove();
+
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
             // Ocultar el botón "Siguiente" en la sección de evaluación
@@ -2146,8 +2150,6 @@ function renderizarEvaluacion(json) {
         botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--aprobado" id="btn-iniciar-evaluacion" disabled>✓ Evaluación aprobada</button>`;
     } else if (!puedeIntentar) {
         botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--bloqueado" id="btn-iniciar-evaluacion" disabled>🔒 ${mensajeBloqueo || 'No puedes intentar ahora'}</button>`;
-    } else if (estadoUsuario.tiene_intento_en_progreso) {
-        botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Continuar evaluación</button>`;
     } else {
         botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Realizar evaluación</button>`;
     }
@@ -2314,37 +2316,25 @@ function mostrarBienvenidaModulos() {
     document.getElementById('bienvenidaContent')?.remove();
 
     const nombre = localStorage.getItem('user_nombre') || 'Usuario';
+    const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
+    
     if (contentSection) {
         const bienvenidaDiv = document.createElement('div');
         bienvenidaDiv.id = 'bienvenidaContent';
-        bienvenidaDiv.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 40px;
-            text-align: center;
-            height: 100%;
-        `;
+        bienvenidaDiv.className = 'welcome-hero';
+        
         bienvenidaDiv.innerHTML = `
-            <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
-            <h2 style="
-                font-size: 28px;
-                font-weight: 700;
-                color: #1a1a2e;
-                margin-bottom: 12px;
-            ">¡Hola, ${nombre}!</h2>
-            <p style="
-                font-size: 18px;
-                color: #555;
-                margin-bottom: 8px;
-            ">Bienvenido a Varchate.</p>
-            <p style="
-                font-size: 16px;
-                color: #888;
-                max-width: 400px;
-                line-height: 1.6;
-            ">Elige un módulo del menú para empezar a aprender.</p>
+            <div class="welcome-card">
+                <div class="welcome-icon-container">
+                    <img src="${imagesBase}/alegre.png" alt="Varchate Mascot" class="welcome-mascot">
+                </div>
+                <h2 class="welcome-title">¡Hola, ${nombre}!</h2>
+                <p class="welcome-subtitle">Bienvenido a tu panel de aprendizaje</p>
+                <p class="welcome-text">
+                    Estamos emocionados de tenerte aquí. Elige un módulo del menú superior para comenzar 
+                    tu viaje en el mundo de la programación.
+                </p>
+            </div>
         `;
         // Insertamos al principio para que quede por encima de los contenedores ocultos
         contentSection.insertBefore(bienvenidaDiv, contentSection.firstChild);
