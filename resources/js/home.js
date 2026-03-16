@@ -5,6 +5,9 @@ const dropdown = document.getElementById("dropdown");
 const hamburger = document.querySelector(".hamburger");
 
 if (hamburger && dropdown) {
+  // Contexto para el chatbot
+  window.varchateChat?.setContext('Dashboard de Práctica');
+
   hamburger.addEventListener("click", () => {
     dropdown.classList.toggle("show");
   });

@@ -25,7 +25,7 @@
         <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
 
         <!-- ✅ FORMULARIO CORREGIDO -->
-        <form id="recoveryForm">
+        <form id="recoveryForm" data-api-url="{{ env('VITE_API_BASE_URL', 'http://127.0.0.1:8001/api') }}">
           <input type="email" id="email" placeholder="Correo electrónico" required>
           <button type="submit" class="button">Enviar</button>
         </form>

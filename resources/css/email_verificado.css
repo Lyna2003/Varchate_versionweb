@@ -1,0 +1,281 @@
+/* ================================================
+   EMAIL VERIFICADO — Varchate
+   Coherente con el sistema de diseño del proyecto
+   ================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand:      #0099FF;
+  --brand-dark: #0055cc;
+  --success:    #22c55e;
+  --expired:    #f97316;
+  --already:    #8b5cf6;
+  --error:      #ef4444;
+  --bg:         #f0f4f8;
+  --surface:    #ffffff;
+  --text-main:  #1a1a2e;
+  --text-sub:   #64748b;
+  --border:     #e2e8f0;
+  --shadow:     0 20px 60px rgba(0, 153, 255, 0.12), 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Dark mode */
+.dark-mode {
+  --bg:        #0f1117;
+  --surface:   #1a1d2e;
+  --text-main: #e8eaf0;
+  --text-sub:  #8892a4;
+  --border:    #2a2f45;
+  --shadow:    0 20px 60px rgba(0, 153, 255, 0.18), 0 4px 16px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── Partículas de fondo ── */
+.bg-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-particles span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,153,255,0.18), transparent 70%);
+  animation: floatParticle linear infinite;
+}
+
+.bg-particles span:nth-child(1) { width:320px; height:320px; top:-80px;  left:-60px;  animation-duration:18s; animation-delay:0s; }
+.bg-particles span:nth-child(2) { width:200px; height:200px; top:60%;    right:-40px; animation-duration:22s; animation-delay:-6s; }
+.bg-particles span:nth-child(3) { width:140px; height:140px; top:30%;    left:5%;     animation-duration:26s; animation-delay:-3s; }
+.bg-particles span:nth-child(4) { width:260px; height:260px; bottom:-60px; right:10%;  animation-duration:20s; animation-delay:-9s; }
+.bg-particles span:nth-child(5) { width:100px; height:100px; top:10%;    right:25%;   animation-duration:30s; animation-delay:-14s; }
+.bg-particles span:nth-child(6) { width:180px; height:180px; bottom:15%; left:30%;    animation-duration:24s; animation-delay:-5s; }
+
+@keyframes floatParticle {
+  0%   { transform: translateY(0) scale(1);   opacity: 0.6; }
+  50%  { transform: translateY(-30px) scale(1.08); opacity: 1; }
+  100% { transform: translateY(0) scale(1);   opacity: 0.6; }
+}
+
+/* ── Layout ── */
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 28px;
+}
+
+/* ── Header / logo ── */
+.ev-header {
+  display: flex;
+  justify-content: center;
+}
+
+.ev-logo {
+  height: 40px;
+  filter: drop-shadow(0 2px 8px rgba(0,153,255,0.3));
+}
+
+/* ── Tarjeta ── */
+.ev-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+  animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(32px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Estados ── */
+.ev-state { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.ev-state.hidden { display: none; }
+
+/* ── Ícono central ── */
+.ev-icon-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.ev-icon-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.2;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.92); opacity: 0.25; }
+  50%  { transform: scale(1.08); opacity: 0.1;  }
+  100% { transform: scale(0.92); opacity: 0.25; }
+}
+
+.ev-icon-wrap.loading {
+  background: rgba(0, 153, 255, 0.1);
+  color: var(--brand);
+}
+
+.ev-icon-wrap.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success);
+  animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.ev-icon-wrap.expired {
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--expired);
+}
+
+.ev-icon-wrap.already {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--already);
+}
+
+@keyframes successPop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Spinner de carga */
+.ev-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 153, 255, 0.2);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Textos ── */
+.ev-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.ev-desc {
+  font-size: 15px;
+  color: var(--text-sub);
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+/* ── Countdown ── */
+.ev-countdown {
+  font-size: 13px;
+  color: var(--text-sub);
+  background: rgba(0, 153, 255, 0.08);
+  border: 1px solid rgba(0, 153, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 18px;
+}
+
+.ev-countdown strong {
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* ── Botones ── */
+.ev-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 30px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.ev-btn:hover { transform: translateY(-2px); }
+.ev-btn:active { transform: translateY(0); }
+
+.ev-btn--primary {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 153, 255, 0.35);
+}
+
+.ev-btn--primary:hover {
+  box-shadow: 0 10px 28px rgba(0, 153, 255, 0.45);
+}
+
+.ev-btn--secondary {
+  background: transparent;
+  color: var(--brand);
+  border: 2px solid var(--brand);
+  box-shadow: none;
+}
+
+.ev-btn--secondary:hover {
+  background: rgba(0, 153, 255, 0.07);
+  box-shadow: 0 4px 14px rgba(0, 153, 255, 0.15);
+}
+
+/* ── Footer ── */
+.ev-footer p {
+  font-size: 12px;
+  color: var(--text-sub);
+  opacity: 0.6;
+  letter-spacing: 0.3px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .ev-card {
+    padding: 36px 24px;
+    border-radius: 20px;
+  }
+
+  .ev-title { font-size: 20px; }
+  .ev-desc  { font-size: 14px; }
+  .ev-icon-wrap { width: 72px; height: 72px; font-size: 30px; }
+}

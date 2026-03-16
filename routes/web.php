@@ -2,17 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\ChatbotController;
+
 
 // ===============================
 // RUTAS PÚBLICAS (accesibles sin autenticación)
 // ===============================
 
-// La raíz siempre redirige al dashboard (página principal pública)
 Route::get('/', function () {
     return redirect('/home');
 });
 
-// Dashboard público - no requiere autenticación
 Route::get('/home', function () {
     return view('home');
 })->name('home');
@@ -35,14 +36,13 @@ Route::get('/register{slash?}', function ($slash = null) {
     return view('register');
 })->where('slash', '\/?')->name('register');
 
-
 Route::get('/recuperar', function () {
     return view('recuperar');
 });
+
 Route::get('/enlace', function () {
     return view('enlace');
 });
-
 
 Route::get('/reset-password', function () {
     return view('nueva_contrasena');
@@ -57,27 +57,17 @@ Route::get('/terminos', function () {
 // ===============================
 
 Route::middleware('auth')->group(function () {
-    Route::get(
-        '/modulos',
-        function () {
-            return view('modulo');
-        }
-    )->name('modulos');
+    Route::get('/modulos', function () {
+        return view('modulo');
+    })->name('modulos');
 
-    Route::get(
-        '/modulo/{slug}',
-        function ($slug) {
-            return view('modulo', ['slug' => $slug]);
-        }
-    )->name('modulo.detalle');
+    Route::get('/modulo/{slug}', function ($slug) {
+        return view('modulo', ['slug' => $slug]);
+    })->name('modulo.detalle');
 
-    // Perfil: protegido por sesión Laravel
-    Route::get(
-        '/perfil',
-        function () {
-            return view('perfil');
-        }
-    )->name('perfil');
+    Route::get('/perfil', function () {
+        return view('perfil');
+    })->name('perfil');
 });
 
 // ===============================
@@ -94,9 +84,20 @@ Route::post('/api/set-session-token', function (Request $request) {
 });
 
 Route::post('/api/clear-session-token', function () {
-    // Invalidar completamente la sesión de Laravel
     session()->flush();
     session()->invalidate();
     session()->regenerateToken();
-    return response()->json(['success' => true]);
+    return response()->json(['success' => true])
+        ->cookie('auth_token', '', -1, '/', null, false, false);
 });
+
+// ===============================
+// EMAIL VERIFICADO
+// ===============================
+
+Route::get('/email-verificado', fn() => view('email-verificado'));
+
+// ===============================
+// CHATBOT
+// ===============================
+Route::post('/api/chatbot/chat', [ChatbotController::class, 'chat']);

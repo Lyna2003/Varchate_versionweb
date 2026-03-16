@@ -11,7 +11,6 @@ export default defineConfig({
                 ...glob.sync('resources/css/**/*.css'),
                 ...glob.sync('resources/js/**/*.js'),
             ].filter(file =>
-                !file.includes('_') &&
                 !file.includes('/modules/')
             ),
             refresh: true,

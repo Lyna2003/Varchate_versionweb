@@ -298,6 +298,9 @@ async function cargarDatosModulo(moduleSlug) {
             moduloActual = await moduloResponse.json();
             console.log('Módulo actual:', moduloActual);
 
+            // Actualizar contexto del chatbot
+            window.varchateChat?.setContext(`Módulo: ${moduloActual.modulo}`);
+
             // --- Resetear vista general antes de cargar nuevo contenido ---
             leccionActualIndex = -1;
             document.getElementById('ejerciciosSeccion')?.remove();
@@ -359,30 +362,34 @@ function actualizarIntroduccionModulo() {
     if (prevHtmlBlock) prevHtmlBlock.remove();
 
     if (moduloActual.descripcion_larga) {
-        const contenido = moduloActual.descripcion_larga;
-
-        // Detectar si el contenido tiene etiquetas HTML
-        const tieneHTML = /<[a-z][\s\S]*>/i.test(contenido);
+        // Verificar si la descripción ya contiene etiquetas HTML
+        const tieneHTML = /<[a-z][\s\S]*>/i.test(moduloActual.descripcion_larga);
 
         if (tieneHTML) {
-            // Renderizar como HTML directamente (igual que las lecciones)
-            const contenidoLimpio = limpiarContenidoHTML(contenido);
+            // Si tiene HTML, lo insertamos directamente
             const div = document.createElement('div');
-            div.className = 'intro-html-content';
-            div.innerHTML = contenidoLimpio;
-            // Insertar después del h2
-            introHeader
-                ? introHeader.insertAdjacentElement('afterend', div)
-                : introduccionContent.appendChild(div);
+            div.innerHTML = moduloActual.descripcion_larga;
+            div.style.marginBottom = '20px';
+            div.style.lineHeight = '1.8';
+            div.style.fontSize = '16px';
+            div.style.textAlign = 'justify';
+            
+            // Aseguramos que los párrafos dentro de la descripción también tengan estilo si es necesario
+            div.querySelectorAll('p').forEach(p => {
+                if (!p.style.marginBottom) p.style.marginBottom = '15px';
+            });
+
+            introHeader.insertAdjacentElement('afterend', div);
         } else {
-            // Texto plano: dividir por saltos de línea y crear párrafos
-            const parrafos = contenido.split('\n');
+            // Si es texto plano, mantenemos la lógica de dividir por saltos de línea para crear párrafos
+            const parrafos = moduloActual.descripcion_larga.split('\n');
             let ultimoElemento = introHeader;
 
             parrafos.forEach(parrafo => {
-                if (parrafo.trim().length > 0) {
+                const trimmed = parrafo.trim();
+                if (trimmed.length > 0) {
                     const p = document.createElement('p');
-                    p.textContent = parrafo.trim();
+                    p.textContent = trimmed;
                     p.style.marginBottom = '20px';
                     p.style.lineHeight = '1.8';
                     p.style.fontSize = '16px';
@@ -1031,16 +1038,14 @@ if (!document.getElementById('animation-styles')) {
 function limpiarContenidoHTML(html) {
     if (!html) return '<p>Contenido no disponible</p>';
 
-    let contenidoLimpio = html;
-
-    // Extraer contenido del body (pero conservar estilos)
-    const bodyRegex = /<body[^>]*>([\s\S]*?)<\/body>/i;
-    const bodyMatch = contenidoLimpio.match(bodyRegex);
-    if (bodyMatch && bodyMatch[1]) {
-        contenidoLimpio = bodyMatch[1];
+    // Si no parece tener etiquetas HTML complejas (html/head/body), devolver tal cual
+    if (!/<(html|head|body)/i.test(html)) {
+        return html;
     }
 
-    // Extraer estilos del head y agregarlos al contenido
+    let contenidoLimpio = '';
+
+    // Extraer estilos del head o de cualquier parte
     const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
     let styles = '';
     let styleMatch;
@@ -1048,20 +1053,20 @@ function limpiarContenidoHTML(html) {
         styles += styleMatch[0];
     }
 
-    // Si hay estilos, agregarlos al principio del contenido
-    if (styles) {
-        contenidoLimpio = styles + contenidoLimpio;
+    // Extraer el contenido del body
+    const bodyRegex = /<body[^>]*>([\s\S]*?)<\/body>/i;
+    const bodyMatch = html.match(bodyRegex);
+    
+    if (bodyMatch && bodyMatch[1]) {
+        contenidoLimpio = bodyMatch[1];
+    } else {
+        // Si no hay body, pero hay etiquetas html, intentamos limpiar lo que no sea head/style
+        contenidoLimpio = html.replace(/<head[\s\S]*?<\/head>/gi, '');
+        contenidoLimpio = contenidoLimpio.replace(/<\/?(html|body)[^>]*>/gi, '');
     }
 
-    // Eliminar metadatos y doctype (no afectan estilos)
-    contenidoLimpio = contenidoLimpio.replace(/<meta[^>]*>/gi, '');
-    contenidoLimpio = contenidoLimpio.replace(/<!DOCTYPE[^>]*>/i, '');
-
-    // Eliminar etiquetas html y head vacías
-    contenidoLimpio = contenidoLimpio.replace(/<\/?html[^>]*>/gi, '');
-    contenidoLimpio = contenidoLimpio.replace(/<\/?head[^>]*>/gi, '');
-
-    return contenidoLimpio;
+    // Combinar estilos y contenido
+    return styles + contenidoLimpio;
 }
 
 function mostrarContenidoNoDisponible() {
@@ -1091,8 +1096,9 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
     const token = localStorage.getItem('auth_token');
 
     mostrarSpinner(true);
-    // Limpiar sección de ejercicios previa (puede ser de otra lección)
+    // Limpiar secciones de ejercicios y editor previas
     document.getElementById('ejerciciosSeccion')?.remove();
+    document.getElementById('editorIndependienteSeccion')?.remove();
 
 
     try {
@@ -1138,6 +1144,9 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 
             console.log('✅ Lección procesada - ID:', leccion.id, 'Título:', leccion.titulo);
 
+            // Actualizar contexto del chatbot
+            window.varchateChat?.setContext(`Lección: ${leccion.titulo}`);
+
             // Limpiar el contenido HTML
             let contenidoLimpio = leccion.contenido || '<p>Contenido no disponible</p>';
             contenidoLimpio = limpiarContenidoHTML(contenidoLimpio);
@@ -1156,6 +1165,8 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             if (leccionContent) {
                 leccionContent.style.display = 'block';
                 leccionContent.innerHTML = contenidoLimpio;
+                // Asegurar que el chatbot sea visible al cargar lección
+                window.varchateChat?.setVisibility(true);
             }
 
             // Subir al tope automáticamente al cargar nueva lección
@@ -1169,7 +1180,7 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 
             // ===== EJERCICIOS: cargar y mostrar si la lección tiene =====
             if (moduloActual && moduloActual.id) {
-                await cargarEjerciciosLeccion(moduloActual.id, leccion.id);
+                await cargarEjerciciosLeccion(moduloActual.id, leccion.id, leccion);
             }
 
         } else {
@@ -1190,12 +1201,28 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 // EJERCICIOS INTERACTIVOS EN LECCIÓN
 // ===============================
 
-async function cargarEjerciciosLeccion(moduloId, leccionId) {
+async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
     const mainEl = document.querySelector('main.container');
     const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
     try {
+        // Verificar flags de la lección si se proporcionó el objeto
+        // Flag de ejercicios: solo si está activo en la base de datos
+        const tieneEjerciciosFlag = leccionObj ? (leccionObj.tiene_ejercicios == 1 || leccionObj.tiene_ejercicios === true) : false;
+        // Flag de editor: solo si está activo en la base de datos (según última aclaración: cada uno por su lado)
+        const tieneEditorCodigoFlag = leccionObj ? (leccionObj.tiene_editor_codigo == 1 || leccionObj.tiene_editor_codigo === true) : false;
+
+        console.log('🚩 Flags de lección (estrictos):', { tieneEjerciciosFlag, tieneEditorCodigoFlag });
+
+        if (!tieneEjerciciosFlag && !tieneEditorCodigoFlag) {
+            console.log('ℹ️ La lección no tiene activados ejercicios ni editor de código');
+            // Asegurar limpieza por si acaso
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('editorIndependienteSeccion')?.remove();
+            return;
+        }
+
         const url = `${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios`;
         console.log('🔍 Cargando ejercicios desde:', url);
 
@@ -1208,25 +1235,47 @@ async function cargarEjerciciosLeccion(moduloId, leccionId) {
 
         if (!response.ok) {
             console.warn('⚠️ Ejercicios HTTP error:', response.status);
+            // Si hay error pero tieneEditorCodigoFlag es true, podríamos mostrar un demo
+            if (tieneEditorCodigoFlag) {
+                mostrarDemoEditor(moduloId, leccionId);
+            }
             return;
         }
 
         const json = await response.json();
-        console.log('📦 Respuesta ejercicios completa:', JSON.stringify(json));
         const data = json?.data;
 
-        if (!data?.tiene_ejercicios || !data?.ejercicios?.length) {
-            console.log('ℹ️ Esta lección no tiene ejercicios');
-            return;
+        // 1. Renderizar ejercicios normales (si existen y flag activo)
+        if (tieneEjerciciosFlag && data?.ejercicios && data.ejercicios.length > 0) {
+            console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s)`);
+            renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
+        } else {
+            // Limpiar si no hay ejercicios
+            document.getElementById('ejerciciosSeccion')?.remove();
         }
 
-        console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s):`, data.ejercicios);
-        renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
+        // 2. Renderizar editor independiente (si flag activo)
+        if (tieneEditorCodigoFlag) {
+            const configEditor = {
+                id: 'editor-practica-' + leccionId,
+                instrucciones: 'Practica libremente con el editor.',
+                titulo: 'Editor de Código Interactivo',
+                codigo_inicial: leccionObj?.codigo_base || '<!-- Escribe tu HTML aquí -->\n<h1>Hola Varchate</h1>',
+                css_inicial: leccionObj?.css_base || '/* Escribe tu CSS aquí */\nh1 { color: #38bdf8; text-align: center; }',
+                js_inicial: leccionObj?.js_base || '// Escribe tu JS aquí\nconsole.log("¡Listo para programar!");'
+            };
+            renderizarEditorIndependiente(configEditor);
+        } else {
+            // Limpiar si no hay editor
+            document.getElementById('editorIndependienteSeccion')?.remove();
+        }
 
     } catch (err) {
         console.warn('No se pudieron cargar ejercicios:', err);
     }
 }
+
+// Eliminar función mostrarDemoEditor ya que ahora está integrada en cargarEjerciciosLeccion
 
 // Escapa texto para inserción segura en innerHTML
 function escapeHTML(str) {
@@ -1237,6 +1286,35 @@ function escapeHTML(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+/**
+ * Renderiza contenido de forma inteligente:
+ * Escapa etiquetas que parecen código (ej. <html>) pero permite etiquetas de estilo (ej. <b>).
+ */
+function renderSmartContent(str) {
+    if (!str) return '';
+    
+    // 1. Escapar todo primero para seguridad y visibilidad base
+    let escaped = str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // 2. Restaurar etiquetas de estilo permitidas
+    const whitelist = ['b', 'strong', 'i', 'em', 'u', 'span', 'br', 'p', 'code', 'pre'];
+    
+    whitelist.forEach(tag => {
+        // Apertura: &lt;b&gt; o &lt;b style="..."&gt;
+        const openRegex = new RegExp(`&lt;(${tag})(\\s+[^&]*)?&gt;`, 'gi');
+        escaped = escaped.replace(openRegex, `<$1$2>`);
+        
+        // Cierre: &lt;/b&gt;
+        const closeRegex = new RegExp(`&lt;/(${tag})&gt;`, 'gi');
+        escaped = escaped.replace(closeRegex, `</$1>`);
+    });
+
+    return escaped;
 }
 
 function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
@@ -1282,7 +1360,7 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
             if (!opciones.length) return '<p style="color:#e57373;font-size:13px;">⚠️ Sin opciones cargadas</p>';
             return `<div class="ejercicio-opciones">
                 ${opciones.map(op => `
-                    <button class="ejercicio-opcion" data-opcion-id="${op.id}">${escapeHTML(op.texto)}</button>
+                    <button class="ejercicio-opcion" data-opcion-id="${op.id}">${renderSmartContent(op.texto)}</button>
                 `).join('')}
             </div>`;
         } else if (ej.tipo === 'arrastrar_soltar') {
@@ -1293,15 +1371,15 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
                     <div class="drag-items-col">
                         <p class="drag-col-label">Elementos</p>
                         ${opciones.map(op => `
-                            <div class="drag-item" draggable="true" data-opcion-id="${op.id}">${escapeHTML(op.texto)}</div>
+                             <div class="drag-item" draggable="true" data-opcion-id="${op.id}">${renderSmartContent(op.texto)}</div>
                         `).join('')}
                     </div>
                     <div class="drag-destinos-col">
                         <p class="drag-col-label">Definiciones</p>
                         ${destinos.map(dest => `
                             <div class="drag-destino">
-                                <span class="drag-destino-label">${escapeHTML(dest)}</span>
-                                <div class="drag-zona" data-pareja="${escapeHTML(dest)}">Arrastra aquí</div>
+                                <span class="drag-destino-label">${renderSmartContent(dest)}</span>
+                                <div class="drag-zona" data-pareja="${dest}">Arrastra aquí</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1332,13 +1410,13 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
                     <span class="ejercicio-num">Ejercicio ${indexActual + 1}</span>
                     <span class="ejercicio-tipo-badge">${getTipoBadge(ej.tipo)}</span>
                 </div>
-                <p class="ejercicio-instrucciones">${escapeHTML(ej.instrucciones)}</p>
-                <p class="ejercicio-pregunta">${escapeHTML(ej.pregunta)}</p>
+                <p class="ejercicio-instrucciones">${renderSmartContent(ej.instrucciones)}</p>
+                <p class="ejercicio-pregunta">${renderSmartContent(ej.pregunta)}</p>
                 ${buildOpcionesHTML(ej)}
                 <div class="ejercicio-feedback" id="ejFeedback" style="${respondido ? 'display:block' : 'display:none'}">
                     ${respondido ? (correcto
-                ? `✅ ${escapeHTML(est.feedback)}`
-                : `❌ ${escapeHTML(est.feedback)}${est.opcionCorrecta?.texto ? ` La respuesta correcta era: <strong>${escapeHTML(est.opcionCorrecta.texto)}</strong>` : ''}`)
+                ? `✅ ${renderSmartContent(est.feedback)}`
+                : `❌ ${renderSmartContent(est.feedback)}${est.opcionCorrecta?.texto ? ` La respuesta correcta era: <strong>${renderSmartContent(est.opcionCorrecta.texto)}</strong>` : ''}`)
                 : ''}
                 </div>
                 ${respondido ? '' : `
@@ -1428,68 +1506,6 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
             });
         }
 
-        // Comprobar
-        const btnComprobar = seccion.querySelector('#btnComprobar');
-        if (btnComprobar) {
-            btnComprobar.addEventListener('click', async () => {
-                const mainEl = document.querySelector('main.container');
-                const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
-                const token = localStorage.getItem('auth_token');
-                const est = estados[indexActual];
-                let body = {};
-
-                if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
-                    const selected = seccion.querySelector('.ejercicio-opcion.selected');
-                    if (!selected) {
-                        const fb = seccion.querySelector('#ejFeedback');
-                        fb.style.display = 'block';
-                        fb.className = 'ejercicio-feedback feedback-warning';
-                        fb.textContent = '⚠️ Selecciona una opción antes de comprobar';
-                        return;
-                    }
-                    body = { opcion_id: parseInt(selected.dataset.opcionId) };
-                } else if (ej.tipo === 'arrastrar_soltar') {
-                    const parejas = [];
-                    seccion.querySelectorAll('.drag-zona').forEach(zona => {
-                        const item = zona.querySelector('.drag-item');
-                        if (item) parejas.push({ id_opcion: parseInt(item.dataset.opcionId), pareja: zona.dataset.pareja });
-                    });
-                    if (!parejas.length) {
-                        const fb = seccion.querySelector('#ejFeedback');
-                        fb.style.display = 'block';
-                        fb.className = 'ejercicio-feedback feedback-warning';
-                        fb.textContent = '⚠️ Arrastra los elementos antes de comprobar';
-                        return;
-                    }
-                    body = { parejas };
-                }
-
-                btnComprobar.disabled = true;
-                btnComprobar.textContent = 'Comprobando...';
-
-                try {
-                    const resp = await fetch(`${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios/${ej.id}/intento`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    const result = await resp.json();
-                    est.respondido = true;
-                    est.correcto = result?.data?.es_correcta;
-                    est.feedback = result?.data?.feedback || '';
-                    est.opcionCorrecta = result?.data?.opcion_correcta || null;
-                    render();
-                } catch {
-                    btnComprobar.disabled = false;
-                    btnComprobar.textContent = 'Comprobar';
-                    const fb = seccion.querySelector('#ejFeedback');
-                    fb.style.display = 'block';
-                    fb.className = 'ejercicio-feedback feedback-warning';
-                    fb.textContent = '⚠️ Error de conexión. Inténtalo de nuevo.';
-                }
-            });
-        }
-
         // Reintentar
         const btnReintentar = seccion.querySelector('#btnReintentar');
         if (btnReintentar) {
@@ -1510,6 +1526,138 @@ function getTipoBadge(tipo) {
         'arrastrar_soltar': '⇄ Relacionar'
     };
     return badges[tipo] || tipo;
+}
+
+/**
+ * Renderiza el Editor de Código de forma independiente (fuera del slider)
+ */
+function renderizarEditorIndependiente(config) {
+    const contentSection = document.getElementById('contentSection');
+    if (!contentSection) return;
+
+    // Eliminar previo si existe
+    document.getElementById('editorIndependienteSeccion')?.remove();
+
+    const seccion = document.createElement('div');
+    seccion.className = 'editor-independiente-seccion';
+    seccion.id = 'editorIndependienteSeccion';
+    
+    // Inyectar HTML del editor
+    seccion.innerHTML = `
+        <div class="ejercicios-leccion-header editor-standalone-header">
+            <i class="fa-solid fa-code"></i>
+            <div>
+                <h3 class="ejercicios-leccion-titulo">${config.titulo}</h3>
+                <p class="ejercicios-leccion-subtitulo">${config.instrucciones}</p>
+            </div>
+        </div>
+        <div class="editor-codigo-container">
+            <div class="editor-codigo-header">
+                <div class="editor-tabs">
+                    <button class="editor-tab active" data-lang="html">index.html</button>
+                    <button class="editor-tab" data-lang="css">style.css</button>
+                    <button class="editor-tab" data-lang="js">script.js</button>
+                </div>
+                <div class="editor-codigo-actions">
+                    <button class="btn-ejecutar-codigo" id="btnEjecutarStandalone">
+                        <i class="fas fa-play"></i> Ejecutar
+                    </button>
+                </div>
+            </div>
+            <div class="editor-codigo-main">
+                <div class="editor-panes-container">
+                    <textarea id="standalone-html">${escapeHTML(config.codigo_inicial)}</textarea>
+                    <textarea id="standalone-css" style="display:none;">${escapeHTML(config.css_inicial)}</textarea>
+                    <textarea id="standalone-js" style="display:none;">${escapeHTML(config.js_inicial)}</textarea>
+                </div>
+                <div class="editor-codigo-preview">
+                    <span class="preview-label">Resultado en vivo</span>
+                    <iframe id="preview-iframe-standalone"></iframe>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Insertar después de ejerciciosSeccion o antes del botón siguiente
+    const ejerciciosS = document.getElementById('ejerciciosSeccion');
+    const btnContainer = contentSection.querySelector('.btn-container');
+
+    if (ejerciciosS && ejerciciosS.nextSibling) {
+        contentSection.insertBefore(seccion, ejerciciosS.nextSibling);
+    } else if (btnContainer) {
+        contentSection.insertBefore(seccion, btnContainer);
+    } else {
+        contentSection.appendChild(seccion);
+    }
+
+    // Inicializar Editores
+    const editors = {};
+    ['html', 'css', 'js'].forEach(lang => {
+        const textarea = seccion.querySelector(`#standalone-${lang}`);
+        if (textarea) {
+            const mode = lang === 'js' ? 'javascript' : (lang === 'css' ? 'css' : 'htmlmixed');
+            editors[lang] = CodeMirror.fromTextArea(textarea, {
+                lineNumbers: true,
+                mode: mode,
+                theme: 'material-darker',
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                tabSize: 4,
+                lineWrapping: true
+            });
+        }
+    });
+
+    // Pestañas
+    seccion.querySelectorAll('.editor-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const lang = tab.dataset.lang;
+            seccion.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            ['html', 'css', 'js'].forEach(l => {
+                const pane = seccion.querySelector(`#standalone-${l}`).nextSibling;
+                if (l === lang) {
+                    pane.style.display = 'block';
+                    editors[l].refresh();
+                } else {
+                    pane.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Ejecutar
+    // Ejecutar
+    seccion.querySelector('#btnEjecutarStandalone').addEventListener('click', () => {
+        const iframe = seccion.querySelector('#preview-iframe-standalone');
+        const html = editors['html'].getValue();
+        const css = editors['css'].getValue();
+        const js = editors['js'].getValue();
+        
+        const content = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>${css}</style>
+            </head>
+            <body>
+                ${html}
+                <script>
+                    try {
+                        ${js}
+                    } catch (err) {
+                        console.error(err);
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+        
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(content);
+        doc.close();
+    });
 }
 
 async function marcarLeccionVista(moduloId, leccionId, skipRender = false, mostrarMensaje = true) {
@@ -1576,6 +1724,10 @@ async function cargarEvaluacion(evaluacionId) {
         if (response.ok) {
             const json = await response.json();
             console.log('✅ Evaluación cargada:', json);
+
+            // Limpiar secciones de ejercicios y editor previas
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('editorIndependienteSeccion')?.remove();
 
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
@@ -1935,7 +2087,7 @@ function renderizarEvaluacion(json) {
     // Descripción arriba del grid
     let infoLines = '';
     if (descripcion) {
-        infoLines += `<p class="eval-info-line eval-desc">${descripcion}</p>`;
+        infoLines += `<div class="eval-info-line eval-desc">${descripcion}</div>`;
     }
 
     // Grid de estadísticas con tarjetas visuales
@@ -1998,8 +2150,6 @@ function renderizarEvaluacion(json) {
         botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--aprobado" id="btn-iniciar-evaluacion" disabled>✓ Evaluación aprobada</button>`;
     } else if (!puedeIntentar) {
         botonHTML = `<button class="btn-realizar-evaluacion btn-realizar-evaluacion--bloqueado" id="btn-iniciar-evaluacion" disabled>🔒 ${mensajeBloqueo || 'No puedes intentar ahora'}</button>`;
-    } else if (estadoUsuario.tiene_intento_en_progreso) {
-        botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Continuar evaluación</button>`;
     } else {
         botonHTML = `<button class="btn-realizar-evaluacion" id="btn-iniciar-evaluacion">Realizar evaluación</button>`;
     }
@@ -2064,6 +2214,7 @@ window.iniciarEvaluacion = async function (evaluacionId) {
 
 
 function mostrarIntroduccion() {
+    window.varchateChat?.setVisibility(true);
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
 
@@ -2165,37 +2316,25 @@ function mostrarBienvenidaModulos() {
     document.getElementById('bienvenidaContent')?.remove();
 
     const nombre = localStorage.getItem('user_nombre') || 'Usuario';
+    const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
+    
     if (contentSection) {
         const bienvenidaDiv = document.createElement('div');
         bienvenidaDiv.id = 'bienvenidaContent';
-        bienvenidaDiv.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 40px;
-            text-align: center;
-            height: 100%;
-        `;
+        bienvenidaDiv.className = 'welcome-hero';
+        
         bienvenidaDiv.innerHTML = `
-            <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
-            <h2 style="
-                font-size: 28px;
-                font-weight: 700;
-                color: #1a1a2e;
-                margin-bottom: 12px;
-            ">¡Hola, ${nombre}!</h2>
-            <p style="
-                font-size: 18px;
-                color: #555;
-                margin-bottom: 8px;
-            ">Bienvenido a Varchate.</p>
-            <p style="
-                font-size: 16px;
-                color: #888;
-                max-width: 400px;
-                line-height: 1.6;
-            ">Elige un módulo del menú para empezar a aprender.</p>
+            <div class="welcome-card">
+                <div class="welcome-icon-container">
+                    <img src="${imagesBase}/alegre.png" alt="Varchate Mascot" class="welcome-mascot">
+                </div>
+                <h2 class="welcome-title">¡Hola, ${nombre}!</h2>
+                <p class="welcome-subtitle">Bienvenido a tu panel de aprendizaje</p>
+                <p class="welcome-text">
+                    Estamos emocionados de tenerte aquí. Elige un módulo del menú superior para comenzar 
+                    tu viaje en el mundo de la programación.
+                </p>
+            </div>
         `;
         // Insertamos al principio para que quede por encima de los contenedores ocultos
         contentSection.insertBefore(bienvenidaDiv, contentSection.firstChild);
@@ -2709,6 +2848,9 @@ function abrirModalEvaluacion(data) {
     if (overlay) overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
+    // Desactivar chatbot durante evaluación
+    window.varchateChat?.setVisibility(false);
+
     _iniciarTimerModal();
     _renderizarPreguntaModal(0);
 
@@ -2732,6 +2874,9 @@ function _cerrarModalEvaluacion() {
     const overlay = document.getElementById('eval-modal-overlay');
     if (overlay) overlay.style.display = 'none';
     document.body.style.overflow = '';
+
+    // Reactivar chatbot al cerrar evaluación
+    window.varchateChat?.setVisibility(true);
 }
 
 function _iniciarTimerModal() {
@@ -2774,10 +2919,10 @@ function _renderizarPreguntaModal(indice) {
     if (counterEl) counterEl.textContent = `Pregunta ${indice + 1} de ${preguntas.length}`;
 
     const instrEl = document.getElementById('eval-modal-instrucciones');
-    if (instrEl) instrEl.textContent = pregunta.instrucciones || '';
+    if (instrEl) instrEl.innerHTML = renderSmartContent(pregunta.instrucciones);
 
     const questionEl = document.getElementById('eval-modal-question');
-    if (questionEl) questionEl.textContent = pregunta.pregunta;
+    if (questionEl) questionEl.innerHTML = renderSmartContent(pregunta.pregunta);
 
     const optionsEl = document.getElementById('eval-modal-options');
     if (!optionsEl) return;
@@ -2835,7 +2980,9 @@ function _renderOpcionesMultiple(container, pregunta, bloqueada) {
         });
 
         label.appendChild(radio);
-        label.appendChild(document.createTextNode(opcion.texto));
+        const textoSpan = document.createElement('span');
+        textoSpan.innerHTML = renderSmartContent(opcion.texto);
+        label.appendChild(textoSpan);
         container.appendChild(label);
     });
 }
@@ -2858,7 +3005,7 @@ function _renderDragAndDrop(container, pregunta, bloqueada) {
     opciones.forEach(opcion => {
         const chip = document.createElement('div');
         chip.className = 'eval-draggable';
-        chip.textContent = opcion.texto;
+        chip.innerHTML = renderSmartContent(opcion.texto);
         chip.draggable = !bloqueada;
         chip.dataset.opcionId = opcion.id;
 
@@ -2875,7 +3022,7 @@ function _renderDragAndDrop(container, pregunta, bloqueada) {
 
         const labelTexto = document.createElement('span');
         labelTexto.className = 'eval-drop-label';
-        labelTexto.textContent = opcion.pareja_arrastre || '?';
+        labelTexto.innerHTML = renderSmartContent(opcion.pareja_arrastre);
 
         const blank = document.createElement('div');
         blank.className = 'eval-blank';
@@ -3168,14 +3315,14 @@ async function _mostrarRevisionRespuestas(intentoId, originalData) {
                     <div class="eval-revision-list">
                         ${respuestas.map((r, i) => `
                             <div class="eval-revision-item ${r.respuesta_usuario.es_correcta ? 'correct' : 'incorrect'}">
-                                <div class="eval-revision-question">${i + 1}. ${escapeHTML(r.pregunta_texto)}</div>
+                                <div class="eval-revision-question">${i + 1}. ${renderSmartContent(r.pregunta_texto)}</div>
                                 <div class="eval-revision-user-ans">
-                                    <strong>Tu respuesta:</strong> ${escapeHTML(r.respuesta_usuario.opcion_texto || r.respuesta_usuario.respuesta_texto || '(Sin respuesta)')}
+                                    <strong>Tu respuesta:</strong> ${renderSmartContent(r.respuesta_usuario.opcion_texto || r.respuesta_usuario.respuesta_texto || '(Sin respuesta)')}
                                     ${r.respuesta_usuario.es_correcta ? ' ✅' : ' ❌'}
                                 </div>
                                 ${!r.respuesta_usuario.es_correcta && r.respuesta_correcta ? `
                                     <div class="eval-revision-correct-ans">
-                                        <strong>Respuesta correcta:</strong> ${escapeHTML(r.respuesta_correcta.texto)}
+                                        <strong>Respuesta correcta:</strong> ${renderSmartContent(r.respuesta_correcta.texto)}
                                     </div>
                                 ` : ''}
                             </div>

@@ -1,5 +1,6 @@
 // Configuración
-const API_URL = 'http://127.0.0.1:8001/api';
+const API_URL = document.querySelector('[data-api-url]')?.dataset.apiUrl
+    || 'https://api-varchate-v1-production.up.railway.app/api';
 
 // Función para crear y mostrar un modal
 function showModal(message, type = 'info', redirectUrl = null) {
@@ -125,11 +126,11 @@ style.textContent = `
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    
+
     .custom-modal.show {
         opacity: 1;
     }
-    
+
     .modal-content {
         background: white;
         padding: 30px;
@@ -141,23 +142,23 @@ style.textContent = `
         transform: scale(0.7);
         transition: transform 0.3s ease;
     }
-    
+
     .custom-modal.show .modal-content {
         transform: scale(1);
     }
-    
+
     .modal-icon {
         font-size: 48px;
         margin-bottom: 20px;
     }
-    
+
     .modal-message {
         font-size: 18px;
         margin-bottom: 25px;
         color: #333;
         line-height: 1.5;
     }
-    
+
     .modal-button {
         background: #007bff;
         color: white;
@@ -169,32 +170,32 @@ style.textContent = `
         transition: background 0.3s;
         border: none;
     }
-    
+
     .modal-button:hover {
         background: #0056b3;
     }
-    
+
     .modal-success .modal-button {
         background: #28a745;
     }
-    
+
     .modal-success .modal-button:hover {
         background: #218838;
     }
-    
+
     .modal-error .modal-button {
         background: #dc3545;
     }
-    
+
     .modal-error .modal-button:hover {
         background: #c82333;
     }
-    
+
     .modal-warning .modal-button {
         background: #ffc107;
         color: #333;
     }
-    
+
     .modal-warning .modal-button:hover {
         background: #e0a800;
     }

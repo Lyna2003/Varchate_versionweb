@@ -29,7 +29,7 @@
           style="background-color: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 15px; display: none;">
         </div>
 
-        <form id="resetForm">
+        <form id="resetForm" data-api-url="{{ env('VITE_API_BASE_URL', 'http://127.0.0.1:8001/api') }}">
 
           <!-- Contraseña -->
           <div class="input-pass">
