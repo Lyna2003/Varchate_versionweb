@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://127.0.0.1:8001';
+const API_BASE_URL = document.getElementById('resetForm')?.dataset.apiUrl?.replace('/api', '')
+    || 'https://api-varchate-v1-production.up.railway.app';
 
 // Función para obtener parámetros de la URL
 function getUrlParams() {
