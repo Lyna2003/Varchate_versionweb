@@ -2265,7 +2265,7 @@
   background: #f87171;
 }
 /* ===== RESULTADO MODAL — FIX MÓVIL ===== */
-@media (max-width: 520px) {
+@media (max-width: 460px) {
 
     .eval-result-screen {
         border-radius: 16px !important;
