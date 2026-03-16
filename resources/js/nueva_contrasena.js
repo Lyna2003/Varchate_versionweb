@@ -229,7 +229,7 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
     submitButton.textContent = 'Guardando...';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/password/reset`, {
+        const response = await fetch(`${API_BASE_URL}/password/reset`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
