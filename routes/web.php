@@ -96,11 +96,9 @@ Route::post('/api/clear-session-token', function () {
 Route::get('/api/email/verify/{id}/{hash}', function ($id, $hash) {
     try {
         $backendUrl = env('VITE_API_BASE_URL', 'http://127.0.0.1:8001/api');
+        $queryString = request()->getQueryString();
 
-        $response = Http::get("{$backendUrl}/email/verify/{$id}/{$hash}", [
-            'expires'   => request('expires'),
-            'signature' => request('signature'),
-        ]);
+        $response = Http::get("{$backendUrl}/email/verify/{$id}/{$hash}?{$queryString}");
 
         $msg = strtolower($response->json()['message'] ?? '');
 
