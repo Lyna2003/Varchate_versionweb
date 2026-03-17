@@ -321,6 +321,12 @@ async function cargarDatosModulo(moduleSlug) {
             // Actualizar la introducción con la descripción larga
             actualizarIntroduccionModulo();
 
+            // Mostrar ranking y progreso al cargar un módulo
+            const rankingElements = document.querySelectorAll('.ranking, .ranking-mobile');
+            const progressElements = document.querySelectorAll('.progress-container, .progress-container-mobile');
+            rankingElements.forEach(el => el.style.display = '');
+            progressElements.forEach(el => el.style.display = '');
+
             // 3. Cargar PRIMERO el progreso (para que las lecciones se rendericen con el estado correcto)
             await cargarProgresoModulo(moduloActual.id);
 
@@ -2309,9 +2315,16 @@ function mostrarBienvenidaModulos() {
     const leccionContent = document.getElementById('leccionContent');
     const btnNext = document.getElementById('btnNext');
 
+    const rankingElements = document.querySelectorAll('.ranking, .ranking-mobile');
+    const progressElements = document.querySelectorAll('.progress-container, .progress-container-mobile');
+
     if (introduccionContent) introduccionContent.style.display = 'none';
     if (leccionContent) leccionContent.style.display = 'none';
     if (btnNext) btnNext.style.display = 'none';
+    
+    // Ocultar ranking y progreso en bienvenida
+    rankingElements.forEach(el => el.style.display = 'none');
+    progressElements.forEach(el => el.style.display = 'none');
 
     document.getElementById('bienvenidaContent')?.remove();
 

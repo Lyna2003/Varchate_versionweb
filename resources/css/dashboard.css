@@ -832,6 +832,68 @@ body {
   overflow: auto;
 }
 
+/* =========================
+   👋 Sección de Bienvenida (General)
+========================= */
+.welcome-hero {
+  width: 100%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 20px;
+}
+
+.welcome-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 600px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 20px auto !important;
+}
+
+.welcome-icon-container {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  margin-bottom: 20px;
+}
+
+.welcome-mascot {
+  width: 180px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.welcome-title {
+  font-size: 2.2rem;
+  color: #1a1a2e;
+  margin-bottom: 15px;
+  font-weight: 800;
+  text-align: center !important;
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  color: #0099FF;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center !important;
+}
+
+.welcome-text {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  max-width: 500px;
+  text-align: center !important;
+}
+
 /* ======================= */
 /* Contenedor PHP          */
 /* ======================= */
@@ -1191,8 +1253,27 @@ body {
   }
 
   .footer-logo {
-    width: 200px; /* Más pequeño en móvil */
+    width: 100px; /* Aún más pequeño por petición del usuario */
     margin: 0 auto 20px auto;
+  }
+
+  /* Estilos para la sección de bienvenida en móvil */
+  .welcome-card {
+    padding: 25px 20px !important;
+    max-width: 100% !important;
+  }
+
+  .welcome-mascot {
+    width: 110px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .welcome-title {
+    font-size: 1.6rem !important;
+  }
+
+  .welcome-subtitle {
+    font-size: 1.1rem !important;
   }
 
   .footer-welcome p {
