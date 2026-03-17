@@ -12,7 +12,7 @@
 
     <title>Varchate</title>
     <!-- Enlace al archivo CSS externo -->
-    @vite('resources/css/home.css')
+    @vite('resources/css/dashboard.css')
     @vite('resources/css/chatbot.css')
 
     <!-- Fuentes -->
@@ -406,10 +406,10 @@ echo "&lt;br&gt;La suma de $a y $b es: " . $suma;
     @endauth
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite('resources/js/home.js')
+    @vite('resources/js/dashboard.js')
     @vite('resources/js/chatbot.js')
     <script>window.varchateIcon = "{{ asset('images/chatbot-icon.svg') }}";</script>
-    @endauth
+
 </body>
 
 </html>

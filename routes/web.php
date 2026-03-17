@@ -11,12 +11,12 @@ use App\Http\Controllers\ChatbotController;
 // ===============================
 
 Route::get('/', function () {
-    return redirect('/home');
+    return redirect('/dashboard');
 });
 
-Route::get('/home', function () {
-    return view('home');
-})->name('home');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
 
 // ===============================
 // Login, Registro y Recuperación de Contraseña
