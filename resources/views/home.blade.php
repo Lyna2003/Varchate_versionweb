@@ -381,6 +381,7 @@ echo "&lt;br&gt;La suma de $a y $b es: " . $suma;
 
 
 
+    @auth
     <!-- Chatbot UI -->
     <div id="chatbot-toggle" class="chatbot-toggle" title="¿Necesitas ayuda?">
         <img src="{{ asset('images/chatbot-icon.svg') }}" alt="Chatbot">
@@ -402,11 +403,13 @@ echo "&lt;br&gt;La suma de $a y $b es: " . $suma;
             <button id="chatbot-send"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
+    @endauth
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/js/home.js')
     @vite('resources/js/chatbot.js')
     <script>window.varchateIcon = "{{ asset('images/chatbot-icon.svg') }}";</script>
+    @endauth
 </body>
 
 </html>
