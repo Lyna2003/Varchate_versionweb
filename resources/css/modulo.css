@@ -2364,6 +2364,17 @@
   .drag-item.dragging {
     opacity: 0.5;
     cursor: grabbing;
+    background: #dceeff;
+    border-color: #2a73ff;
+  }
+
+  /* Feedback para selección por clic (Móvil/Desktop fallback) */
+  .drag-item.selected-for-drop {
+    border-color: #2a73ff;
+    background: #e0edff;
+    box-shadow: 0 0 0 3px rgba(42, 115, 255, 0.2);
+    transform: translateY(-2px);
+    z-index: 10;
   }
 
   .drag-destino {
@@ -2388,17 +2399,54 @@
     background: #f9fbff;
     display: flex;
     align-items: center;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition: all 0.2s ease;
+    cursor: pointer; /* Indica que se puede hacer clic */
   }
 
-  .drag-zona.drag-over {
+  .drag-zona.drag-over, .drag-zona.selected-target {
     background: #e0edff;
     border-color: #2a73ff;
     color: #2a73ff;
+    border-style: solid;
+  }
+
+  .drag-items-col.selected-target {
+    background: rgba(42, 115, 255, 0.05);
+    border-radius: 10px;
+    padding: 5px;
   }
 
   .drag-zona .drag-item {
     margin-bottom: 0;
+    width: 100%;
+  }
+
+  /* Responsivo para Drag & Drop */
+  @media (max-width: 768px) {
+    .drag-drop-container {
+      grid-template-columns: 1fr;
+    }
+
+    .drag-items-col {
+      order: 2; /* Los items abajo para que primero se lean las definiciones si se desea, o viceversa */
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+      background: #f0f6ff;
+      border-radius: 12px;
+    }
+
+    .drag-items-col .drag-item {
+      margin-bottom: 0;
+      flex: 1 1 calc(50% - 10px);
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .drag-destinos-col {
+      order: 1;
+    }
   }
 
   /* Feedback */

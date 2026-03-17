@@ -1534,23 +1534,73 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
         // Drag & Drop
         if (!respondido && ej.tipo === 'arrastrar_soltar') {
             let draggedItem = null;
+            let selectedItem = null; // Para selección por clic (móvil)
+
+            const itemsCol = seccion.querySelector('.drag-items-col');
+
+            // Native Drag Events (Desktop)
             seccion.querySelectorAll('.drag-item').forEach(item => {
-                item.addEventListener('dragstart', () => { draggedItem = item; item.classList.add('dragging'); });
-                item.addEventListener('dragend', () => { item.classList.remove('dragging'); });
+                item.addEventListener('dragstart', () => { 
+                    draggedItem = item; 
+                    item.classList.add('dragging'); 
+                });
+                item.addEventListener('dragend', () => { 
+                    item.classList.remove('dragging'); 
+                });
+
+                // Alternativa por Clic (Móvil / Desktop híbrido)
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Desmarcar anterior
+                    seccion.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected-for-drop'));
+                    
+                    if (selectedItem === item) {
+                        selectedItem = null;
+                    } else {
+                        selectedItem = item;
+                        item.classList.add('selected-for-drop');
+                    }
+                });
             });
+
             seccion.querySelectorAll('.drag-zona').forEach(zona => {
-                zona.addEventListener('dragover', e => { e.preventDefault(); zona.classList.add('drag-over'); });
+                // Native Drop Events
+                zona.addEventListener('dragover', e => { 
+                    e.preventDefault(); 
+                    zona.classList.add('drag-over'); 
+                });
                 zona.addEventListener('dragleave', () => zona.classList.remove('drag-over'));
                 zona.addEventListener('drop', e => {
                     e.preventDefault();
                     zona.classList.remove('drag-over');
                     if (draggedItem) {
                         const existing = zona.querySelector('.drag-item');
-                        if (existing) seccion.querySelector('.drag-items-col').appendChild(existing);
+                        if (existing) itemsCol.appendChild(existing);
                         zona.appendChild(draggedItem);
                         draggedItem = null;
                     }
                 });
+
+                // Alternativa por Clic (Móvil)
+                zona.addEventListener('click', () => {
+                    if (selectedItem) {
+                        const existing = zona.querySelector('.drag-item');
+                        if (existing) itemsCol.appendChild(existing);
+                        
+                        zona.appendChild(selectedItem);
+                        selectedItem.classList.remove('selected-for-drop');
+                        selectedItem = null;
+                    }
+                });
+            });
+
+            // Permitir devolver items a la columna original por clic
+            itemsCol.addEventListener('click', (e) => {
+                if (selectedItem && selectedItem.parentElement !== itemsCol) {
+                    itemsCol.appendChild(selectedItem);
+                    selectedItem.classList.remove('selected-for-drop');
+                    selectedItem = null;
+                }
             });
         }
 
