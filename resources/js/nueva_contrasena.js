@@ -120,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ? form.dataset.apiUrl
         : 'https://api-varchate-v1-production.up.railway.app/api';
 
-    console.log('API URL:', API_BASE_URL);
 
     // Mostrar email en pantalla
     const emailDisplay = document.getElementById('emailDisplay');

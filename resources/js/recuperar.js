@@ -85,7 +85,6 @@ document.getElementById('recoveryForm').addEventListener('submit', async (e) => 
         });
 
         const data = await response.json();
-        console.log('Respuesta:', data);
 
         if (response.ok) {
             sessionStorage.setItem('recoveryEmail', email);
