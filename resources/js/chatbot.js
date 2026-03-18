@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.varchateChat = {
         context: 'General',
         history: [],
-        
+
         // Función para cambiar visibilidad (activar/desactivar)
         setVisibility(visible) {
             if (visible) {
@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatbotWindow.style.display = 'none';
             }
         },
-        
+
         // Función para actualizar el tema/contexto
         setContext(newContext) {
             this.context = newContext;
-            console.log('Chatbot context updated to:', newContext);
+
         }
     };
 
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessage(text, sender, save = true) {
         const container = document.createElement('div');
         container.className = `msg-container ${sender}`;
-        
+
         if (sender === 'bot') {
             const avatar = document.createElement('div');
             avatar.className = 'msg-avatar';
@@ -132,10 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${sender}`;
-        
+
         // Formateo: **texto** -> <strong> e ![alt](url) -> <div class="img-wrapper"><img ...></div>
         let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
+
         // Expresión regular para capturar imágenes de Markdown
         const imgRegex = /!\[(.*?)\]\((.*?)\)/g;
         let match;
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="image-loading-text">Generando imagen...</div>
                     </div>`;
         });
-        
+
         msgDiv.innerHTML = formattedText;
         container.appendChild(msgDiv);
         chatbotMessages.appendChild(container);
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = new Image();
             img.src = imgData.url;
             img.alt = imgData.alt;
-            
+
             img.onload = () => {
                 wrapper.classList.remove('skeleton');
                 wrapper.innerHTML = ''; // Limpiar mensaje de carga

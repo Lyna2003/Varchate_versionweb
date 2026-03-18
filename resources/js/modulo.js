@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Obtener el slug del módulo desde la URL
     const moduleSlug = obtenerSlugDeURL();
-    console.log('Módulo actual:', moduleSlug);
+
 
     // Verificar que el token sea válido con la API
     await verificarTokenEnSegundoPlano(token);
@@ -266,7 +266,6 @@ async function cargarDatosModulo(moduleSlug) {
 
             if (modulosResponse.ok) {
                 modulosGlobal = await modulosResponse.json();
-                console.log('Módulos cargados:', modulosGlobal);
                 renderizarBotonesModulos(modulosGlobal);
             }
         } else {
@@ -302,7 +301,6 @@ async function cargarDatosModulo(moduleSlug) {
 
         if (moduloResponse.ok) {
             moduloActual = await moduloResponse.json();
-            console.log('Módulo actual:', moduloActual);
 
             // Actualizar contexto del chatbot
             window.varchateChat?.setContext(`Módulo: ${moduloActual.modulo}`);
@@ -390,7 +388,7 @@ function actualizarIntroduccionModulo() {
             div.style.lineHeight = '1.8';
             div.style.fontSize = '16px';
             div.style.textAlign = 'justify';
-            
+
             // Aseguramos que los párrafos dentro de la descripción también tengan estilo si es necesario
             div.querySelectorAll('p').forEach(p => {
                 if (!p.style.marginBottom) p.style.marginBottom = '15px';
@@ -448,7 +446,6 @@ async function cargarLeccionesModulo(moduloId, moduleSlug) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('📚 Lecciones cargadas (raw):', data);
 
             let leccionesArray = [];
 
@@ -464,7 +461,6 @@ async function cargarLeccionesModulo(moduloId, moduleSlug) {
                 for (let key in data) {
                     if (Array.isArray(data[key])) {
                         leccionesArray = data[key];
-                        console.log(`📦 Lecciones encontradas en propiedad "${key}":`, leccionesArray);
                         break;
                     }
                 }
@@ -484,7 +480,6 @@ async function cargarLeccionesModulo(moduloId, moduleSlug) {
                 return true;
             });
 
-            console.log('✅ Lecciones procesadas:', leccionesArray);
             leccionesModulo = leccionesArray;
             renderizarLecciones(leccionesArray);
         }
@@ -501,7 +496,6 @@ async function cargarProgresoModulo(moduloId) {
     const token = localStorage.getItem('auth_token');
 
     try {
-        console.log('📥 Cargando progreso para módulo:', moduloId);
 
         // Intentar cargar progreso de módulos con progreso
         const response = await fetch(`${apiUrl}/modulos-con-progreso`, {
@@ -513,12 +507,10 @@ async function cargarProgresoModulo(moduloId) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('📊 Progreso cargado (raw):', data);
 
             // Verificar si la respuesta es un array o un objeto
             if (data.success && Array.isArray(data.data)) {
                 progresoModulo = data.data.find(m => m.id === moduloId);
-                console.log('🎯 Progreso del módulo actual:', progresoModulo);
             } else if (Array.isArray(data)) {
                 progresoModulo = data.find(m => m.id === moduloId);
             } else if (data && typeof data === 'object') {
@@ -533,7 +525,6 @@ async function cargarProgresoModulo(moduloId) {
                 }
             }
 
-            console.log('✅ Progreso procesado:', progresoModulo);
 
             if (progresoModulo) {
                 actualizarProgreso(progresoModulo.progreso || 0);
@@ -563,7 +554,7 @@ async function precargarEvaluacion(moduloId) {
         if (response.ok) {
             const json = await response.json();
             evaluacionData = json?.data?.evaluacion || null;
-            console.log('📋 Evaluación precargada:', evaluacionData);
+
         }
     } catch (error) {
         console.warn('No se pudo precargar la evaluación:', error);
@@ -599,7 +590,7 @@ function renderizarBotonesModulos(modulos) {
 
         if (esModuloActual) {
             button.classList.add('active');
-            console.log('Botón activado:', modulo.modulo); // Para debugging
+            // Para debugging
         }
 
         button.addEventListener('click', () => {
@@ -625,7 +616,6 @@ function renderizarBotonesModulos(modulos) {
 window.addEventListener('popstate', (event) => {
     // Si hay un estado guardado, o podemos extraer el slug de la URL, lo cargamos
     const slug = event.state?.moduleSlug || obtenerSlugDeURL();
-    console.log('Navegación popstate a:', slug);
     cargarDatosModulo(slug);
 });
 
@@ -652,16 +642,9 @@ function renderizarLecciones(lecciones) {
     // Guardar las lecciones ordenadas globalmente para usarlas después
     window.leccionesOrdenadas = leccionesOrdenadas;
 
-    // ===== Obtener datos de progreso REALES =====
     const leccionesCompletadas = progresoModulo?.lecciones_vistas || 0;
     const totalLeccionesReales = leccionesOrdenadas.length; // Usar el length real, no el de BD
 
-    console.log('📊 Renderizando lecciones:', {
-        leccionesCompletadas: leccionesCompletadas,
-        totalLecciones: totalLeccionesReales,
-        evaluacionAprobada: progresoModulo?.evaluacion_aprobada,
-        progresoModulo: progresoModulo
-    });
 
     // 1. Renderizar sidebar (BOTONES FUNCIONALES)
     let sidebarHTML = '<button class="active" data-tipo="intro" data-leccion-id="intro">INTRODUCCIÓN</button>';
@@ -689,13 +672,6 @@ function renderizarLecciones(lecciones) {
                 LECCIÓN ${index + 1} ${iconoLlave}
             </button>
         `;
-
-        console.log(`Lección ${index + 1}:`, {
-            id: leccion.id,
-            titulo: leccion.titulo,
-            desbloqueada: desbloqueadaFinal,
-            completada: index < leccionesCompletadas
-        });
     });
 
     // Verificar si todas las lecciones están completadas para desbloquear evaluación
@@ -802,7 +778,6 @@ function renderizarLecciones(lecciones) {
             const leccionIndex = parseInt(btn.dataset.leccionIndex);
             const tipo = btn.dataset.tipo;
 
-            console.log('Click en sidebar button:', { tipo, leccionId, leccionSlug, leccionIndex });
 
             // Verificar si el botón está bloqueado visualmente
             if (btn.classList.contains('locked')) {
@@ -829,21 +804,17 @@ function renderizarLecciones(lecciones) {
             btn.classList.add('active');
 
             if (tipo === 'intro') {
-                console.log('Mostrando introducción');
                 leccionActualIndex = -1; // Sincronizar estado
                 document.getElementById('ejerciciosSeccion')?.remove();
                 mostrarIntroduccion();
             } else if (tipo === 'evaluacion') {
-                console.log('Cargando evaluación');
                 leccionActualIndex = window.leccionesOrdenadas?.length ?? 0; // Sincronizar estado
                 document.getElementById('ejerciciosSeccion')?.remove();
                 cargarEvaluacion(btn.dataset.evaluacionId);
             } else if (tipo === 'certificado') {
-                console.log('Mostrando certificado');
                 document.getElementById('ejerciciosSeccion')?.remove();
                 cargarCertificado(btn.dataset.moduloId);
             } else if (leccionSlug && moduloActual) {
-                console.log('Cargando lección:', leccionSlug);
                 leccionActualIndex = leccionIndex; // Sincronizar estado
                 cargarLeccion(moduloActual.slug, leccionSlug);
             }
@@ -1076,7 +1047,7 @@ function limpiarContenidoHTML(html) {
     // Extraer el contenido del body
     const bodyRegex = /<body[^>]*>([\s\S]*?)<\/body>/i;
     const bodyMatch = html.match(bodyRegex);
-    
+
     if (bodyMatch && bodyMatch[1]) {
         contenidoLimpio = bodyMatch[1];
     } else {
@@ -1122,7 +1093,6 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 
 
     try {
-        console.log('📖 Cargando lección:', { moduloSlug, leccionSlug });
 
         // Verificar que tenemos el módulo actual
         if (!moduloActual || !moduloActual.id) {
@@ -1140,14 +1110,12 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Respuesta completa:', data);
 
             // Extraer la lección de la propiedad 'leccion'
             let leccion = null;
 
             if (data.leccion) {
                 leccion = data.leccion;
-                console.log('📦 Lección extraída de propiedad leccion:', leccion);
             } else if (data.data) {
                 leccion = data.data;
             } else if (data.id) {
@@ -1162,7 +1130,6 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
                 return;
             }
 
-            console.log('✅ Lección procesada - ID:', leccion.id, 'Título:', leccion.titulo);
 
             // Actualizar contexto del chatbot
             window.varchateChat?.setContext(`Lección: ${leccion.titulo}`);
@@ -1171,7 +1138,6 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             let contenidoLimpio = leccion.contenido || '<p>Contenido no disponible</p>';
             contenidoLimpio = limpiarContenidoHTML(contenidoLimpio);
 
-            console.log('📄 Contenido limpio (primeros 200 chars):', contenidoLimpio.substring(0, 200) + '...');
 
             // Mostrar contenido de la lección
             const introduccionContent = document.getElementById('introduccionContent');
@@ -1197,8 +1163,6 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             // Encontrar el índice de la lección actual
             if (window.leccionesOrdenadas) {
                 const indiceActual = window.leccionesOrdenadas.findIndex(l => l.id === leccion.id);
-                console.log('📍 Índice de lección actual:', indiceActual);
-                if (indiceActual !== -1) leccionActualIndex = indiceActual;
             }
 
             // ===== EJERCICIOS: cargar y mostrar si la lección tiene =====
@@ -1236,14 +1200,8 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
         // Flag de editor: solo si está activo en la base de datos (según última aclaración: cada uno por su lado)
         const tieneEditorCodigoFlag = leccionObj ? (leccionObj.tiene_editor_codigo == 1 || leccionObj.tiene_editor_codigo === true) : false;
 
-        console.log('🚩 Flags de lección (estrictos):', { tieneEjerciciosFlag, tieneEditorCodigoFlag });
 
         if (!tieneEjerciciosFlag && !tieneEditorCodigoFlag) {
-            console.log('ℹ️ La lección no tiene activados ejercicios ni editor de código');
-            // Asegurar que el botón siguiente esté habilitado si no hay ejercicios
-            const btnNextLeccion = document.getElementById('btnNext');
-            if (btnNextLeccion) btnNextLeccion.disabled = false;
-            
             // Asegurar limpieza por si acaso
             document.getElementById('ejerciciosSeccion')?.remove();
             document.getElementById('editorIndependienteSeccion')?.remove();
@@ -1257,7 +1215,6 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
         }
 
         const url = `${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios`;
-        console.log('🔍 Cargando ejercicios desde:', url);
 
         const response = await fetch(url, {
             headers: {
@@ -1280,7 +1237,6 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
 
         // 1. Renderizar ejercicios normales (si existen y flag activo)
         if (tieneEjerciciosFlag && data?.ejercicios && data.ejercicios.length > 0) {
-            console.log(`✅ ${data.ejercicios.length} ejercicio(s) encontrado(s)`);
             renderizarEjerciciosLeccion(data.ejercicios, moduloId, leccionId);
         } else {
             // Limpiar si no hay ejercicios
@@ -1327,7 +1283,7 @@ function escapeHTML(str) {
  */
 function renderSmartContent(str) {
     if (!str) return '';
-    
+
     // 1. Escapar todo primero para seguridad y visibilidad base
     let escaped = str
         .replace(/&/g, '&amp;')
@@ -1336,12 +1292,12 @@ function renderSmartContent(str) {
 
     // 2. Restaurar etiquetas de estilo permitidas
     const whitelist = ['b', 'strong', 'i', 'em', 'u', 'span', 'br', 'p', 'code', 'pre'];
-    
+
     whitelist.forEach(tag => {
         // Apertura: &lt;b&gt; o &lt;b style="..."&gt;
         const openRegex = new RegExp(`&lt;(${tag})(\\s+[^&]*)?&gt;`, 'gi');
         escaped = escaped.replace(openRegex, `<$1$2>`);
-        
+
         // Cierre: &lt;/b&gt;
         const closeRegex = new RegExp(`&lt;/(${tag})&gt;`, 'gi');
         escaped = escaped.replace(closeRegex, `</$1>`);
@@ -1391,7 +1347,6 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
 
     function buildOpcionesHTML(ej) {
         const opciones = Array.isArray(ej.opciones) ? ej.opciones : [];
-        console.log(`🧩 buildOpcionesHTML tipo=${ej.tipo} opciones=${opciones.length}`, opciones);
 
         if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
             if (!opciones.length) return '<p style="color:#e57373;font-size:13px;">⚠️ Sin opciones cargadas</p>';
@@ -1733,7 +1688,7 @@ function renderizarEditorIndependiente(config) {
     const seccion = document.createElement('div');
     seccion.className = 'editor-independiente-seccion';
     seccion.id = 'editorIndependienteSeccion';
-    
+
     // Inyectar HTML del editor
     seccion.innerHTML = `
         <div class="ejercicios-leccion-header editor-standalone-header">
@@ -1873,7 +1828,7 @@ function renderizarEditorIndependiente(config) {
         const html = editors['html'].getValue();
         const css = editors['css'].getValue();
         const js = editors['js'].getValue();
-        
+
         const content = `
             <!DOCTYPE html>
             <html>
@@ -1892,7 +1847,7 @@ function renderizarEditorIndependiente(config) {
             </body>
             </html>
         `;
-        
+
         const doc = iframe.contentDocument || iframe.contentWindow.document;
         doc.open();
         doc.write(content);
@@ -1947,7 +1902,6 @@ async function cargarEvaluacion(evaluacionId) {
     mostrarSpinner(true);
 
     try {
-        console.log('📝 Cargando evaluación para módulo:', moduloActual?.id);
 
         if (!moduloActual?.id) {
             console.error('No hay módulo actual');
@@ -1963,7 +1917,7 @@ async function cargarEvaluacion(evaluacionId) {
 
         if (response.ok) {
             const json = await response.json();
-            console.log('✅ Evaluación cargada:', json);
+
 
             // Limpiar secciones de ejercicios y editor previas
             document.getElementById('ejerciciosSeccion')?.remove();
@@ -2437,7 +2391,6 @@ window.iniciarEvaluacion = async function (evaluacionId) {
         const json = await response.json();
 
         if (response.ok && json.success) {
-            console.log('Evaluación iniciada:', json.data);
             mostrarMensajeExito('Evaluación iniciada correctamente');
             // TODO: renderizar preguntas con json.data.preguntas
         } else {
@@ -2595,7 +2548,7 @@ function mostrarBienvenidaModulos() {
 
     const nombre = localStorage.getItem('user_nombre') || 'Estudiante';
     const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
-    
+
     if (contentSection) {
         const bienvenidaDiv = document.createElement('div');
         bienvenidaDiv.id = 'bienvenidaContent';
@@ -3126,7 +3079,6 @@ window.iniciarEvaluacion = async function (evaluacionId) {
         const json = await response.json();
 
         if (response.ok && json.success) {
-            console.log('✅ Evaluación iniciada:', json.data);
             abrirModalEvaluacion(json.data);
         } else {
             const msg = json.message || 'No se pudo iniciar la evaluación';
