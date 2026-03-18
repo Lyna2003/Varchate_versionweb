@@ -246,6 +246,12 @@ async function cargarDatosModulo(moduleSlug) {
     const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
     const token = localStorage.getItem('auth_token');
 
+    // Restaurar el layout con sidebar al cargar un módulo
+    const mainLayout = document.querySelector('.main-layout');
+    const sidebar = document.getElementById('sidebar');
+    if (mainLayout) mainLayout.classList.remove('no-sidebar');
+    if (sidebar) sidebar.style.display = '';
+
     mostrarSpinner(true);
 
     try {
@@ -311,6 +317,10 @@ async function cargarDatosModulo(moduleSlug) {
             if (leccionContent) {
                 leccionContent.innerHTML = ''; // Limpiar lección anterior
             }
+            
+            // Limpiar secciones dinámicas de ejercicios/editor previos
+            document.getElementById('ejerciciosSeccion')?.remove();
+            document.getElementById('editorIndependienteSeccion')?.remove();
             // ----------------------------------------------------------------
 
             // Actualizar título del módulo en la barra de progreso con el nombre corto
@@ -318,6 +328,12 @@ async function cargarDatosModulo(moduleSlug) {
 
             // Actualizar la introducción con la descripción larga
             actualizarIntroduccionModulo();
+
+            // Mostrar ranking y progreso al cargar un módulo
+            const rankingElements = document.querySelectorAll('.ranking, .ranking-mobile');
+            const progressElements = document.querySelectorAll('.progress-container, .progress-container-mobile');
+            rankingElements.forEach(el => el.style.display = '');
+            progressElements.forEach(el => el.style.display = '');
 
             // 3. Cargar PRIMERO el progreso (para que las lecciones se rendericen con el estado correcto)
             await cargarProgresoModulo(moduloActual.id);
@@ -366,6 +382,7 @@ function actualizarIntroduccionModulo() {
         if (tieneHTML) {
             // Si tiene HTML, lo insertamos directamente
             const div = document.createElement('div');
+            div.className = 'intro-html-content'; // Marca para limpieza posterior
             div.innerHTML = moduloActual.descripcion_larga;
             div.style.marginBottom = '20px';
             div.style.lineHeight = '1.8';
@@ -607,6 +624,9 @@ function renderizarLecciones(lecciones) {
     const lessonsContainer = document.getElementById('lessonsContainer');
 
     if (!sidebar || !lessonsContainer) return;
+    
+    // Limpiar contenedor antes de renderizar lecciones del nuevo módulo
+    lessonsContainer.innerHTML = '';
 
     // Verificar que lecciones sea un array
     if (!Array.isArray(lecciones) || lecciones.length === 0) {
@@ -1123,9 +1143,11 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
 
-            // Mostrar el botón "Siguiente" en lecciones normales
+            // Mostrar el botón "Siguiente" y su contenedor en lecciones normales
             const btnNextLeccion = document.getElementById('btnNext');
+            const btnContainer = document.querySelector('.btn-container');
             if (btnNextLeccion) btnNextLeccion.style.display = '';
+            if (btnContainer) btnContainer.style.display = '';
 
             if (introduccionContent) introduccionContent.style.display = 'none';
             if (leccionContent) {
@@ -1186,6 +1208,12 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
             return;
         }
 
+        // Si hay ejercicios, bloqueamos el botón siguiente hasta que se completen
+        if (tieneEjerciciosFlag) {
+            const btnNextLeccion = document.getElementById('btnNext');
+            if (btnNextLeccion) btnNextLeccion.disabled = true;
+        }
+
         const url = `${apiUrl}/modulos/${moduloId}/lecciones/${leccionId}/ejercicios`;
 
         const response = await fetch(url, {
@@ -1221,9 +1249,9 @@ async function cargarEjerciciosLeccion(moduloId, leccionId, leccionObj = null) {
                 id: 'editor-practica-' + leccionId,
                 instrucciones: 'Practica libremente con el editor.',
                 titulo: 'Editor de Código Interactivo',
-                codigo_inicial: leccionObj?.codigo_base || '<!-- Escribe tu HTML aquí -->\n<h1>Hola Varchate</h1>',
-                css_inicial: leccionObj?.css_base || '/* Escribe tu CSS aquí */\nh1 { color: #38bdf8; text-align: center; }',
-                js_inicial: leccionObj?.js_base || '// Escribe tu JS aquí\nconsole.log("¡Listo para programar!");'
+                codigo_inicial: leccionObj?.codigo_base || '<!-- Empieza a escribir tu HTML aquí -->\n',
+                css_inicial: leccionObj?.css_base || '/* Empieza a escribir tu CSS aquí */\n',
+                js_inicial: leccionObj?.js_base || '// Empieza a escribir tu JS aquí\n'
             };
             renderizarEditorIndependiente(configEditor);
         } else {
@@ -1279,6 +1307,10 @@ function renderSmartContent(str) {
 }
 
 function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
+    const mainEl = document.querySelector('main.container');
+    const apiUrl = mainEl?.dataset.apiUrl || 'http://localhost:8001/api';
+    const token = localStorage.getItem('auth_token');
+
     // Inyectamos en contentSection (FUERA de leccionContent) para evitar
     // que los <style> del HTML de la lección sobreescriban nuestros estilos
     const contentSection = document.getElementById('contentSection');
@@ -1355,6 +1387,13 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
         const respondido = est.respondido;
         const correcto = est.correcto;
 
+        // --- CONTROL DEL BOTÓN SIGUIENTE GLOBAL ---
+        const btnNextLeccion = document.getElementById('btnNext');
+        if (btnNextLeccion) {
+            const todosCorrectos = estados.every(e => e.correcto);
+            btnNextLeccion.disabled = !todosCorrectos;
+        }
+
         seccion.innerHTML = `
             <div class="ejercicios-leccion-header">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -1396,7 +1435,9 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
                         <span class="ej-dot ${estados[i].respondido ? (estados[i].correcto ? 'dot-correcto' : 'dot-incorrecto') : ''} ${i === indexActual ? 'dot-actual' : ''}"></span>
                     `).join('')}
                 </div>
-                <button class="ejercicio-btn-nav" id="btnSiguiente" ${indexActual === ejercicios.length - 1 ? 'disabled' : ''}>Siguiente →</button>
+                <button class="ejercicio-btn-nav" id="btnSiguiente" ${!correcto ? 'disabled' : ''}>
+                    ${indexActual === ejercicios.length - 1 ? 'Finalizar Práctica →' : 'Siguiente →'}
+                </button>
             </div>
         `;
 
@@ -1429,7 +1470,19 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
         });
 
         seccion.querySelector('#btnSiguiente')?.addEventListener('click', () => {
-            if (indexActual < ejercicios.length - 1) { indexActual++; render(); }
+            if (indexActual < ejercicios.length - 1) { 
+                indexActual++; 
+                render(); 
+            } else if (estados[indexActual].correcto) {
+                // Si es el último y acertó, podemos intentar avanzar la lección completa
+                const mainNext = document.getElementById('btnNext');
+                if (mainNext && !mainNext.disabled) {
+                    mainNext.click();
+                } else if (mainNext) {
+                    // Si el botón está deshabilitado por alguna razón pero acertó, mostramos éxito
+                    mostrarMensajeExito('¡Has completado todos los ejercicios! Puedes continuar.');
+                }
+            }
         });
 
         // Selección de opciones
@@ -1446,23 +1499,157 @@ function renderizarEjerciciosLeccion(ejercicios, moduloId, leccionId) {
         // Drag & Drop
         if (!respondido && ej.tipo === 'arrastrar_soltar') {
             let draggedItem = null;
+            let selectedItem = null; // Para selección por clic (móvil)
+
+            const itemsCol = seccion.querySelector('.drag-items-col');
+
+            // Native Drag Events (Desktop)
             seccion.querySelectorAll('.drag-item').forEach(item => {
-                item.addEventListener('dragstart', () => { draggedItem = item; item.classList.add('dragging'); });
-                item.addEventListener('dragend', () => { item.classList.remove('dragging'); });
+                item.addEventListener('dragstart', () => { 
+                    draggedItem = item; 
+                    item.classList.add('dragging'); 
+                });
+                item.addEventListener('dragend', () => { 
+                    item.classList.remove('dragging'); 
+                });
+
+                // Alternativa por Clic (Móvil / Desktop híbrido)
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Desmarcar anterior
+                    seccion.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected-for-drop'));
+                    
+                    if (selectedItem === item) {
+                        selectedItem = null;
+                    } else {
+                        selectedItem = item;
+                        item.classList.add('selected-for-drop');
+                    }
+                });
             });
+
             seccion.querySelectorAll('.drag-zona').forEach(zona => {
-                zona.addEventListener('dragover', e => { e.preventDefault(); zona.classList.add('drag-over'); });
+                // Native Drop Events
+                zona.addEventListener('dragover', e => { 
+                    e.preventDefault(); 
+                    zona.classList.add('drag-over'); 
+                });
                 zona.addEventListener('dragleave', () => zona.classList.remove('drag-over'));
                 zona.addEventListener('drop', e => {
                     e.preventDefault();
                     zona.classList.remove('drag-over');
                     if (draggedItem) {
                         const existing = zona.querySelector('.drag-item');
-                        if (existing) seccion.querySelector('.drag-items-col').appendChild(existing);
+                        if (existing) itemsCol.appendChild(existing);
                         zona.appendChild(draggedItem);
                         draggedItem = null;
                     }
                 });
+
+                // Alternativa por Clic (Móvil)
+                zona.addEventListener('click', () => {
+                    if (selectedItem) {
+                        const existing = zona.querySelector('.drag-item');
+                        if (existing) itemsCol.appendChild(existing);
+                        
+                        zona.appendChild(selectedItem);
+                        selectedItem.classList.remove('selected-for-drop');
+                        selectedItem = null;
+                    }
+                });
+            });
+
+            // Permitir devolver items a la columna original por clic
+            itemsCol.addEventListener('click', (e) => {
+                if (selectedItem && selectedItem.parentElement !== itemsCol) {
+                    itemsCol.appendChild(selectedItem);
+                    selectedItem.classList.remove('selected-for-drop');
+                    selectedItem = null;
+                }
+            });
+        }
+
+        // Comprobar
+        const btnComprobar = seccion.querySelector('#btnComprobar');
+        if (btnComprobar) {
+            btnComprobar.addEventListener('click', () => {
+                const est = estados[indexActual];
+                const ej = ejercicios[indexActual];
+
+                if (ej.tipo === 'seleccion_multiple' || ej.tipo === 'verdadero_falso') {
+                    if (!est.seleccionId) return;
+
+                    mostrarSpinner(true);
+                    fetch(`${apiUrl}/modulos/${moduloActual.id}/lecciones/${leccionId}/ejercicios/${ej.id}/intento`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            opcion_id: est.seleccionId
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.success) {
+                            est.correcto = json.data.es_correcta;
+                            est.feedback = json.data.feedback;
+                            est.opcionCorrecta = json.data.opcion_correcta;
+                            est.respondido = true;
+                            render();
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error validando ejercicio:', err);
+                        mostrarMensajeBloqueado('Error al validar la respuesta. Inténtalo de nuevo.');
+                    })
+                    .finally(() => mostrarSpinner(false));
+
+                } else if (ej.tipo === 'arrastrar_soltar') {
+                    const zonas = seccion.querySelectorAll('.drag-zona');
+                    const parejasParaAPI = [];
+                    
+                    zonas.forEach(zona => {
+                        const item = zona.querySelector('.drag-item');
+                        if (item) {
+                            parejasParaAPI.push({
+                                id_opcion: item.dataset.opcionId,
+                                respuesta: zona.dataset.pareja
+                            });
+                        }
+                    });
+
+                    if (parejasParaAPI.length === 0) return;
+
+                    mostrarSpinner(true);
+                    fetch(`${apiUrl}/modulos/${moduloActual.id}/lecciones/${leccionId}/ejercicios/${ej.id}/intento`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            parejas: parejasParaAPI
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.success) {
+                            est.correcto = json.data.es_correcta;
+                            est.feedback = json.data.feedback;
+                            est.respondido = true;
+                            render();
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error validando ejercicio drag-drop:', err);
+                        mostrarMensajeBloqueado('Error al validar la respuesta. Inténtalo de nuevo.');
+                    })
+                    .finally(() => mostrarSpinner(false));
+                }
             });
         }
 
@@ -1513,10 +1700,15 @@ function renderizarEditorIndependiente(config) {
         </div>
         <div class="editor-codigo-container">
             <div class="editor-codigo-header">
+                <div class="mac-window-controls">
+                    <span class="mac-dot mac-close"></span>
+                    <span class="mac-dot mac-min"></span>
+                    <span class="mac-dot mac-max"></span>
+                </div>
                 <div class="editor-tabs">
-                    <button class="editor-tab active" data-lang="html">index.html</button>
-                    <button class="editor-tab" data-lang="css">style.css</button>
-                    <button class="editor-tab" data-lang="js">script.js</button>
+                    <button class="editor-tab active" data-lang="html"><i class="fa-brands fa-html5" style="color:#e34f26"></i> HTML</button>
+                    <button class="editor-tab" data-lang="css"><i class="fa-brands fa-css3-alt" style="color:#264de4"></i> CSS</button>
+                    <button class="editor-tab" data-lang="js"><i class="fa-brands fa-js" style="color:#f7df1e"></i> JS</button>
                 </div>
                 <div class="editor-codigo-actions">
                     <button class="btn-ejecutar-codigo" id="btnEjecutarStandalone">
@@ -1526,12 +1718,17 @@ function renderizarEditorIndependiente(config) {
             </div>
             <div class="editor-codigo-main">
                 <div class="editor-panes-container">
-                    <textarea id="standalone-html">${escapeHTML(config.codigo_inicial)}</textarea>
-                    <textarea id="standalone-css" style="display:none;">${escapeHTML(config.css_inicial)}</textarea>
-                    <textarea id="standalone-js" style="display:none;">${escapeHTML(config.js_inicial)}</textarea>
+                    <div class="editor-pane pane-code" data-pane="html">
+                        <textarea id="standalone-html">${escapeHTML(config.codigo_inicial)}</textarea>
+                    </div>
+                    <div class="editor-pane pane-code" data-pane="css" style="display:none;">
+                        <textarea id="standalone-css">${escapeHTML(config.css_inicial)}</textarea>
+                    </div>
+                    <div class="editor-pane pane-code" data-pane="js" style="display:none;">
+                        <textarea id="standalone-js">${escapeHTML(config.js_inicial)}</textarea>
+                    </div>
                 </div>
                 <div class="editor-codigo-preview">
-                    <span class="preview-label">Resultado en vivo</span>
                     <iframe id="preview-iframe-standalone"></iframe>
                 </div>
             </div>
@@ -1563,22 +1760,61 @@ function renderizarEditorIndependiente(config) {
                 autoCloseBrackets: true,
                 matchBrackets: true,
                 tabSize: 4,
-                lineWrapping: true
+                lineWrapping: true,
+                extraKeys: {"Ctrl-Space": "autocomplete"}
+            });
+
+            // Autocompletado automático al escribir
+            editors[lang].on("inputRead", function(cm, change) {
+                if (change.origin !== "+input" || 
+                    change.text[0] === " " || 
+                    change.text[0] === ";" || 
+                    change.text[0] === "(" || 
+                    change.text[0] === ")" || 
+                    change.text[0] === "{" || 
+                    change.text[0] === "}") return;
+                
+                cm.showHint({
+                    completeSingle: false,
+                    hint: CodeMirror.hint[lang === 'js' ? 'javascript' : (lang === 'css' ? 'css' : 'html')]
+                });
+            });
+
+            // Borrar comentarios iniciales al hacer focus (empezar a escribir)
+            editors[lang].on("focus", function(cm) {
+                const val = cm.getValue().trim();
+                if (
+                    val === '<!-- Empieza a escribir tu HTML aquí -->' ||
+                    val === '/* Empieza a escribir tu CSS aquí */' ||
+                    val === '// Empieza a escribir tu JS aquí'
+                ) {
+                    cm.setValue('');
+                }
             });
         }
     });
+
+    // Forzar refresco inicial para evitar que el editor salga "aplastado" o hacia abajo
+    setTimeout(() => {
+        Object.values(editors).forEach(ed => ed.refresh());
+    }, 150);
 
     // Pestañas
     seccion.querySelectorAll('.editor-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const lang = tab.dataset.lang;
+            
+            // Actualizar botones de pestaña
             seccion.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            ['html', 'css', 'js'].forEach(l => {
-                const pane = seccion.querySelector(`#standalone-${l}`).nextSibling;
-                if (l === lang) {
+
+            // Actualizar visibilidad de paneles (solo para código)
+            seccion.querySelectorAll('.editor-pane.pane-code').forEach(pane => {
+                if (pane.dataset.pane === lang) {
                     pane.style.display = 'block';
-                    editors[l].refresh();
+                    if (editors[lang]) {
+                        editors[lang].refresh();
+                    }
                 } else {
                     pane.style.display = 'none';
                 }
@@ -1586,7 +1822,6 @@ function renderizarEditorIndependiente(config) {
         });
     });
 
-    // Ejecutar
     // Ejecutar
     seccion.querySelector('#btnEjecutarStandalone').addEventListener('click', () => {
         const iframe = seccion.querySelector('#preview-iframe-standalone');
@@ -2176,9 +2411,11 @@ function mostrarIntroduccion() {
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
 
-    // Mostrar el botón "Siguiente" al volver a la introducción
+    // Mostrar el botón "Siguiente" y su contenedor al volver a la introducción
     const btnNext = document.getElementById('btnNext');
+    const btnContainer = document.querySelector('.btn-container');
     if (btnNext) btnNext.style.display = '';
+    if (btnContainer) btnContainer.style.display = '';
 
     // Solo mostrar/ocultar — NO tocar el contenido interno que ya está bien renderizado
     if (introduccionContent) {
@@ -2261,42 +2498,125 @@ function mostrarSpinner(mostrar) {
     }
 }
 
+function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return '¡Buenos días';
+    if (hour < 18) return '¡Buenas tardes';
+    return '¡Buenas noches';
+}
+
 function mostrarBienvenidaModulos() {
     const contentSection = document.getElementById('contentSection');
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
     const btnNext = document.getElementById('btnNext');
 
+    const rankingElements = document.querySelectorAll('.ranking, .ranking-mobile');
+    const progressElements = document.querySelectorAll('.progress-container, .progress-container-mobile');
+
     if (introduccionContent) introduccionContent.style.display = 'none';
     if (leccionContent) leccionContent.style.display = 'none';
     if (btnNext) btnNext.style.display = 'none';
+    
+    // Ocultar sidebar y ajustar layout a pantalla completa
+    const mainLayout = document.querySelector('.main-layout');
+    const sidebar = document.getElementById('sidebar');
+    if (mainLayout) mainLayout.classList.add('no-sidebar');
+    if (sidebar) {
+        sidebar.style.display = 'none';
+        sidebar.innerHTML = ''; // Limpiar lecciones previas
+    }
+
+    // Resetear botones superiores (quitar activo)
+    document.querySelectorAll('#topButtonsContainer button').forEach(btn => btn.classList.remove('active'));
+
+    // Ocultar el contenedor completo del botón siguiente para una vista limpia
+    const btnContainer = document.querySelector('.btn-container');
+    if (btnContainer) btnContainer.style.display = 'none';
+
+    // Eliminar secciones dinámicas (ejercicios, editores, evaluación) para resetear la vista
+    document.getElementById('ejerciciosSeccion')?.remove();
+    document.getElementById('editorIndependienteSeccion')?.remove();
+    const evalModal = document.getElementById('eval-modal-overlay');
+    if (evalModal) evalModal.style.display = 'none';
+
+    // Ocultar ranking y progreso en bienvenida (se mostrarán dentro del dashboard si es necesario)
+    rankingElements.forEach(el => el.style.display = 'none');
+    progressElements.forEach(el => el.style.display = 'none');
 
     document.getElementById('bienvenidaContent')?.remove();
 
-    const nombre = localStorage.getItem('user_nombre') || 'Usuario';
+    const nombre = localStorage.getItem('user_nombre') || 'Estudiante';
     const imagesBase = document.querySelector('main.container')?.dataset.imagesUrl || '/images';
 
     if (contentSection) {
         const bienvenidaDiv = document.createElement('div');
         bienvenidaDiv.id = 'bienvenidaContent';
-        bienvenidaDiv.className = 'welcome-hero';
-
+        bienvenidaDiv.className = 'dashboard-container';
+        
         bienvenidaDiv.innerHTML = `
-            <div class="welcome-card">
-                <div class="welcome-icon-container">
-                    <img src="${imagesBase}/alegre.png" alt="Varchate Mascot" class="welcome-mascot">
+            <div class="dashboard-hero">
+                <div class="hero-text">
+                    <h2 class="hero-greeting">${getGreeting()}, ${nombre}! 👋</h2>
+                    <p class="hero-subtitle">¡Haz realidad tus proyectos! Bienvenido a VARCHATE, tu lugar para aprender desde cero.</p>
+                    <p class="hero-description">
+                        Elige un módulo en el <b>menú superior</b> para comenzar tu viaje en la programación.
+                    </p>
                 </div>
-                <h2 class="welcome-title">¡Hola, ${nombre}!</h2>
-                <p class="welcome-subtitle">Bienvenido a tu panel de aprendizaje</p>
-                <p class="welcome-text">
-                    Estamos emocionados de tenerte aquí. Elige un módulo del menú superior para comenzar 
-                    tu viaje en el mundo de la programación.
-                </p>
+                <div class="hero-mascot-container">
+                    <img src="${imagesBase}/alegre.png" alt="Varchate Mascot" class="hero-mascot">
+                </div>
+            </div>
+            
+            <div class="dashboard-footer-stats">
+                <div class="stat-item">
+                    <i class="fas fa-rocket"></i>
+                    <span>¿Listo para superar tus metas hoy?</span>
+                </div>
             </div>
         `;
-        // Insertamos al principio para que quede por encima de los contenedores ocultos
         contentSection.insertBefore(bienvenidaDiv, contentSection.firstChild);
     }
+}
+
+function configurarLogo() {
+    if (window._logo_nav_ok) return;
+    window._logo_nav_ok = true;
+
+    const logoLinks = document.querySelectorAll('.logo-link');
+    logoLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Navegar a la vista general (/modulos)
+            const newUrl = '/modulos';
+            window.history.pushState({ moduleSlug: null }, '', newUrl);
+            
+            // Mostrar la bienvenida con limpieza total
+            moduloActual = null;
+            mostrarBienvenidaModulos();
+            
+            // Asegurarnos de que el scroll vuelva al inicio
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Cerrar sidebar y overlay en móvil
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        });
+    });
+}
+
+function getModuleIcon(name) {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('html')) return 'fa-code';
+    if (lowerName.includes('css')) return 'fa-palette';
+    if (lowerName.includes('js') || lowerName.includes('javascript')) return 'fa-bolt';
+    if (lowerName.includes('sql') || lowerName.includes('base de datos')) return 'fa-database';
+    if (lowerName.includes('php')) return 'fa-server';
+    if (lowerName.includes('intro')) return 'fa-lightbulb';
+    return 'fa-book';
 }
 
 function mostrarErrorModulo() {
@@ -2315,7 +2635,9 @@ function inicializarFuncionalidades() {
     configurarBotonesModulos();
     manejarNavegacion();
     configurarBotonSiguiente();
+    configurarLogo();
 }
+
 
 function configurarProgreso() {
     const progressFills = document.querySelectorAll('.progress-fill');
@@ -3510,4 +3832,79 @@ function renderRankingError(mensaje) {
 
     skeleton.style.display = 'none';
     lista.style.display = 'flex';
+}
+
+/**
+ * Agrega funcionalidad interactiva a los ejemplos de las lecciones.
+ * Permite copiar el código de un bloque <pre> al editor de práctica.
+ */
+function inicializarEjemplosInteractivos() {
+    const container = document.getElementById('leccionContent');
+    if (!container) return;
+
+    // Buscamos todos los bloques pre que no tengan ya el botón
+    const blocks = container.querySelectorAll('pre');
+    blocks.forEach(block => {
+        if (block.querySelector('.btn-probar-ejemplo')) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-probar-ejemplo';
+        btn.title = 'Probar este código en el editor';
+        btn.innerHTML = '<i class="fas fa-play"></i> Probar código';
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const code = block.innerText.trim();
+            const editorSec = document.getElementById('editorIndependienteSeccion');
+
+            if (editorSec) {
+                // Detectar lenguaje de forma simple
+                const isCSS = code.includes('{') && code.includes(':') && !code.includes('<');
+                const lang = isCSS ? 'css' : 'html';
+
+                const textarea = document.getElementById(`standalone-${lang}`);
+                if (textarea && textarea.CodeMirror) {
+                    textarea.CodeMirror.setValue(code);
+                    
+                    // Activar la pestaña correspondiente
+                    const tab = editorSec.querySelector(`.editor-tab[data-lang="${lang}"]`);
+                    if (tab) tab.click();
+
+                    // Ejecutar el código automáticamente
+                    document.getElementById('btnEjecutarStandalone')?.click();
+
+                    // Scroll suave al editor
+                    editorSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    if (typeof mostrarMensajeExito === 'function') {
+                        mostrarMensajeExito('Código copiado al editor de práctica');
+                    }
+                }
+            } else {
+                if (typeof mostrarMensajeBloqueado === 'function') {
+                    mostrarMensajeBloqueado('Esta lección no permite edición en tiempo real.');
+                }
+            }
+        });
+
+        block.appendChild(btn);
+    });
+}
+
+// Observador para detectar cambios en el contenido de la lección
+const lessonObserver = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            inicializarEjemplosInteractivos();
+        }
+    });
+});
+
+const lessonTarget = document.getElementById('leccionContent');
+if (lessonTarget) {
+    lessonObserver.observe(lessonTarget, { childList: true });
+    // Ejecución inicial por si ya hay contenido
+    inicializarEjemplosInteractivos();
 }
