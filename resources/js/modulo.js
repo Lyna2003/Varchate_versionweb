@@ -1169,9 +1169,11 @@ async function cargarLeccion(moduloSlug, leccionSlug) {
             const introduccionContent = document.getElementById('introduccionContent');
             const leccionContent = document.getElementById('leccionContent');
 
-            // Mostrar el botón "Siguiente" en lecciones normales
+            // Mostrar el botón "Siguiente" y su contenedor en lecciones normales
             const btnNextLeccion = document.getElementById('btnNext');
+            const btnContainer = document.querySelector('.btn-container');
             if (btnNextLeccion) btnNextLeccion.style.display = '';
+            if (btnContainer) btnContainer.style.display = '';
 
             if (introduccionContent) introduccionContent.style.display = 'none';
             if (leccionContent) {
@@ -2431,9 +2433,11 @@ function mostrarIntroduccion() {
     const introduccionContent = document.getElementById('introduccionContent');
     const leccionContent = document.getElementById('leccionContent');
 
-    // Mostrar el botón "Siguiente" al volver a la introducción
+    // Mostrar el botón "Siguiente" y su contenedor al volver a la introducción
     const btnNext = document.getElementById('btnNext');
+    const btnContainer = document.querySelector('.btn-container');
     if (btnNext) btnNext.style.display = '';
+    if (btnContainer) btnContainer.style.display = '';
 
     // Solo mostrar/ocultar — NO tocar el contenido interno que ya está bien renderizado
     if (introduccionContent) {
