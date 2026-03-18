@@ -45,7 +45,19 @@
   }
 
   /* Forzar la fuente en todos los textos principales sin romper FontAwesome */
-  h1, h2, h3, h4, h5, h6, p, a, span, div, button, input, textarea {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  a,
+  span,
+  div,
+  button,
+  input,
+  textarea {
     font-family: 'Barlow Semi Condensed', sans-serif;
   }
 
@@ -439,7 +451,7 @@
     margin-bottom: 1.5rem;
     color: #555;
     font-weight: 500;
-    line-height: 1.8;
+    line-height: 0.8;
     font-size: 16.5px;
   }
 
